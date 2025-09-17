@@ -24,13 +24,27 @@ let pool: Pool | null = null
 
 export const connectDB = async (): Promise<void> => {
   try {
+    // Debug: Log environment variables
+    console.log('Environment variables loaded:')
+    console.log('DB_HOST:', process.env['DB_HOST'])
+    console.log('DB_PORT:', process.env['DB_PORT'])
+    console.log('DB_NAME:', process.env['DB_NAME'])
+    console.log('DB_USER:', process.env['DB_USER'])
+    console.log('DB_PASSWORD length:', process.env['DB_PASSWORD']?.length)
+    console.log('DB_SSL_MODE:', process.env['DB_SSL_MODE'])
+    
     // Create connection pool
+    const dbPassword = process.env['DB_PASSWORD']
+    if (!dbPassword) {
+      throw new Error('DB_PASSWORD environment variable is required')
+    }
+    
     pool = new Pool({
       host: process.env['DB_HOST'] || 'localhost',
       port: parseInt(process.env['DB_PORT'] || '5432'),
       database: process.env['DB_NAME'] || 'planner-crm',
       user: process.env['DB_USER'] || 'postgres',
-      password: process.env['DB_PASSWORD'] || '',
+      password: String(dbPassword), // Ensure password is a string
       ssl: process.env['DB_SSL_MODE'] === 'require' ? { rejectUnauthorized: false } : false,
       max: parseInt(process.env['DB_POOL_SIZE'] || '20'), // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
