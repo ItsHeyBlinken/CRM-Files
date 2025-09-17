@@ -128,7 +128,7 @@ export class UserModel {
   // Find users by role
   static async findByRole(role: string): Promise<IUser[]> {
     const result = await query('SELECT * FROM users WHERE role = $1 AND is_active = true', [role])
-    return result.rows.map(row => this.mapRowToUser(row))
+    return result.rows.map((row: any) => this.mapRowToUser(row))
   }
 
   // Update user

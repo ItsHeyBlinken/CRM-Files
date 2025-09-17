@@ -27,12 +27,12 @@ interface AuthenticatedSocket extends Socket {
   user?: any
 }
 
-interface SocketRooms {
-  [userId: string]: string[]
-}
+// interface SocketRooms {
+//   [userId: string]: string[]
+// }
 
 const connectedUsers: Map<string, string> = new Map() // userId -> socketId
-const userRooms: SocketRooms = {}
+// const userRooms: SocketRooms = {} // TODO: Implement room management
 
 export const socketHandler = (io: SocketIOServer) => {
   // Authentication middleware

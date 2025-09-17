@@ -256,7 +256,7 @@ export class VendorModel {
       WHERE categories @> $1 AND is_active = true 
       ORDER BY name ASC
     `, [JSON.stringify([category])])
-    return result.rows.map(row => this.mapRowToVendor(row))
+    return result.rows.map((row: any) => this.mapRowToVendor(row))
   }
 
   // Find vendors by location
@@ -272,7 +272,7 @@ export class VendorModel {
     queryText += ' ORDER BY name ASC'
     
     const result = await query(queryText, params)
-    return result.rows.map(row => this.mapRowToVendor(row))
+    return result.rows.map((row: any) => this.mapRowToVendor(row))
   }
 
   // Search vendors
@@ -296,7 +296,7 @@ export class VendorModel {
     queryText += ' ORDER BY name ASC'
     
     const result = await query(queryText, params)
-    return result.rows.map(row => this.mapRowToVendor(row))
+    return result.rows.map((row: any) => this.mapRowToVendor(row))
   }
 
   // Update vendor
@@ -427,7 +427,7 @@ export class VendorModel {
     `)
 
     const byCategory: { [key: string]: number } = {}
-    categoryResult.rows.forEach(row => {
+    categoryResult.rows.forEach((row: any) => {
       byCategory[row.category] = parseInt(row.count)
     })
 

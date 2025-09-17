@@ -124,7 +124,7 @@ export class ActivityModel {
   // Find activities by owner
   static async findByOwner(ownerId: string): Promise<IActivity[]> {
     const result = await query('SELECT * FROM activities WHERE owner = $1 ORDER BY created_at DESC', [ownerId])
-    return result.rows.map(row => this.mapRowToActivity(row))
+    return result.rows.map((row: any) => this.mapRowToActivity(row))
   }
 
   // Find activities by related entity
@@ -133,7 +133,7 @@ export class ActivityModel {
       'SELECT * FROM activities WHERE related_to->>\'type\' = $1 AND related_to->>\'id\' = $2 ORDER BY created_at DESC',
       [type, id]
     )
-    return result.rows.map(row => this.mapRowToActivity(row))
+    return result.rows.map((row: any) => this.mapRowToActivity(row))
   }
 
   // Update activity

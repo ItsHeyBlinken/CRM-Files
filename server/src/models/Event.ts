@@ -162,19 +162,19 @@ export class EventModel {
   // Find events by client ID
   static async findByClientId(clientId: string): Promise<IEvent[]> {
     const result = await query('SELECT * FROM events WHERE client_id = $1 ORDER BY start_date DESC', [clientId])
-    return result.rows.map(row => this.mapRowToEvent(row))
+    return result.rows.map((row: any) => this.mapRowToEvent(row))
   }
 
   // Find events by planner ID
   static async findByPlannerId(plannerId: string): Promise<IEvent[]> {
     const result = await query('SELECT * FROM events WHERE planner_id = $1 ORDER BY start_date DESC', [plannerId])
-    return result.rows.map(row => this.mapRowToEvent(row))
+    return result.rows.map((row: any) => this.mapRowToEvent(row))
   }
 
   // Find events by status
   static async findByStatus(status: string): Promise<IEvent[]> {
     const result = await query('SELECT * FROM events WHERE status = $1 ORDER BY start_date DESC', [status])
-    return result.rows.map(row => this.mapRowToEvent(row))
+    return result.rows.map((row: any) => this.mapRowToEvent(row))
   }
 
   // Find upcoming events
@@ -185,7 +185,7 @@ export class EventModel {
       ORDER BY start_date ASC 
       LIMIT $1
     `, [limit])
-    return result.rows.map(row => this.mapRowToEvent(row))
+    return result.rows.map((row: any) => this.mapRowToEvent(row))
   }
 
   // Update event

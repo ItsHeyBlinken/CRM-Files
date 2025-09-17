@@ -143,25 +143,25 @@ export class PaymentModel {
   // Find payments by event ID
   static async findByEventId(eventId: string): Promise<IPayment[]> {
     const result = await query('SELECT * FROM payments WHERE event_id = $1 ORDER BY created_at DESC', [eventId])
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Find payments by client ID
   static async findByClientId(clientId: string): Promise<IPayment[]> {
     const result = await query('SELECT * FROM payments WHERE client_id = $1 ORDER BY created_at DESC', [clientId])
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Find payments by vendor ID
   static async findByVendorId(vendorId: string): Promise<IPayment[]> {
     const result = await query('SELECT * FROM payments WHERE vendor_id = $1 ORDER BY created_at DESC', [vendorId])
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Find payments by status
   static async findByStatus(status: string): Promise<IPayment[]> {
     const result = await query('SELECT * FROM payments WHERE status = $1 ORDER BY created_at DESC', [status])
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Find overdue payments
@@ -172,7 +172,7 @@ export class PaymentModel {
       AND due_date < NOW() 
       ORDER BY due_date ASC
     `)
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Find upcoming payments
@@ -183,7 +183,7 @@ export class PaymentModel {
       AND due_date BETWEEN NOW() AND NOW() + INTERVAL '${days} days'
       ORDER BY due_date ASC
     `)
-    return result.rows.map(row => this.mapRowToPayment(row))
+    return result.rows.map((row: any) => this.mapRowToPayment(row))
   }
 
   // Update payment
@@ -335,12 +335,12 @@ export class PaymentModel {
     `, params)
 
     const byStatus: { [key: string]: number } = {}
-    statusResult.rows.forEach(row => {
+    statusResult.rows.forEach((row: any) => {
       byStatus[row.status] = parseInt(row.count)
     })
 
     const byPaymentMethod: { [key: string]: number } = {}
-    methodResult.rows.forEach(row => {
+    methodResult.rows.forEach((row: any) => {
       byPaymentMethod[row.payment_method] = parseInt(row.count)
     })
 
