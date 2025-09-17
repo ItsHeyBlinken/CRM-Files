@@ -1,5 +1,47 @@
 node_modules
 .env
+.log
+.env.example
+.env.local
+.env.development
+.env.production
+.env.test
+.env.test.local
+.env.test.development
+.env.test.production
+.env.test.local.development
+.env.test.local.production
 
+client/node_modules
+client/.env
+client/.env.example
+client/.env.local
+client/.env.development
+client/.env.production
+client/.env.test
+client/.env.test.local
+client/.env.test.development
+client/.env.test.production
 
+server/node_modules
+server/.env
+server/.env.example
+server/.env.local
+server/.env.development
+server/.env.production
+server/.env.test
+server/.env.test.local
+server/.env.test.development
+server/.env.test.production
+
+database/node_modules
+database/.env
+database/.env.example
+database/.env.local
+database/.env.development
+database/.env.production
+database/.env.test
+database/.env.test.local
+database/.env.test.development
+database/.env.test.production   
 
