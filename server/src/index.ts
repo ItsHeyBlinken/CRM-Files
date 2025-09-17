@@ -51,12 +51,7 @@ import clientRoutes from './routes/clients'
 import uploadRoutes from './routes/upload'
 import reportRoutes from './routes/reports'
 
-// TODO: Fix these models - they still have Mongoose code
-// import { Activity } from './models/Activity'
-// import { Contact } from './models/Contact'
-// import { Deal } from './models/Deal'
-// import { Lead } from './models/Lead'
-// import { Task } from './models/Task'
+// Models are now using PostgreSQL - no imports needed for basic functionality
 
 // Load environment variables
 dotenv.config()
@@ -73,7 +68,10 @@ const io = new SocketIOServer(server, {
 const PORT = process.env['PORT'] || 3000
 
 // Connect to PostgreSQL
-connectDB()
+connectDB().catch((error) => {
+  logger.error('Database connection failed:', error)
+  logger.warn('Server will continue without database connection for now')
+})
 
 // Security middleware
 app.use(helmet({

@@ -5,7 +5,7 @@
  * catching and formatting all errors that occur during request processing.
  * 
  * Features:
- * - Mongoose error handling (CastError, ValidationError, DuplicateKey)
+ * - PostgreSQL error handling (constraint violations, connection errors)
  * - JWT error handling (JsonWebTokenError, TokenExpiredError)
  * - Multer file upload error handling
  * - Custom error formatting with status codes
@@ -22,6 +22,7 @@ import { logger } from '../utils/logger'
 export interface AppError extends Error {
   statusCode?: number
   isOperational?: boolean
+  code?: string
 }
 
 export const errorHandler = (
@@ -36,21 +37,21 @@ export const errorHandler = (
   // Log error
   logger.error(err)
 
-  // Mongoose bad ObjectId
-  if (err.name === 'CastError') {
-    const message = 'Resource not found'
-    error = { message, statusCode: 404 } as AppError
-  }
-
-  // Mongoose duplicate key
-  if (err.name === 'MongoError' && (err as any).code === 11000) {
+  // PostgreSQL constraint violations
+  if (err.code === '23505') { // unique_violation
     const message = 'Duplicate field value entered'
     error = { message, statusCode: 400 } as AppError
   }
 
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    const message = Object.values((err as any).errors).map((val: any) => val.message).join(', ')
+  // PostgreSQL foreign key violations
+  if (err.code === '23503') { // foreign_key_violation
+    const message = 'Referenced record not found'
+    error = { message, statusCode: 400 } as AppError
+  }
+
+  // PostgreSQL check constraint violations
+  if (err.code === '23514') { // check_violation
+    const message = 'Invalid data provided'
     error = { message, statusCode: 400 } as AppError
   }
 
