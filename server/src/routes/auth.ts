@@ -1,15 +1,42 @@
 import { Router } from 'express'
 import { Request, Response } from 'express'
+import { protect, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
-// POST /api/auth/login
-router.post('/login', async (_req: Request, res: Response) => {
+// GET /api/auth/me
+router.get('/me', protect, async (req: AuthRequest, res: Response) => {
   try {
-    // TODO: Implement login logic
-    res.status(200).json({ message: 'Login endpoint - not implemented yet' })
+    // Return user data from the authenticated request
+    res.json({
+      id: req.user?.id,
+      email: req.user?.email,
+      name: req.user?.name,
+      role: req.user?.role
+    })
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' })
+    res.status(500).json({ error: 'Failed to get user data' })
+  }
+})
+
+// POST /api/auth/login
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body
+    
+    // For now, return a mock user (you'll implement real authentication later)
+    if (email && password) {
+      res.json({
+        id: '1',
+        email: email,
+        name: 'Test User',
+        role: 'USER'
+      })
+    } else {
+      res.status(400).json({ error: 'Email and password are required' })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Login failed' })
   }
 })
 
