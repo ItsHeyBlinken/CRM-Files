@@ -54,14 +54,7 @@ import reportRoutes from './routes/reports'
 // Models are now using PostgreSQL - no imports needed for basic functionality
 
 // Load environment variables
-console.log('Loading .env file...')
-const result = dotenv.config()
-if (result.error) {
-  console.error('Error loading .env file:', result.error)
-} else {
-  console.log('Environment variables loaded successfully')
-  console.log('DB_PASSWORD exists:', !!process.env['DB_PASSWORD'])
-}
+dotenv.config()
 
 const app = express()
 const server = createServer(app)
