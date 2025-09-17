@@ -18,7 +18,6 @@ A comprehensive Customer Relationship Management (CRM) platform built with React
 - **Full-Stack TypeScript**: Type-safe development across frontend and backend
 - **Modern React**: Hooks, Context API, and modern patterns
 - **Express.js API**: RESTful API with comprehensive middleware
-- **MongoDB**: Flexible document database with Mongoose ODM
 - **Authentication**: JWT-based authentication with role-based access
 - **File Upload**: Document and attachment management
 - **Email Integration**: Automated email notifications and templates

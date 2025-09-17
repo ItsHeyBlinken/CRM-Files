@@ -18,7 +18,7 @@
  * @version 1.0.0
  */
 
-import mongoose, { Document, Schema } from 'mongoose'
+import { query } from '../config/database'
 
 export interface IDeal extends Document {
   _id: string

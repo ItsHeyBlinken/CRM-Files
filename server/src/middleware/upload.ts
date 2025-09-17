@@ -32,7 +32,7 @@ if (!fs.existsSync(uploadDir)) {
 
 // Configure storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, file, cb) => {
     let uploadPath = uploadDir
     
     // Determine subdirectory based on file type
@@ -53,14 +53,14 @@ const storage = multer.diskStorage({
     
     cb(null, uploadPath)
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueName = `${uuidv4()}-${Date.now()}${path.extname(file.originalname)}`
     cb(null, uniqueName)
   },
 })
 
 // File filter
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   // Check file type
   const allowedTypes = /jpeg|jpg|png|gif|webp|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv/
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
@@ -87,13 +87,13 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB default
+    fileSize: parseInt(process.env['MAX_FILE_SIZE'] || '10485760'), // 10MB default
     files: 10, // Maximum 10 files
   },
 })
 
 // Image processing middleware
-export const processImage = async (req: any, res: any, next: any) => {
+export const processImage = async (req: any, _res: any, next: any) => {
   if (!req.file) return next()
 
   try {
@@ -122,7 +122,7 @@ export const processImage = async (req: any, res: any, next: any) => {
 }
 
 // Multiple file processing middleware
-export const processFiles = async (req: any, res: any, next: any) => {
+export const processFiles = async (req: any, _res: any, next: any) => {
   if (!req.files || req.files.length === 0) return next()
 
   try {

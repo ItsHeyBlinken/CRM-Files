@@ -51,6 +51,13 @@ import clientRoutes from './routes/clients'
 import uploadRoutes from './routes/upload'
 import reportRoutes from './routes/reports'
 
+// TODO: Fix these models - they still have Mongoose code
+// import { Activity } from './models/Activity'
+// import { Contact } from './models/Contact'
+// import { Deal } from './models/Deal'
+// import { Lead } from './models/Lead'
+// import { Task } from './models/Task'
+
 // Load environment variables
 dotenv.config()
 
@@ -58,12 +65,12 @@ const app = express()
 const server = createServer(app)
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
     methods: ['GET', 'POST']
   }
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env['PORT'] || 3000
 
 // Connect to PostgreSQL
 connectDB()
@@ -82,7 +89,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -90,8 +97,8 @@ app.use(cors({
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'), // 15 minutes
+  max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'), // limit each IP to 100 requests per windowMs
   message: {
     error: 'Too many requests from this IP, please try again later.',
   },
@@ -108,11 +115,11 @@ app.use(cookieParser())
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  secret: process.env['SESSION_SECRET'] || 'your-session-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env['NODE_ENV'] === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
@@ -122,19 +129,19 @@ app.use(session({
 app.use(compression())
 
 // Logging middleware
-if (process.env.NODE_ENV === 'development') {
+if (process.env['NODE_ENV'] === 'development') {
   app.use(morgan('dev'))
 } else {
   app.use(morgan('combined'))
 }
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV,
+    environment: process.env['NODE_ENV'],
   })
 })
 
@@ -162,7 +169,7 @@ app.use(errorHandler)
 // Start server
 server.listen(PORT, () => {
   logger.info(`🚀 Event Planner CRM Server running on port ${PORT}`)
-  logger.info(`📱 Environment: ${process.env.NODE_ENV}`)
+  logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
   logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
   logger.info(`🔌 Socket.io enabled for real-time communication`)
   logger.info(`📊 PostgreSQL database connected`)

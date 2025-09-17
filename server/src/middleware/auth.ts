@@ -36,8 +36,8 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     }
 
     // Check for token in cookies
-    if (!token && req.cookies.token) {
-      token = req.cookies.token
+    if (!token && req.cookies['token']) {
+      token = req.cookies['token']
     }
 
     if (!token) {
@@ -50,11 +50,10 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
 
     try {
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+      const decoded = jwt.verify(token, process.env['JWT_SECRET']!) as any
 
       // Get user from token
-      const user = await User.findById(decoded.id).select('-password')
-
+      const user = await User.findById(decoded.id)
       if (!user) {
         res.status(401).json({
           success: false,
@@ -111,7 +110,7 @@ export const authorize = (...roles: string[]) => {
   }
 }
 
-export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const optionalAuth = async (req: AuthRequest, _res: Response, next: NextFunction): Promise<void> => {
   try {
     let token: string | undefined
 
@@ -121,17 +120,17 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
     }
 
     // Check for token in cookies
-    if (!token && req.cookies.token) {
-      token = req.cookies.token
+    if (!token && req.cookies['token']) {
+      token = req.cookies['token']
     }
 
     if (token) {
       try {
         // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+        const decoded = jwt.verify(token, process.env['JWT_SECRET']!) as any
 
         // Get user from token
-        const user = await User.findById(decoded.id).select('-password')
+        const user = await User.findById(decoded.id)
 
         if (user && user.isActive) {
           req.user = user

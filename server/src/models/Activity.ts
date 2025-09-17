@@ -1,7 +1,7 @@
 /**
- * Activity Model and Schema Definition
+ * Activity Model and Database Operations
  * 
- * This module defines the Activity model for the CRM platform,
+ * This module defines the Activity model for the Event Planner CRM platform,
  * including comprehensive activity logging and communication tracking.
  * 
  * Features:
@@ -14,23 +14,23 @@
  * - Activity analytics and reporting
  * - Automated activity creation
  * 
- * @author CRM Platform Team
+ * @author Event Planner CRM Team
  * @version 1.0.0
  */
 
-import mongoose, { Document, Schema } from 'mongoose'
+import { query } from '../config/database'
 
-export interface IActivity extends Document {
-  _id: string
+export interface IActivity {
+  id: string
   type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'TASK' | 'DEAL_UPDATE' | 'LEAD_UPDATE' | 'CONTACT_UPDATE'
   subject: string
   description?: string
-  owner: mongoose.Types.ObjectId
+  owner: string
   relatedTo?: {
     type: 'CONTACT' | 'LEAD' | 'DEAL' | 'TASK'
-    id: mongoose.Types.ObjectId
+    id: string
   }
-  participants: mongoose.Types.ObjectId[]
+  participants: string[]
   duration?: number // in minutes
   outcome?: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' | 'FOLLOW_UP_REQUIRED'
   nextAction?: string
@@ -43,143 +43,222 @@ export interface IActivity extends Document {
   direction?: 'INBOUND' | 'OUTBOUND'
   createdAt: Date
   updatedAt: Date
-  getActivitySummary(): string
-  getDurationText(): string
 }
 
-const activitySchema = new Schema<IActivity>({
-  type: {
-    type: String,
-    required: [true, 'Activity type is required'],
-    enum: ['CALL', 'EMAIL', 'MEETING', 'NOTE', 'TASK', 'DEAL_UPDATE', 'LEAD_UPDATE', 'CONTACT_UPDATE'],
-  },
-  subject: {
-    type: String,
-    required: [true, 'Activity subject is required'],
-    trim: true,
-    maxlength: [200, 'Subject cannot exceed 200 characters'],
-  },
-  description: {
-    type: String,
-    maxlength: [2000, 'Description cannot exceed 2000 characters'],
-    trim: true,
-  },
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Activity owner is required'],
-  },
-  relatedTo: {
-    type: {
-      type: String,
-      enum: ['CONTACT', 'LEAD', 'DEAL', 'TASK'],
-    },
-    id: {
-      type: Schema.Types.ObjectId,
-    },
-  },
-  participants: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Contact',
-  }],
-  duration: {
-    type: Number,
-    min: 0,
-  },
-  outcome: {
-    type: String,
-    enum: ['POSITIVE', 'NEUTRAL', 'NEGATIVE', 'FOLLOW_UP_REQUIRED'],
-  },
-  nextAction: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Next action cannot exceed 500 characters'],
-  },
-  nextActionDate: {
-    type: Date,
-  },
-  attachments: [{
-    type: String,
-  }],
-  tags: [{
-    type: String,
-    trim: true,
-    maxlength: [50, 'Tag cannot exceed 50 characters'],
-  }],
-  isImportant: {
-    type: Boolean,
-    default: false,
-  },
-  location: {
-    type: String,
-    trim: true,
-    maxlength: [200, 'Location cannot exceed 200 characters'],
-  },
-  meetingType: {
-    type: String,
-    enum: ['IN_PERSON', 'PHONE', 'VIDEO', 'EMAIL'],
-  },
-  direction: {
-    type: String,
-    enum: ['INBOUND', 'OUTBOUND'],
-  },
-}, {
-  timestamps: true,
-  toJSON: {
-    transform: function(doc, ret) {
-      ret.id = ret._id
-      delete ret._id
-      delete ret.__v
-      return ret
-    },
-  },
-})
-
-// Indexes for better query performance
-activitySchema.index({ type: 1 })
-activitySchema.index({ owner: 1 })
-activitySchema.index({ 'relatedTo.type': 1, 'relatedTo.id': 1 })
-activitySchema.index({ createdAt: -1 })
-activitySchema.index({ isImportant: 1 })
-activitySchema.index({ outcome: 1 })
-activitySchema.index({ tags: 1 })
-activitySchema.index({ subject: 'text', description: 'text' })
-
-// Get activity summary
-activitySchema.methods.getActivitySummary = function(): string {
-  const typeText = this.type.toLowerCase().replace('_', ' ')
-  const subject = this.subject
-  const date = this.createdAt.toLocaleDateString()
-  
-  return `${typeText}: ${subject} (${date})`
-}
-
-// Get duration text
-activitySchema.methods.getDurationText = function(): string {
-  if (!this.duration) return 'No duration'
-  
-  const hours = Math.floor(this.duration / 60)
-  const minutes = this.duration % 60
-  
-  if (hours > 0) {
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+export interface IActivityCreate {
+  type: 'CALL' | 'EMAIL' | 'MEETING' | 'NOTE' | 'TASK' | 'DEAL_UPDATE' | 'LEAD_UPDATE' | 'CONTACT_UPDATE'
+  subject: string
+  description?: string
+  owner: string
+  relatedTo?: {
+    type: 'CONTACT' | 'LEAD' | 'DEAL' | 'TASK'
+    id: string
   }
-  return `${minutes}m`
+  participants?: string[]
+  duration?: number
+  outcome?: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' | 'FOLLOW_UP_REQUIRED'
+  nextAction?: string
+  nextActionDate?: Date
+  attachments?: string[]
+  tags?: string[]
+  isImportant?: boolean
+  location?: string
+  meetingType?: 'IN_PERSON' | 'PHONE' | 'VIDEO' | 'EMAIL'
+  direction?: 'INBOUND' | 'OUTBOUND'
 }
 
-// Auto-populate related entity based on type
-activitySchema.pre('save', function(next) {
-  if (this.isModified('type')) {
-    // Auto-set meeting type based on activity type
-    if (this.type === 'MEETING' && !this.meetingType) {
-      this.meetingType = 'IN_PERSON'
-    } else if (this.type === 'CALL' && !this.meetingType) {
-      this.meetingType = 'PHONE'
-    } else if (this.type === 'EMAIL' && !this.meetingType) {
-      this.meetingType = 'EMAIL'
+export interface IActivityUpdate {
+  subject?: string
+  description?: string
+  participants?: string[]
+  duration?: number
+  outcome?: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE' | 'FOLLOW_UP_REQUIRED'
+  nextAction?: string
+  nextActionDate?: Date
+  attachments?: string[]
+  tags?: string[]
+  isImportant?: boolean
+  location?: string
+  meetingType?: 'IN_PERSON' | 'PHONE' | 'VIDEO' | 'EMAIL'
+  direction?: 'INBOUND' | 'OUTBOUND'
+}
+
+export class ActivityModel {
+  // Create a new activity
+  static async create(activityData: IActivityCreate): Promise<IActivity> {
+    const result = await query(`
+      INSERT INTO activities (
+        type, subject, description, owner, related_to, participants, duration,
+        outcome, next_action, next_action_date, attachments, tags, is_important,
+        location, meeting_type, direction, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW())
+      RETURNING *
+    `, [
+      activityData.type,
+      activityData.subject,
+      activityData.description || null,
+      activityData.owner,
+      activityData.relatedTo ? JSON.stringify(activityData.relatedTo) : null,
+      JSON.stringify(activityData.participants || []),
+      activityData.duration || null,
+      activityData.outcome || null,
+      activityData.nextAction || null,
+      activityData.nextActionDate || null,
+      JSON.stringify(activityData.attachments || []),
+      JSON.stringify(activityData.tags || []),
+      activityData.isImportant || false,
+      activityData.location || null,
+      activityData.meetingType || null,
+      activityData.direction || null
+    ])
+
+    return this.mapRowToActivity(result.rows[0])
+  }
+
+  // Find activity by ID
+  static async findById(id: string): Promise<IActivity | null> {
+    const result = await query('SELECT * FROM activities WHERE id = $1', [id])
+    return result.rows.length > 0 ? this.mapRowToActivity(result.rows[0]) : null
+  }
+
+  // Find activities by owner
+  static async findByOwner(ownerId: string): Promise<IActivity[]> {
+    const result = await query('SELECT * FROM activities WHERE owner = $1 ORDER BY created_at DESC', [ownerId])
+    return result.rows.map(row => this.mapRowToActivity(row))
+  }
+
+  // Find activities by related entity
+  static async findByRelatedTo(type: string, id: string): Promise<IActivity[]> {
+    const result = await query(
+      'SELECT * FROM activities WHERE related_to->>\'type\' = $1 AND related_to->>\'id\' = $2 ORDER BY created_at DESC',
+      [type, id]
+    )
+    return result.rows.map(row => this.mapRowToActivity(row))
+  }
+
+  // Update activity
+  static async update(id: string, activityData: IActivityUpdate): Promise<IActivity | null> {
+    const fields = []
+    const values = []
+    let paramCount = 1
+
+    if (activityData.subject !== undefined) {
+      fields.push(`subject = $${paramCount++}`)
+      values.push(activityData.subject)
+    }
+    if (activityData.description !== undefined) {
+      fields.push(`description = $${paramCount++}`)
+      values.push(activityData.description)
+    }
+    if (activityData.participants !== undefined) {
+      fields.push(`participants = $${paramCount++}`)
+      values.push(JSON.stringify(activityData.participants))
+    }
+    if (activityData.duration !== undefined) {
+      fields.push(`duration = $${paramCount++}`)
+      values.push(activityData.duration)
+    }
+    if (activityData.outcome !== undefined) {
+      fields.push(`outcome = $${paramCount++}`)
+      values.push(activityData.outcome)
+    }
+    if (activityData.nextAction !== undefined) {
+      fields.push(`next_action = $${paramCount++}`)
+      values.push(activityData.nextAction)
+    }
+    if (activityData.nextActionDate !== undefined) {
+      fields.push(`next_action_date = $${paramCount++}`)
+      values.push(activityData.nextActionDate)
+    }
+    if (activityData.attachments !== undefined) {
+      fields.push(`attachments = $${paramCount++}`)
+      values.push(JSON.stringify(activityData.attachments))
+    }
+    if (activityData.tags !== undefined) {
+      fields.push(`tags = $${paramCount++}`)
+      values.push(JSON.stringify(activityData.tags))
+    }
+    if (activityData.isImportant !== undefined) {
+      fields.push(`is_important = $${paramCount++}`)
+      values.push(activityData.isImportant)
+    }
+    if (activityData.location !== undefined) {
+      fields.push(`location = $${paramCount++}`)
+      values.push(activityData.location)
+    }
+    if (activityData.meetingType !== undefined) {
+      fields.push(`meeting_type = $${paramCount++}`)
+      values.push(activityData.meetingType)
+    }
+    if (activityData.direction !== undefined) {
+      fields.push(`direction = $${paramCount++}`)
+      values.push(activityData.direction)
+    }
+
+    if (fields.length === 0) {
+      return this.findById(id)
+    }
+
+    fields.push(`updated_at = NOW()`)
+    values.push(id)
+
+    const result = await query(`
+      UPDATE activities 
+      SET ${fields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING *
+    `, values)
+
+    return result.rows.length > 0 ? this.mapRowToActivity(result.rows[0]) : null
+  }
+
+  // Delete activity
+  static async delete(id: string): Promise<boolean> {
+    const result = await query('DELETE FROM activities WHERE id = $1', [id])
+    return result.rowCount > 0
+  }
+
+  // Get activity summary
+  static getActivitySummary(activity: IActivity): string {
+    const duration = activity.duration ? ` (${activity.duration} min)` : ''
+    return `${activity.type}: ${activity.subject}${duration}`
+  }
+
+  // Get duration text
+  static getDurationText(activity: IActivity): string {
+    if (!activity.duration) return 'No duration'
+    const hours = Math.floor(activity.duration / 60)
+    const minutes = activity.duration % 60
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
+    }
+    return `${minutes}m`
+  }
+
+  // Map database row to Activity object
+  private static mapRowToActivity(row: any): IActivity {
+    return {
+      id: row.id,
+      type: row.type,
+      subject: row.subject,
+      description: row.description,
+      owner: row.owner,
+      relatedTo: row.related_to ? JSON.parse(row.related_to) : undefined,
+      participants: row.participants ? JSON.parse(row.participants) : [],
+      duration: row.duration,
+      outcome: row.outcome,
+      nextAction: row.next_action,
+      nextActionDate: row.next_action_date,
+      attachments: row.attachments ? JSON.parse(row.attachments) : [],
+      tags: row.tags ? JSON.parse(row.tags) : [],
+      isImportant: row.is_important,
+      location: row.location,
+      meetingType: row.meeting_type,
+      direction: row.direction,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
     }
   }
-  next()
-})
+}
 
-export const Activity = mongoose.model<IActivity>('Activity', activitySchema)
+export const Activity = ActivityModel
