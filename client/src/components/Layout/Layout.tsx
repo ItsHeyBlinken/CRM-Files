@@ -1,11 +1,23 @@
 import React, { ReactNode } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 
 interface LayoutProps {
   children?: ReactNode
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation()
+  
+  const navItems = [
+    { path: '/', label: 'Dashboard' },
+    { path: '/contacts', label: 'Contacts' },
+    { path: '/leads', label: 'Leads' },
+    { path: '/deals', label: 'Deals' },
+    { path: '/tasks', label: 'Tasks' },
+    { path: '/activities', label: 'Activities' },
+    { path: '/reports', label: 'Reports' }
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
@@ -16,27 +28,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
           <nav className="mt-6">
             <div className="px-6 space-y-2">
-              <a href="/" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Dashboard
-              </a>
-              <a href="/contacts" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Contacts
-              </a>
-              <a href="/leads" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Leads
-              </a>
-              <a href="/deals" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Deals
-              </a>
-              <a href="/tasks" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Tasks
-              </a>
-              <a href="/activities" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Activities
-              </a>
-              <a href="/reports" className="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">
-                Reports
-              </a>
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`block px-3 py-2 rounded-md transition-colors ${
+                    location.pathname === item.path
+                      ? 'bg-blue-100 text-blue-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </nav>
         </div>
