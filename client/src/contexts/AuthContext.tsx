@@ -1,15 +1,23 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import api from '../services/api'
 
 interface User {
   id: string
   email: string
   name: string
+  firstName?: string
+  lastName?: string
   role: string
+  avatarUrl?: string
+  phone?: string
+  company?: string
+  jobTitle?: string
 }
 
 interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, firstName: string, lastName: string, phone?: string, company?: string, jobTitle?: string) => Promise<void>
   logout: () => void
   loading: boolean
   isAuthenticated: boolean
@@ -40,33 +48,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include'
-      })
+      // Check if token exists in localStorage
+      const token = localStorage.getItem('token')
+      const savedUser = localStorage.getItem('user')
       
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-      } else if (response.status === 401) {
-        // For development, set a mock user instead of null
-        // Remove this in production
-        setUser({
-          id: '1',
-          email: 'test@example.com',
-          name: 'Test User',
-          role: 'USER'
-        })
+      if (token && savedUser) {
+        // Set user from localStorage immediately for faster initial render
+        try {
+          setUser(JSON.parse(savedUser))
+        } catch (e) {
+          console.error('Error parsing saved user:', e)
+        }
       }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      // For development, set a mock user instead of null
-      // Remove this in production
-      setUser({
-        id: '1',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'USER'
-      })
+
+      // Verify token with server
+      const response = await api.get('/auth/me')
+      
+      if (response.data) {
+        setUser(response.data)
+        // Update localStorage with fresh user data
+        localStorage.setItem('user', JSON.stringify(response.data))
+      }
+    } catch (error: any) {
+      // If auth check fails, clear stored data
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        setUser(null)
+      }
     } finally {
       setLoading(false)
     }
@@ -74,36 +83,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
-      })
-
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
+      const response = await api.post('/auth/login', { email, password })
+      
+      if (response.data.token && response.data.user) {
+        // Store token and user data
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        setUser(response.data.user)
       } else {
-        throw new Error('Login failed')
+        throw new Error('Invalid response from server')
       }
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Login failed. Please try again.'
+      throw new Error(errorMessage)
+    }
+  }
+
+  const register = async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    phone?: string,
+    company?: string,
+    jobTitle?: string
+  ) => {
+    try {
+      const response = await api.post('/auth/register', {
+        email,
+        password,
+        firstName,
+        lastName,
+        phone,
+        company,
+        jobTitle
+      })
+      
+      if (response.data.token && response.data.user) {
+        // Store token and user data
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        setUser(response.data.user)
+      } else {
+        throw new Error('Invalid response from server')
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.'
+      throw new Error(errorMessage)
     }
   }
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
+      await api.post('/auth/logout')
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // Clear local storage and user state
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       setUser(null)
     }
   }
@@ -111,6 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value = {
     user,
     login,
+    register,
     logout,
     loading,
     isAuthenticated: !!user
