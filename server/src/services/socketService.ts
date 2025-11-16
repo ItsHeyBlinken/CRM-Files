@@ -59,8 +59,13 @@ export const socketHandler = (io: SocketIOServer) => {
   })
 
   io.on('connection', (socket: AuthenticatedSocket) => {
-    const userId = socket.user._id.toString()
-    const userName = socket.user.getFullName()
+    if (!socket.user) {
+      logger.error('Socket connected without user')
+      return
+    }
+
+    const userId = socket.user.id
+    const userName = User.getFullName(socket.user)
 
     logger.info(`User ${userName} (${userId}) connected via socket`)
 
@@ -70,14 +75,9 @@ export const socketHandler = (io: SocketIOServer) => {
     // Join user to their personal room
     socket.join(`user_${userId}`)
 
-    // Join user to team room if they have a team
-    if (socket.user.team) {
-      socket.join(`team_${socket.user.team}`)
-    }
-
-    // Join user to department room if they have a department
-    if (socket.user.department) {
-      socket.join(`department_${socket.user.department}`)
+    // Join user to company room if they have a company
+    if (socket.user.company) {
+      socket.join(`company_${socket.user.company}`)
     }
 
     // Broadcast user online status
