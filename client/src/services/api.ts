@@ -17,9 +17,16 @@
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 
+// Get API URL from environment or use relative path
+// Since frontend and backend are served from same domain in production, use relative /api
+// VITE_API_URL is only needed if frontend is on different domain than backend
+const apiBaseURL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'
+
 // Create axios instance with base configuration
 const api: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseURL,
   headers: {
     'Content-Type': 'application/json',
   },

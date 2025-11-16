@@ -59,9 +59,13 @@ dotenv.config()
 
 const app = express()
 const server = createServer(app)
+
+// Get CORS origin from environment (support both CORS_ORIGIN and FRONTEND_URL)
+const corsOrigin = process.env['CORS_ORIGIN'] || process.env['FRONTEND_URL'] || 'http://localhost:5173'
+
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
+    origin: corsOrigin,
     methods: ['GET', 'POST']
   }
 })
@@ -88,7 +92,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env['CORS_ORIGIN'] || 'http://localhost:5173',
+  origin: corsOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -114,7 +118,7 @@ app.use(cookieParser())
 
 // Session configuration
 app.use(session({
-  secret: process.env['SESSION_SECRET'] || 'your-session-secret',
+  secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: {
