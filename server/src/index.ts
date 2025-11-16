@@ -31,6 +31,7 @@ import session from 'express-session'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
+import path from 'path'
 import 'express-async-errors'
 import dotenv from 'dotenv'
 
@@ -160,7 +161,24 @@ app.use('/uploads', express.static('uploads'))
 // Socket.io connection handling
 socketHandler(io)
 
-// Error handling middleware
+// Serve built client files in production (before error handlers)
+if (process.env['NODE_ENV'] === 'production') {
+  // In compiled JS, __dirname will be available
+  const clientDistPath = path.join(__dirname, '../../client/dist')
+  
+  // Serve static files from client dist
+  app.use(express.static(clientDistPath))
+  
+  // Handle React Router - serve index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next()
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'))
+  })
+}
+
+// Error handling middleware (must be last)
 app.use(notFound)
 app.use(errorHandler)
 
