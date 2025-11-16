@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface LayoutProps {
   children?: ReactNode

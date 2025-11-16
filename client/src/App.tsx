@@ -17,7 +17,6 @@
  * @version 1.0.0
  */
 
-import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { SocketProvider } from './contexts/SocketContext'
