@@ -171,9 +171,40 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         jobTitle: newUser.jobTitle
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Registration error:', error)
-    res.status(500).json({ error: 'Registration failed' })
+    logger.error('Registration error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+      name: error?.name
+    })
+    
+    // Provide more specific error messages
+    if (error?.code === '23505') {
+      res.status(409).json({ error: 'User with this email already exists' })
+      return
+    }
+    
+    if (error?.code === 'ECONNREFUSED' || error?.message?.includes('connect')) {
+      res.status(503).json({ error: 'Database connection failed. Please try again later.' })
+      return
+    }
+    
+    // Check for missing table error
+    if (error?.code === '42P01' || error?.message?.includes('does not exist') || error?.message?.includes('relation "users"')) {
+      logger.error('Database table "users" does not exist. Please run database migrations.')
+      res.status(500).json({ 
+        error: 'Database not configured. Please contact support or run database migrations.' 
+      })
+      return
+    }
+    
+    const errorMessage = process.env['NODE_ENV'] === 'development' 
+      ? error?.message || 'Registration failed'
+      : 'Registration failed. Please try again.'
+    
+    res.status(500).json({ error: errorMessage })
   }
 })
 

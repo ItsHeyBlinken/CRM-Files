@@ -25,9 +25,36 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
+    // Get socket URL from environment or use same origin as API
+    // Remove /api suffix if present, Socket.io connects to the root
+    let socketURL = window.location.origin
+    if (import.meta.env.VITE_API_URL) {
+      socketURL = import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+    }
+
+    const token = localStorage.getItem('token')
+    
+    // Only connect if user is authenticated
+    if (!token) {
+      // Disconnect existing socket if token is removed
+      if (socket) {
+        socket.close()
+        setSocket(null)
+        setConnected(false)
+      }
+      return
+    }
+
     // Initialize socket connection
-    const newSocket = io('http://localhost:3000', {
-      transports: ['websocket', 'polling']
+    const newSocket = io(socketURL, {
+      transports: ['websocket', 'polling'],
+      auth: {
+        token: token
+      },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      autoConnect: true
     })
 
     newSocket.on('connect', () => {
@@ -41,17 +68,22 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     })
 
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error)
+      // Only log errors that aren't authentication-related (expected when not logged in)
+      if (error.message && !error.message.includes('Authentication error')) {
+        console.error('Socket connection error:', error)
+      }
       setConnected(false)
     })
 
     setSocket(newSocket)
 
-    // Cleanup on unmount
+    // Cleanup on unmount or when token changes
     return () => {
-      newSocket.close()
+      if (newSocket.connected) {
+        newSocket.close()
+      }
     }
-  }, [])
+  }, []) // Only run once on mount - token changes will trigger re-render via AuthContext
 
   const value = {
     socket,

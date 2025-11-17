@@ -67,8 +67,10 @@ const corsOrigin = process.env['CORS_ORIGIN'] || process.env['FRONTEND_URL'] || 
 const io = new SocketIOServer(server, {
   cors: {
     origin: corsOrigin,
-    methods: ['GET', 'POST']
-  }
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
 })
 
 const PORT = process.env['PORT'] || 3000
