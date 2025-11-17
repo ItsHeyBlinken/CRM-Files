@@ -43,5 +43,12 @@ database/.env.production
 database/.env.test
 database/.env.test.local
 database/.env.test.development
-database/.env.test.production   
+database/.env.test.production
+
+# Build outputs - should not be committed
+server/dist
+client/dist
+dist
+*.log
+logs
 

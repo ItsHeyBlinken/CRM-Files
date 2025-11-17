@@ -26,13 +26,16 @@ cmds = [
   'echo "=== Building Client ==="',
   'cd /app/client && npm run build',
   'echo "=== Client build complete ==="',
+  'ls -la /app/client/dist/ | head -5',
   'echo "=== Building Server ==="',
   'cd /app/server && npm run build',
   'echo "=== Server build complete ==="',
+  'ls -la /app/server/dist/ | head -10',
   'echo "=== Verifying builds ==="',
-  'ls -la /app/client/dist/ || echo "WARNING: Client dist not found"',
-  'ls -la /app/server/dist/ || echo "WARNING: Server dist not found"',
-  'test -f /app/server/dist/index.js && echo "SUCCESS: server/dist/index.js exists" || echo "ERROR: server/dist/index.js missing"'
+  'test -f /app/server/dist/index.js && echo "SUCCESS: server/dist/index.js exists" || echo "ERROR: server/dist/index.js missing"',
+  'echo "=== Build verification complete ==="',
+  'grep -r "fonts.googleapis.com" /app/server/dist/index.js && echo "CSP includes fonts.googleapis.com" || echo "WARNING: CSP may not be updated"',
+  'grep -r "trust proxy" /app/server/dist/index.js && echo "Trust proxy found" || echo "WARNING: Trust proxy may not be set"'
 ]
 
 # Start phase: Start the server

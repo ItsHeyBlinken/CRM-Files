@@ -58,6 +58,10 @@ import reportRoutes from './routes/reports'
 // Load environment variables
 dotenv.config()
 
+// Build timestamp for verification
+const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString()
+console.log('🚀 Server starting - Build timestamp:', BUILD_TIMESTAMP)
+
 const app = express()
 
 // Trust proxy MUST be set before any other middleware
