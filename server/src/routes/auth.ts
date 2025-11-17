@@ -141,16 +141,25 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Create new user
-    const newUser = await User.create({
-      email,
-      password,
-      firstName,
-      lastName,
-      phone,
-      company,
-      jobTitle,
-      role: 'CLIENT' // Default role for new registrations
-    })
+    logger.info('Attempting to create user:', { email, firstName, lastName })
+    let newUser
+    try {
+      newUser = await User.create({
+        email,
+        password,
+        firstName,
+        lastName,
+        phone,
+        company,
+        jobTitle,
+        role: 'CLIENT' // Default role for new registrations
+      })
+      logger.info('User created successfully:', { id: newUser.id, email: newUser.email })
+    } catch (createError: any) {
+      logger.error('User.create() failed:', createError)
+      console.error('User.create() failed:', createError)
+      throw createError // Re-throw to be caught by outer catch
+    }
 
     // Generate JWT token
     const token = generateToken(newUser.id, newUser.role)
@@ -217,10 +226,18 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       return
     }
     
-    // Log full error in development
-    if (process.env['NODE_ENV'] === 'development') {
-      logger.error('Full registration error:', JSON.stringify(error, null, 2))
+    // Always log full error details for debugging
+    const errorDetails = {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+      name: error?.name,
+      errno: error?.errno,
+      sqlState: error?.sqlState,
+      sqlMessage: error?.sqlMessage
     }
+    logger.error('Full registration error:', JSON.stringify(errorDetails, null, 2))
+    console.error('Full registration error:', JSON.stringify(errorDetails, null, 2))
     
     const errorMessage = process.env['NODE_ENV'] === 'development' 
       ? error?.message || 'Registration failed'
