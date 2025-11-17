@@ -52,9 +52,20 @@ export const logger = winston.createLogger({
   ],
 })
 
-// If we're not in production, log to the console as well
+// Always log to console for errors, even in production (for debugging)
+logger.add(new winston.transports.Console({
+  level: 'error', // Only log errors to console in production
+  format: combine(
+    colorize(),
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    consoleFormat
+  )
+}))
+
+// If we're not in production, also log info and above to console
 if (process.env['NODE_ENV'] !== 'production') {
   logger.add(new winston.transports.Console({
+    level: 'info',
     format: combine(
       colorize(),
       timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),

@@ -115,22 +115,50 @@ export class UserModel {
       return this.mapRowToUser(result.rows[0])
     } catch (error: any) {
       // If first_name doesn't exist, fall back to name column (old schema)
-      if (error?.code === '42703' || error?.message?.includes('first_name')) {
-        const fullName = `${userData.firstName} ${userData.lastName}`.trim()
-        const result = await query(`
-          INSERT INTO users (
-            email, password, name, role, phone, company, created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-          RETURNING *
-        `, [
-          userData.email,
-          hashedPassword,
-          fullName,
-          userData.role || 'CLIENT',
-          userData.phone || null,
-          userData.company || null
-        ])
-        return this.mapRowToUser(result.rows[0])
+      if (error?.code === '42703' || error?.message?.includes('first_name') || error?.message?.includes('column') && error?.message?.includes('does not exist')) {
+        try {
+          const fullName = `${userData.firstName} ${userData.lastName}`.trim()
+          // Try with password column first
+          let result
+          try {
+            result = await query(`
+              INSERT INTO users (
+                email, password, name, role, phone, company, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+              RETURNING *
+            `, [
+              userData.email,
+              hashedPassword,
+              fullName,
+              userData.role || 'CLIENT',
+              userData.phone || null,
+              userData.company || null
+            ])
+          } catch (passwordError: any) {
+            // If password column doesn't exist, try password_hash
+            if (passwordError?.code === '42703' || passwordError?.message?.includes('password')) {
+              result = await query(`
+                INSERT INTO users (
+                  email, password_hash, name, role, phone, company, created_at, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+                RETURNING *
+              `, [
+                userData.email,
+                hashedPassword,
+                fullName,
+                userData.role || 'CLIENT',
+                userData.phone || null,
+                userData.company || null
+              ])
+            } else {
+              throw passwordError
+            }
+          }
+          return this.mapRowToUser(result.rows[0])
+        } catch (fallbackError: any) {
+          // If fallback also fails, throw original error with context
+          throw new Error(`Schema fallback failed: ${fallbackError?.message}. Original error: ${error?.message}`)
+        }
       }
       throw error
     }

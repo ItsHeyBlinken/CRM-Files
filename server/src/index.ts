@@ -59,6 +59,12 @@ import reportRoutes from './routes/reports'
 dotenv.config()
 
 const app = express()
+
+// Trust proxy MUST be set before any other middleware
+// Required when behind a reverse proxy/load balancer (like Coolify)
+// This allows Express to correctly identify client IPs from X-Forwarded-For headers
+app.set('trust proxy', 1)
+
 const server = createServer(app)
 
 // Get CORS origin from environment (support both CORS_ORIGIN and FRONTEND_URL)
@@ -74,10 +80,6 @@ const io = new SocketIOServer(server, {
 })
 
 const PORT = process.env['PORT'] || 3000
-
-// Trust proxy - required when behind a reverse proxy/load balancer (like Coolify)
-// This allows Express to correctly identify client IPs from X-Forwarded-For headers
-app.set('trust proxy', 1)
 
 // Session configuration with PostgreSQL store
 const PgSession = connectPgSimple(session)
@@ -113,9 +115,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
     },
   },
 }))

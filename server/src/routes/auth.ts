@@ -172,8 +172,16 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       }
     })
   } catch (error: any) {
+    // Log error with both logger and console for visibility
     logger.error('Registration error:', error)
+    console.error('Registration error:', error)
     logger.error('Registration error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+      name: error?.name
+    })
+    console.error('Registration error details:', {
       message: error?.message,
       stack: error?.stack,
       code: error?.code,
@@ -198,6 +206,20 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         error: 'Database not configured. Please contact support or run database migrations.' 
       })
       return
+    }
+    
+    // Check for undefined column error (schema mismatch)
+    if (error?.code === '42703' || error?.message?.includes('column') && error?.message?.includes('does not exist')) {
+      logger.error('Database schema mismatch. Column does not exist:', error?.message)
+      res.status(500).json({ 
+        error: 'Database schema error. Please contact support.' 
+      })
+      return
+    }
+    
+    // Log full error in development
+    if (process.env['NODE_ENV'] === 'development') {
+      logger.error('Full registration error:', JSON.stringify(error, null, 2))
     }
     
     const errorMessage = process.env['NODE_ENV'] === 'development' 
