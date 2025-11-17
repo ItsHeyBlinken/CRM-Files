@@ -1,0 +1,34 @@
+# Nixpacks Configuration for Event Planner CRM
+# This file configures the Nixpacks build process for deployment
+
+# Specify Node.js version (use 20 to avoid EOL warning)
+[variables]
+NIXPACKS_NODE_VERSION = '20'
+
+# Setup phase: Install additional packages if needed
+[phases.setup]
+nixPkgs = ['...']
+
+# Install phase: Install all dependencies
+[phases.install]
+cmds = [
+  'npm ci',
+  'cd server && npm install',
+  'cd ../client && npm install'
+]
+
+# Build phase: Build both client and server
+[phases.build]
+cmds = [
+  'cd client && npm run build',
+  'cd ../server && npm run build'
+]
+
+# Start phase: Start the server
+[start]
+cmd = 'cd server && npm start'
+
+# Environment variables (can be overridden by VPS settings)
+[env]
+NODE_ENV = 'production'
+
