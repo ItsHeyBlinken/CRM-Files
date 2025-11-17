@@ -13,20 +13,21 @@ nixPkgs = ['...']
 [phases.install]
 cmds = [
   'npm ci',
-  'cd server && npm install',
-  'cd ../client && npm install'
+  'cd /app/server && npm install',
+  'cd /app/client && npm install'
 ]
 
 # Build phase: Build both client and server
-# Use root build script which handles everything
+# Build client first, then server
 [phases.build]
 cmds = [
-  'npm run build'
+  'cd /app/client && npm run build',
+  'cd /app/server && npm run build'
 ]
 
 # Start phase: Start the server
 [start]
-cmd = 'cd server && node dist/index.js'
+cmd = 'cd /app/server && node dist/index.js'
 
 # Environment variables (can be overridden by VPS settings)
 [env]
