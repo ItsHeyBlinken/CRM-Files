@@ -73,11 +73,38 @@ const io = new SocketIOServer(server, {
 
 const PORT = process.env['PORT'] || 3000
 
-// Connect to PostgreSQL
-connectDB().catch((error) => {
-  logger.error('Database connection failed:', error)
-  logger.warn('Server will continue without database connection for now')
-})
+// Trust proxy - required when behind a reverse proxy/load balancer (like Coolify)
+// This allows Express to correctly identify client IPs from X-Forwarded-For headers
+app.set('trust proxy', 1)
+
+// Session configuration with PostgreSQL store
+const PgSession = connectPgSimple(session)
+
+// Initialize session store - will be set after DB connects
+let sessionStore: connectPgSimple.PGStore | undefined = undefined
+
+// Connect to PostgreSQL and initialize session store once connected
+connectDB()
+  .then(() => {
+    // Initialize PostgreSQL session store once DB is connected
+    if (process.env['NODE_ENV'] === 'production') {
+      try {
+        const pool = getPool()
+        sessionStore = new PgSession({
+          pool: pool,
+          tableName: 'user_sessions',
+          createTableIfMissing: true,
+        })
+        logger.info('✅ Using PostgreSQL session store')
+      } catch (error) {
+        logger.warn('Failed to initialize PostgreSQL session store:', error)
+      }
+    }
+  })
+  .catch((error) => {
+    logger.error('Database connection failed:', error)
+    logger.warn('Server will continue without database connection for now')
+  })
 
 // Security middleware
 app.use(helmet({
@@ -108,6 +135,7 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // Trust the proxy for accurate IP identification
 })
 
 app.use('/api/', limiter)
@@ -117,29 +145,12 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
 
-// Session configuration with PostgreSQL store
-const PgSession = connectPgSimple(session)
-
-// Initialize session store - use PostgreSQL in production if DB is connected
-let sessionStore: connectPgSimple.PGStore | undefined = undefined
-
-if (process.env['NODE_ENV'] === 'production') {
-  try {
-    const pool = getPool()
-    sessionStore = new PgSession({
-      pool: pool,
-      tableName: 'user_sessions',
-      createTableIfMissing: true,
-    })
-    logger.info('Using PostgreSQL session store')
-  } catch (error) {
-    logger.warn('Database not connected yet, session store will use MemoryStore. Sessions will be lost on restart.')
-  }
-}
-
 // Session configuration
+// Note: Session store will be initialized after DB connection in production
+// For now, we use MemoryStore (undefined = default MemoryStore)
+// The warning about MemoryStore will appear until DB connects and store is initialized
 app.use(session({
-  store: sessionStore,
+  store: sessionStore, // Will be undefined (MemoryStore) until DB connects in production
   secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
