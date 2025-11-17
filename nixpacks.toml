@@ -9,7 +9,7 @@ NIXPACKS_NODE_VERSION = '20'
 [phases.setup]
 nixPkgs = ['...']
 
-# Install phase: Install all dependencies
+# Install phase: Install all dependencies (including devDependencies for TypeScript)
 [phases.install]
 cmds = [
   'npm ci',
@@ -18,15 +18,15 @@ cmds = [
 ]
 
 # Build phase: Build both client and server
+# Use root build script which handles everything
 [phases.build]
 cmds = [
-  'cd client && npm run build',
-  'cd ../server && npm run build'
+  'npm run build'
 ]
 
 # Start phase: Start the server
 [start]
-cmd = 'cd server && npm start'
+cmd = 'cd server && node dist/index.js'
 
 # Environment variables (can be overridden by VPS settings)
 [env]
