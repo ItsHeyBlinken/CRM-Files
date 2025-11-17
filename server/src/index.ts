@@ -81,7 +81,7 @@ app.set('trust proxy', 1)
 const PgSession = connectPgSimple(session)
 
 // Initialize session store - will be set after DB connects
-let sessionStore: connectPgSimple.PGStore | undefined = undefined
+let sessionStore: InstanceType<typeof PgSession> | undefined = undefined
 
 // Connect to PostgreSQL and initialize session store once connected
 connectDB()
@@ -127,6 +127,7 @@ app.use(cors({
 }))
 
 // Rate limiting
+// Note: trustProxy is automatically handled by Express's 'trust proxy' setting above
 const limiter = rateLimit({
   windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'), // 15 minutes
   max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'), // limit each IP to 100 requests per windowMs
@@ -135,7 +136,6 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  trustProxy: true, // Trust the proxy for accurate IP identification
 })
 
 app.use('/api/', limiter)

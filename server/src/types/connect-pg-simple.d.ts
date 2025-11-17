@@ -15,6 +15,10 @@ declare module 'connect-pg-simple' {
     prune(): Promise<void>
   }
 
+  namespace connectPgSimple {
+    export { PGStore, PGStoreOptions }
+  }
+
   function connectPgSimple(session: typeof import('express-session')): typeof PGStore
   export = connectPgSimple
 }
