@@ -12,17 +12,27 @@ nixPkgs = ['...']
 # Install phase: Install all dependencies (including devDependencies for TypeScript)
 [phases.install]
 cmds = [
+  'echo "=== Installing dependencies ==="',
   'npm ci',
   'cd /app/server && npm install',
-  'cd /app/client && npm install'
+  'cd /app/client && npm install',
+  'echo "=== Dependencies installed ==="'
 ]
 
 # Build phase: Build both client and server
 # Build client first, then server
 [phases.build]
 cmds = [
+  'echo "=== Building Client ==="',
   'cd /app/client && npm run build',
-  'cd /app/server && npm run build'
+  'echo "=== Client build complete ==="',
+  'echo "=== Building Server ==="',
+  'cd /app/server && npm run build',
+  'echo "=== Server build complete ==="',
+  'echo "=== Verifying builds ==="',
+  'ls -la /app/client/dist/ || echo "WARNING: Client dist not found"',
+  'ls -la /app/server/dist/ || echo "WARNING: Server dist not found"',
+  'test -f /app/server/dist/index.js && echo "SUCCESS: server/dist/index.js exists" || echo "ERROR: server/dist/index.js missing"'
 ]
 
 # Start phase: Start the server
