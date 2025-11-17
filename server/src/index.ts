@@ -28,6 +28,7 @@ import morgan from 'morgan'
 import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import connectPgSimple from 'connect-pg-simple'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
@@ -35,7 +36,7 @@ import path from 'path'
 import 'express-async-errors'
 import dotenv from 'dotenv'
 
-import { connectDB } from './config/database'
+import { connectDB, getPool } from './config/database'
 import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
 import { logger } from './utils/logger'
@@ -116,8 +117,29 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
 
+// Session configuration with PostgreSQL store
+const PgSession = connectPgSimple(session)
+
+// Initialize session store - use PostgreSQL in production if DB is connected
+let sessionStore: connectPgSimple.PGStore | undefined = undefined
+
+if (process.env['NODE_ENV'] === 'production') {
+  try {
+    const pool = getPool()
+    sessionStore = new PgSession({
+      pool: pool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+    })
+    logger.info('Using PostgreSQL session store')
+  } catch (error) {
+    logger.warn('Database not connected yet, session store will use MemoryStore. Sessions will be lost on restart.')
+  }
+}
+
 // Session configuration
 app.use(session({
+  store: sessionStore,
   secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
   resave: false,
   saveUninitialized: false,
