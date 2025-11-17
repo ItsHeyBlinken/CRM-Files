@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { Request, Response } from 'express'
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 import { protect, AuthRequest } from '../middleware/auth'
 import { User } from '../models/User'
 import { logger } from '../utils/logger'
@@ -13,18 +13,20 @@ const generateToken = (userId: string, role: string): string => {
   if (!jwtSecret) {
     throw new Error('JWT_SECRET is not configured')
   }
+  const expiresIn = process.env['JWT_EXPIRE'] || '7d'
   return jwt.sign(
     { id: userId, role },
     jwtSecret,
-    { expiresIn: process.env['JWT_EXPIRE'] || '7d' }
+    { expiresIn } as SignOptions
   )
 }
 
 // GET /api/auth/me
-router.get('/me', protect, async (req: AuthRequest, res: Response) => {
+router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Not authenticated' })
+      res.status(401).json({ error: 'Not authenticated' })
+      return
     }
 
     // Return user data without password
@@ -47,30 +49,34 @@ router.get('/me', protect, async (req: AuthRequest, res: Response) => {
 })
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' })
+      res.status(400).json({ error: 'Email and password are required' })
+      return
     }
 
     // Find user by email
     const user = await User.findByEmail(email)
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' })
+      res.status(401).json({ error: 'Invalid email or password' })
+      return
     }
 
     // Check if user is active
     if (!user.isActive) {
-      return res.status(401).json({ error: 'Account is deactivated' })
+      res.status(401).json({ error: 'Account is deactivated' })
+      return
     }
 
     // Verify password
     const isPasswordValid = await User.comparePassword(password, user.password)
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' })
+      res.status(401).json({ error: 'Invalid email or password' })
+      return
     }
 
     // Update last login
@@ -102,32 +108,36 @@ router.post('/login', async (req: Request, res: Response) => {
 })
 
 // POST /api/auth/register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, phone, company, jobTitle } = req.body
 
     // Validate required fields
     if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ 
+      res.status(400).json({ 
         error: 'Email, password, first name, and last name are required' 
       })
+      return
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' })
+      res.status(400).json({ error: 'Invalid email format' })
+      return
     }
 
     // Validate password strength
     if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long' })
+      res.status(400).json({ error: 'Password must be at least 8 characters long' })
+      return
     }
 
     // Check if user already exists
     const existingUser = await User.findByEmail(email)
     if (existingUser) {
-      return res.status(409).json({ error: 'User with this email already exists' })
+      res.status(409).json({ error: 'User with this email already exists' })
+      return
     }
 
     // Create new user
