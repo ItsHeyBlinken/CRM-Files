@@ -84,33 +84,56 @@ export class UserModel {
   static async create(userData: IUserCreate): Promise<IUser> {
     const hashedPassword = await bcrypt.hash(userData.password, 12)
     
-    const result = await query(`
-      INSERT INTO users (
-        email, password, first_name, last_name, role, phone, bio, company, job_title, manager_id,
-        preferences, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
-      RETURNING *
-    `, [
-      userData.email,
-      hashedPassword,
-      userData.firstName,
-      userData.lastName,
-      userData.role || 'CLIENT',
-      userData.phone || null,
-      userData.bio || null,
-      userData.company || null,
-      userData.jobTitle || null,
-      userData.managerId || null,
-      JSON.stringify({
-        notifications: { email: true, push: true, sms: false },
-        dashboard: { defaultView: 'overview', widgets: [] },
-        theme: 'light',
-        timezone: 'UTC',
-        language: 'en'
-      })
-    ])
-
-    return this.mapRowToUser(result.rows[0])
+    // Check if first_name column exists, otherwise use name column
+    // Try to use the new schema first (first_name, last_name)
+    try {
+      const result = await query(`
+        INSERT INTO users (
+          email, password, first_name, last_name, role, phone, bio, company, job_title, manager_id,
+          preferences, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+        RETURNING *
+      `, [
+        userData.email,
+        hashedPassword,
+        userData.firstName,
+        userData.lastName,
+        userData.role || 'CLIENT',
+        userData.phone || null,
+        userData.bio || null,
+        userData.company || null,
+        userData.jobTitle || null,
+        userData.managerId || null,
+        JSON.stringify({
+          notifications: { email: true, push: true, sms: false },
+          dashboard: { defaultView: 'overview', widgets: [] },
+          theme: 'light',
+          timezone: 'UTC',
+          language: 'en'
+        })
+      ])
+      return this.mapRowToUser(result.rows[0])
+    } catch (error: any) {
+      // If first_name doesn't exist, fall back to name column (old schema)
+      if (error?.code === '42703' || error?.message?.includes('first_name')) {
+        const fullName = `${userData.firstName} ${userData.lastName}`.trim()
+        const result = await query(`
+          INSERT INTO users (
+            email, password, name, role, phone, company, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+          RETURNING *
+        `, [
+          userData.email,
+          hashedPassword,
+          fullName,
+          userData.role || 'CLIENT',
+          userData.phone || null,
+          userData.company || null
+        ])
+        return this.mapRowToUser(result.rows[0])
+      }
+      throw error
+    }
   }
 
   // Find user by ID
@@ -209,24 +232,29 @@ export class UserModel {
 
   // Map database row to User object
   private static mapRowToUser(row: any): IUser {
-    return {
-      id: row.id,
+    // Handle both old schema (name) and new schema (first_name, last_name)
+    let firstName = row.first_name
+    let lastName = row.last_name
+    
+    // If using old schema with name column, split it
+    if (!firstName && !lastName && row.name) {
+      const nameParts = row.name.trim().split(/\s+/)
+      firstName = nameParts[0] || ''
+      lastName = nameParts.slice(1).join(' ') || ''
+    }
+    
+    const user: IUser = {
+      id: String(row.id), // Ensure ID is a string
       email: row.email,
-      password: row.password,
-      firstName: row.first_name,
-      lastName: row.last_name,
-      role: row.role,
-      isActive: row.is_active,
-      emailVerified: row.email_verified,
-      avatarUrl: row.avatar_url,
-      phone: row.phone,
-      bio: row.bio,
-      company: row.company,
-      jobTitle: row.job_title,
-      managerId: row.manager_id,
-      lastLogin: row.last_login,
-      emailVerifiedAt: row.email_verified_at,
-      preferences: row.preferences || {
+      password: row.password || row.password_hash, // Handle both column names
+      firstName: firstName || '',
+      lastName: lastName || '',
+      role: (row.role?.toUpperCase() || 'CLIENT') as 'PLANNER' | 'CLIENT' | 'ADMIN',
+      isActive: row.is_active !== undefined ? row.is_active : true,
+      emailVerified: row.email_verified || false,
+      preferences: (typeof row.preferences === 'string' 
+        ? JSON.parse(row.preferences) 
+        : row.preferences) || {
         notifications: { email: true, push: true, sms: false },
         dashboard: { defaultView: 'overview', widgets: [] },
         theme: 'light',
@@ -236,6 +264,34 @@ export class UserModel {
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }
+    
+    // Add optional properties only if they exist (to satisfy exactOptionalPropertyTypes)
+    if (row.avatar_url) {
+      user.avatarUrl = row.avatar_url
+    }
+    if (row.phone) {
+      user.phone = row.phone
+    }
+    if (row.bio) {
+      user.bio = row.bio
+    }
+    if (row.company) {
+      user.company = row.company
+    }
+    if (row.job_title) {
+      user.jobTitle = row.job_title
+    }
+    if (row.manager_id) {
+      user.managerId = String(row.manager_id)
+    }
+    if (row.last_login) {
+      user.lastLogin = row.last_login
+    }
+    if (row.email_verified_at) {
+      user.emailVerifiedAt = row.email_verified_at
+    }
+    
+    return user
   }
 }
 
