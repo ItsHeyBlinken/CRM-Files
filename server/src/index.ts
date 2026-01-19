@@ -120,6 +120,13 @@ async function initializeServer() {
         })
         console.error('✅ PostgreSQL session store initialized')
         logger.info('✅ Using PostgreSQL session store')
+        // Verify the store is actually set
+        if (!sessionStore) {
+          console.error('❌ ERROR: sessionStore is still undefined after initialization!')
+          logger.error('❌ sessionStore is undefined after initialization')
+        } else {
+          console.error('✅ Verified: sessionStore is set before middleware configuration')
+        }
       } catch (error) {
         console.error('❌ Failed to initialize PostgreSQL session store:', error)
         logger.warn('Failed to initialize PostgreSQL session store:', error)
@@ -191,6 +198,15 @@ function setupMiddleware() {
 
   // Session configuration
   // Session store is now initialized before this point in production
+  if (process.env['NODE_ENV'] === 'production') {
+    if (sessionStore) {
+      console.error('✅ Configuring session middleware with PostgreSQL store')
+      logger.info('✅ Session middleware using PostgreSQL store')
+    } else {
+      console.error('⚠️ WARNING: sessionStore is undefined in production!')
+      logger.warn('⚠️ Session middleware will use MemoryStore (not recommended)')
+    }
+  }
   app.use(session({
     store: sessionStore, // PostgreSQL store in production, undefined (MemoryStore) in development
     secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
