@@ -102,12 +102,14 @@ const PgSession = connectPgSimple(session)
 // Initialize session store - will be set after DB connects
 let sessionStore: InstanceType<typeof PgSession> | undefined = undefined
 
-// Connect to PostgreSQL and initialize session store once connected
-// NOTE: Session middleware is configured below with sessionStore (which may be undefined initially)
-// In production, we'll initialize it after DB connects, but Express will use MemoryStore until then
-connectDB()
-  .then(() => {
-    // Initialize PostgreSQL session store once DB is connected
+// Async function to initialize server after database connection
+async function initializeServer() {
+  try {
+    // Wait for database connection
+    await connectDB()
+    logger.info('✅ Database connection established')
+    
+    // Initialize PostgreSQL session store in production
     if (process.env['NODE_ENV'] === 'production') {
       try {
         const pool = getPool()
@@ -118,144 +120,161 @@ connectDB()
         })
         console.error('✅ PostgreSQL session store initialized')
         logger.info('✅ Using PostgreSQL session store')
-        
-        // NOTE: Unfortunately, we can't change the session store after middleware is configured
-        // The MemoryStore warning will appear on first request, but subsequent requests should use PostgreSQL
-        // This is a limitation of express-session - store must be set before middleware configuration
       } catch (error) {
         console.error('❌ Failed to initialize PostgreSQL session store:', error)
         logger.warn('Failed to initialize PostgreSQL session store:', error)
+        logger.warn('Falling back to MemoryStore (not recommended for production)')
+        // sessionStore remains undefined, will use MemoryStore
       }
     }
-  })
-  .catch((error) => {
-    logger.error('Database connection failed:', error)
-    logger.warn('Server will continue without database connection for now')
-  })
-
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-    },
-  },
-}))
-
-// CORS configuration
-app.use(cors({
-  origin: corsOrigin,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-}))
-
-// Rate limiting
-// Note: trustProxy is automatically handled by Express's 'trust proxy' setting above
-const limiter = rateLimit({
-  windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'), // 15 minutes
-  max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'), // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-})
-
-app.use('/api/', limiter)
-
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
-app.use(cookieParser())
-
-// Session configuration
-// Note: Session store will be initialized after DB connection in production
-// For now, we use MemoryStore (undefined = default MemoryStore)
-// The warning about MemoryStore will appear until DB connects and store is initialized
-app.use(session({
-  store: sessionStore, // Will be undefined (MemoryStore) until DB connects in production
-  secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env['NODE_ENV'] === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  },
-}))
-
-// Compression middleware
-app.use(compression())
-
-// Logging middleware
-if (process.env['NODE_ENV'] === 'development') {
-  app.use(morgan('dev'))
-} else {
-  app.use(morgan('combined'))
-}
-
-// Health check endpoint
-app.get('/health', (_req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env['NODE_ENV'],
-  })
-})
-
-// API routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/events', eventRoutes)
-app.use('/api/vendors', vendorRoutes)
-app.use('/api/payments', paymentRoutes)
-app.use('/api/tasks', taskRoutes)
-app.use('/api/clients', clientRoutes)
-app.use('/api/upload', uploadRoutes)
-app.use('/api/reports', reportRoutes)
-
-// Serve static files
-app.use('/uploads', express.static('uploads'))
-
-// Socket.io connection handling
-socketHandler(io)
-
-// Serve built client files in production (before error handlers)
-if (process.env['NODE_ENV'] === 'production') {
-  // In compiled JS, __dirname will be available
-  const clientDistPath = path.join(__dirname, '../../client/dist')
-  
-  // Serve static files from client dist
-  app.use(express.static(clientDistPath))
-  
-  // Handle React Router - serve index.html for all non-API routes
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      return next()
+  } catch (error) {
+    logger.error('❌ Database connection failed:', error)
+    if (process.env['NODE_ENV'] === 'production') {
+      logger.error('❌ Production server requires database connection. Aborting startup.')
+      process.exit(1)
+    } else {
+      logger.warn('⚠️ Development mode: Continuing without database connection')
+      logger.warn('⚠️ Server will use MemoryStore for sessions')
+      // sessionStore remains undefined, will use MemoryStore
     }
-    res.sendFile(path.join(clientDistPath, 'index.html'))
+  }
+  
+  // Configure session middleware with the initialized store (or undefined for MemoryStore)
+  setupMiddleware()
+  
+  // Start the server
+  startServer()
+}
+
+// Function to setup middleware (called after DB connection)
+function setupMiddleware() {
+  // Security middleware
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  }))
+
+  // CORS configuration
+  app.use(cors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  }))
+
+  // Rate limiting
+  // Note: trustProxy is automatically handled by Express's 'trust proxy' setting above
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'), // 15 minutes
+    max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'), // limit each IP to 100 requests per windowMs
+    message: {
+      error: 'Too many requests from this IP, please try again later.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+
+  app.use('/api/', limiter)
+
+  // Body parsing middleware
+  app.use(express.json({ limit: '10mb' }))
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+  app.use(cookieParser())
+
+  // Session configuration
+  // Session store is now initialized before this point in production
+  app.use(session({
+    store: sessionStore, // PostgreSQL store in production, undefined (MemoryStore) in development
+    secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env['NODE_ENV'] === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  }))
+
+  // Compression middleware
+  app.use(compression())
+
+  // Logging middleware
+  if (process.env['NODE_ENV'] === 'development') {
+    app.use(morgan('dev'))
+  } else {
+    app.use(morgan('combined'))
+  }
+
+  // Health check endpoint
+  app.get('/health', (_req, res) => {
+    res.status(200).json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env['NODE_ENV'],
+    })
+  })
+
+  // API routes
+  app.use('/api/auth', authRoutes)
+  app.use('/api/users', userRoutes)
+  app.use('/api/events', eventRoutes)
+  app.use('/api/vendors', vendorRoutes)
+  app.use('/api/payments', paymentRoutes)
+  app.use('/api/tasks', taskRoutes)
+  app.use('/api/clients', clientRoutes)
+  app.use('/api/upload', uploadRoutes)
+  app.use('/api/reports', reportRoutes)
+
+  // Serve static files
+  app.use('/uploads', express.static('uploads'))
+
+  // Socket.io connection handling
+  socketHandler(io)
+
+  // Serve built client files in production (before error handlers)
+  if (process.env['NODE_ENV'] === 'production') {
+    // In compiled JS, __dirname will be available
+    const clientDistPath = path.join(__dirname, '../../client/dist')
+    
+    // Serve static files from client dist
+    app.use(express.static(clientDistPath))
+    
+    // Handle React Router - serve index.html for all non-API routes
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next()
+      }
+      res.sendFile(path.join(clientDistPath, 'index.html'))
+    })
+  }
+
+  // Error handling middleware (must be last)
+  app.use(notFound)
+  app.use(errorHandler)
+}
+
+// Function to start the server (called after middleware setup)
+function startServer() {
+  server.listen(PORT, () => {
+    logger.info(`🚀 Event Planner CRM Server running on port ${PORT}`)
+    logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
+    logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
+    logger.info(`🔌 Socket.io enabled for real-time communication`)
+    logger.info(`📊 PostgreSQL database connected`)
   })
 }
 
-// Error handling middleware (must be last)
-app.use(notFound)
-app.use(errorHandler)
-
-// Start server
-server.listen(PORT, () => {
-  logger.info(`🚀 Event Planner CRM Server running on port ${PORT}`)
-  logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
-  logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
-  logger.info(`🔌 Socket.io enabled for real-time communication`)
-  logger.info(`📊 PostgreSQL database connected`)
-})
+// Initialize and start the server
+initializeServer()
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
