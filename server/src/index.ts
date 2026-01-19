@@ -60,7 +60,7 @@ dotenv.config()
 
 // Build timestamp for verification
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString()
-console.log('🚀 Server starting - Build timestamp:', BUILD_TIMESTAMP)
+const CODE_VERSION = 'v2.0.0' // Increment this to verify new code is deployed
 
 const app = express()
 
@@ -68,6 +68,11 @@ const app = express()
 // Required when behind a reverse proxy/load balancer (like Coolify)
 // This allows Express to correctly identify client IPs from X-Forwarded-For headers
 app.set('trust proxy', 1)
+
+// Log startup info after app is created
+console.log('🚀 Server starting - Build timestamp:', BUILD_TIMESTAMP)
+console.log('📦 Code version:', CODE_VERSION)
+console.log('✅ Trust proxy setting:', app.get('trust proxy'))
 
 const server = createServer(app)
 

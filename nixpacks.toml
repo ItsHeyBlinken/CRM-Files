@@ -23,24 +23,29 @@ cmds = [
 # Build client first, then server
 [phases.build]
 cmds = [
+  'echo "=== Cleaning old builds ==="',
+  'rm -rf /app/client/dist /app/server/dist',
+  'export BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")',
+  'echo "Build timestamp: $BUILD_TIMESTAMP"',
   'echo "=== Building Client ==="',
   'cd /app/client && npm run build',
   'echo "=== Client build complete ==="',
   'ls -la /app/client/dist/ | head -5',
   'echo "=== Building Server ==="',
-  'cd /app/server && npm run build',
+  'cd /app/server && BUILD_TIMESTAMP=$BUILD_TIMESTAMP npm run build',
   'echo "=== Server build complete ==="',
   'ls -la /app/server/dist/ | head -10',
   'echo "=== Verifying builds ==="',
   'test -f /app/server/dist/index.js && echo "SUCCESS: server/dist/index.js exists" || echo "ERROR: server/dist/index.js missing"',
   'echo "=== Build verification complete ==="',
+  'grep -r "BUILD_TIMESTAMP" /app/server/dist/index.js && echo "Build timestamp code found" || echo "WARNING: Build timestamp code missing"',
   'grep -r "fonts.googleapis.com" /app/server/dist/index.js && echo "CSP includes fonts.googleapis.com" || echo "WARNING: CSP may not be updated"',
   'grep -r "trust proxy" /app/server/dist/index.js && echo "Trust proxy found" || echo "WARNING: Trust proxy may not be set"'
 ]
 
 # Start phase: Start the server
 [start]
-cmd = 'cd /app/server && node dist/index.js'
+cmd = 'cd /app/server && BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ") node dist/index.js'
 
 # Environment variables (can be overridden by VPS settings)
 [env]
