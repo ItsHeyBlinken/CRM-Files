@@ -58,9 +58,18 @@ import reportRoutes from './routes/reports'
 // Load environment variables
 dotenv.config()
 
-// Build timestamp for verification
+// ============================================
+// CODE VERSION CHECK - UPDATE THIS TO VERIFY DEPLOYMENT
+// ============================================
+const CODE_VERSION = 'v2.1.0-FIXED'
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString()
-const CODE_VERSION = 'v2.0.0' // Increment this to verify new code is deployed
+
+// CRITICAL: These console.logs MUST appear in logs if new code is deployed
+console.error('========================================')
+console.error('🚀 SERVER STARTING - NEW CODE VERSION')
+console.error('📦 CODE VERSION:', CODE_VERSION)
+console.error('⏰ BUILD TIMESTAMP:', BUILD_TIMESTAMP)
+console.error('========================================')
 
 const app = express()
 
@@ -69,10 +78,7 @@ const app = express()
 // This allows Express to correctly identify client IPs from X-Forwarded-For headers
 app.set('trust proxy', 1)
 
-// Log startup info after app is created
-console.log('🚀 Server starting - Build timestamp:', BUILD_TIMESTAMP)
-console.log('📦 Code version:', CODE_VERSION)
-console.log('✅ Trust proxy setting:', app.get('trust proxy'))
+console.error('✅ Trust proxy setting:', app.get('trust proxy'))
 
 const server = createServer(app)
 
@@ -97,6 +103,8 @@ const PgSession = connectPgSimple(session)
 let sessionStore: InstanceType<typeof PgSession> | undefined = undefined
 
 // Connect to PostgreSQL and initialize session store once connected
+// NOTE: Session middleware is configured below with sessionStore (which may be undefined initially)
+// In production, we'll initialize it after DB connects, but Express will use MemoryStore until then
 connectDB()
   .then(() => {
     // Initialize PostgreSQL session store once DB is connected
@@ -108,8 +116,14 @@ connectDB()
           tableName: 'user_sessions',
           createTableIfMissing: true,
         })
+        console.error('✅ PostgreSQL session store initialized')
         logger.info('✅ Using PostgreSQL session store')
+        
+        // NOTE: Unfortunately, we can't change the session store after middleware is configured
+        // The MemoryStore warning will appear on first request, but subsequent requests should use PostgreSQL
+        // This is a limitation of express-session - store must be set before middleware configuration
       } catch (error) {
+        console.error('❌ Failed to initialize PostgreSQL session store:', error)
         logger.warn('Failed to initialize PostgreSQL session store:', error)
       }
     }

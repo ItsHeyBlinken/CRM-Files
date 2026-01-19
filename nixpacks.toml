@@ -23,8 +23,11 @@ cmds = [
 # Build client first, then server
 [phases.build]
 cmds = [
-  'echo "=== Cleaning old builds ==="',
+  'echo "========================================"',
+  'echo "=== CLEANING OLD BUILDS ==="',
+  'echo "========================================"',
   'rm -rf /app/client/dist /app/server/dist',
+  'echo "Old dist folders removed"',
   'export BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")',
   'echo "Build timestamp: $BUILD_TIMESTAMP"',
   'echo "=== Building Client ==="',
@@ -36,11 +39,15 @@ cmds = [
   'echo "=== Server build complete ==="',
   'ls -la /app/server/dist/ | head -10',
   'echo "=== Verifying builds ==="',
-  'test -f /app/server/dist/index.js && echo "SUCCESS: server/dist/index.js exists" || echo "ERROR: server/dist/index.js missing"',
-  'echo "=== Build verification complete ==="',
-  'grep -r "BUILD_TIMESTAMP" /app/server/dist/index.js && echo "Build timestamp code found" || echo "WARNING: Build timestamp code missing"',
-  'grep -r "fonts.googleapis.com" /app/server/dist/index.js && echo "CSP includes fonts.googleapis.com" || echo "WARNING: CSP may not be updated"',
-  'grep -r "trust proxy" /app/server/dist/index.js && echo "Trust proxy found" || echo "WARNING: Trust proxy may not be set"'
+  'test -f /app/server/dist/index.js && echo "✅ SUCCESS: server/dist/index.js exists" || (echo "❌ ERROR: server/dist/index.js missing" && exit 1)',
+  'echo "=== Checking for new code ==="',
+  'grep -q "v2.1.0-FIXED" /app/server/dist/index.js && echo "✅ NEW CODE VERSION FOUND" || echo "❌ WARNING: Old code version detected"',
+  'grep -q "BUILD_TIMESTAMP" /app/server/dist/index.js && echo "✅ Build timestamp code found" || echo "❌ WARNING: Build timestamp code missing"',
+  'grep -q "fonts.googleapis.com" /app/server/dist/index.js && echo "✅ CSP includes fonts.googleapis.com" || echo "⚠️ WARNING: CSP may not be updated"',
+  'grep -q "trust proxy" /app/server/dist/index.js && echo "✅ Trust proxy code found" || echo "⚠️ WARNING: Trust proxy code may not be set"',
+  'echo "========================================"',
+  'echo "=== BUILD VERIFICATION COMPLETE ==="',
+  'echo "========================================"'
 ]
 
 # Start phase: Start the server
