@@ -10,6 +10,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const compression_1 = __importDefault(require("compression"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
+const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
@@ -31,17 +32,49 @@ const clients_1 = __importDefault(require("./routes/clients"));
 const upload_1 = __importDefault(require("./routes/upload"));
 const reports_1 = __importDefault(require("./routes/reports"));
 dotenv_1.default.config();
+const CODE_VERSION = 'v2.1.0-FIXED';
+const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString();
+console.error('========================================');
+console.error('🚀 SERVER STARTING - NEW CODE VERSION');
+console.error('📦 CODE VERSION:', CODE_VERSION);
+console.error('⏰ BUILD TIMESTAMP:', BUILD_TIMESTAMP);
+console.error('========================================');
 const app = (0, express_1.default)();
+app.set('trust proxy', 1);
+console.error('✅ Trust proxy setting:', app.get('trust proxy'));
 const server = (0, http_1.createServer)(app);
 const corsOrigin = process.env['CORS_ORIGIN'] || process.env['FRONTEND_URL'] || 'http://localhost:5173';
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: corsOrigin,
-        methods: ['GET', 'POST']
-    }
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
 });
 const PORT = process.env['PORT'] || 3000;
-(0, database_1.connectDB)().catch((error) => {
+const PgSession = (0, connect_pg_simple_1.default)(express_session_1.default);
+let sessionStore = undefined;
+(0, database_1.connectDB)()
+    .then(() => {
+    if (process.env['NODE_ENV'] === 'production') {
+        try {
+            const pool = (0, database_1.getPool)();
+            sessionStore = new PgSession({
+                pool: pool,
+                tableName: 'user_sessions',
+                createTableIfMissing: true,
+            });
+            console.error('✅ PostgreSQL session store initialized');
+            logger_1.logger.info('✅ Using PostgreSQL session store');
+        }
+        catch (error) {
+            console.error('❌ Failed to initialize PostgreSQL session store:', error);
+            logger_1.logger.warn('Failed to initialize PostgreSQL session store:', error);
+        }
+    }
+})
+    .catch((error) => {
     logger_1.logger.error('Database connection failed:', error);
     logger_1.logger.warn('Server will continue without database connection for now');
 });
@@ -49,9 +82,11 @@ app.use((0, helmet_1.default)({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             scriptSrc: ["'self'"],
             imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
         },
     },
 }));
@@ -75,6 +110,7 @@ app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 app.use((0, cookie_parser_1.default)());
 app.use((0, express_session_1.default)({
+    store: sessionStore,
     secret: process.env['SESSION_SECRET'] || process.env['JWT_SECRET'] || 'fallback-session-secret-change-in-production',
     resave: false,
     saveUninitialized: false,

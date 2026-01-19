@@ -28,8 +28,13 @@ exports.logger = winston_1.default.createLogger({
         }),
     ],
 });
+exports.logger.add(new winston_1.default.transports.Console({
+    level: 'error',
+    format: combine(colorize(), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), consoleFormat)
+}));
 if (process.env['NODE_ENV'] !== 'production') {
     exports.logger.add(new winston_1.default.transports.Console({
+        level: 'info',
         format: combine(colorize(), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), consoleFormat)
     }));
 }

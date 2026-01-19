@@ -9,32 +9,82 @@ const database_1 = require("../config/database");
 class UserModel {
     static async create(userData) {
         const hashedPassword = await bcryptjs_1.default.hash(userData.password, 12);
-        const result = await (0, database_1.query)(`
-      INSERT INTO users (
-        email, password, first_name, last_name, role, phone, bio, company, job_title, manager_id,
-        preferences, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
-      RETURNING *
-    `, [
-            userData.email,
-            hashedPassword,
-            userData.firstName,
-            userData.lastName,
-            userData.role || 'CLIENT',
-            userData.phone || null,
-            userData.bio || null,
-            userData.company || null,
-            userData.jobTitle || null,
-            userData.managerId || null,
-            JSON.stringify({
-                notifications: { email: true, push: true, sms: false },
-                dashboard: { defaultView: 'overview', widgets: [] },
-                theme: 'light',
-                timezone: 'UTC',
-                language: 'en'
-            })
-        ]);
-        return this.mapRowToUser(result.rows[0]);
+        try {
+            const result = await (0, database_1.query)(`
+        INSERT INTO users (
+          email, password, first_name, last_name, role, phone, bio, company, job_title, manager_id,
+          preferences, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+        RETURNING *
+      `, [
+                userData.email,
+                hashedPassword,
+                userData.firstName,
+                userData.lastName,
+                userData.role || 'CLIENT',
+                userData.phone || null,
+                userData.bio || null,
+                userData.company || null,
+                userData.jobTitle || null,
+                userData.managerId || null,
+                JSON.stringify({
+                    notifications: { email: true, push: true, sms: false },
+                    dashboard: { defaultView: 'overview', widgets: [] },
+                    theme: 'light',
+                    timezone: 'UTC',
+                    language: 'en'
+                })
+            ]);
+            return this.mapRowToUser(result.rows[0]);
+        }
+        catch (error) {
+            if (error?.code === '42703' || error?.message?.includes('first_name') || error?.message?.includes('column') && error?.message?.includes('does not exist')) {
+                try {
+                    const fullName = `${userData.firstName} ${userData.lastName}`.trim();
+                    let result;
+                    try {
+                        result = await (0, database_1.query)(`
+              INSERT INTO users (
+                email, password, name, role, phone, company, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+              RETURNING *
+            `, [
+                            userData.email,
+                            hashedPassword,
+                            fullName,
+                            userData.role || 'CLIENT',
+                            userData.phone || null,
+                            userData.company || null
+                        ]);
+                    }
+                    catch (passwordError) {
+                        if (passwordError?.code === '42703' || passwordError?.message?.includes('password')) {
+                            result = await (0, database_1.query)(`
+                INSERT INTO users (
+                  email, password_hash, name, role, phone, company, created_at, updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+                RETURNING *
+              `, [
+                                userData.email,
+                                hashedPassword,
+                                fullName,
+                                userData.role || 'CLIENT',
+                                userData.phone || null,
+                                userData.company || null
+                            ]);
+                        }
+                        else {
+                            throw passwordError;
+                        }
+                    }
+                    return this.mapRowToUser(result.rows[0]);
+                }
+                catch (fallbackError) {
+                    throw new Error(`Schema fallback failed: ${fallbackError?.message}. Original error: ${error?.message}`);
+                }
+            }
+            throw error;
+        }
     }
     static async findById(id) {
         const result = await (0, database_1.query)('SELECT * FROM users WHERE id = $1', [id]);
@@ -110,24 +160,25 @@ class UserModel {
         return `${user.firstName} ${user.lastName}`;
     }
     static mapRowToUser(row) {
-        return {
-            id: row.id,
+        let firstName = row.first_name;
+        let lastName = row.last_name;
+        if (!firstName && !lastName && row.name) {
+            const nameParts = row.name.trim().split(/\s+/);
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+        }
+        const user = {
+            id: String(row.id),
             email: row.email,
-            password: row.password,
-            firstName: row.first_name,
-            lastName: row.last_name,
-            role: row.role,
-            isActive: row.is_active,
-            emailVerified: row.email_verified,
-            avatarUrl: row.avatar_url,
-            phone: row.phone,
-            bio: row.bio,
-            company: row.company,
-            jobTitle: row.job_title,
-            managerId: row.manager_id,
-            lastLogin: row.last_login,
-            emailVerifiedAt: row.email_verified_at,
-            preferences: row.preferences || {
+            password: row.password || row.password_hash,
+            firstName: firstName || '',
+            lastName: lastName || '',
+            role: (row.role?.toUpperCase() || 'CLIENT'),
+            isActive: row.is_active !== undefined ? row.is_active : true,
+            emailVerified: row.email_verified || false,
+            preferences: (typeof row.preferences === 'string'
+                ? JSON.parse(row.preferences)
+                : row.preferences) || {
                 notifications: { email: true, push: true, sms: false },
                 dashboard: { defaultView: 'overview', widgets: [] },
                 theme: 'light',
@@ -137,6 +188,31 @@ class UserModel {
             createdAt: row.created_at,
             updatedAt: row.updated_at
         };
+        if (row.avatar_url) {
+            user.avatarUrl = row.avatar_url;
+        }
+        if (row.phone) {
+            user.phone = row.phone;
+        }
+        if (row.bio) {
+            user.bio = row.bio;
+        }
+        if (row.company) {
+            user.company = row.company;
+        }
+        if (row.job_title) {
+            user.jobTitle = row.job_title;
+        }
+        if (row.manager_id) {
+            user.managerId = String(row.manager_id);
+        }
+        if (row.last_login) {
+            user.lastLogin = row.last_login;
+        }
+        if (row.email_verified_at) {
+            user.emailVerifiedAt = row.email_verified_at;
+        }
+        return user;
     }
 }
 exports.UserModel = UserModel;

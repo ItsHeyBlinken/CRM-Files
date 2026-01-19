@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm run dev",
-    "build": "node -e \"const fs=require('fs');['client/dist','server/dist'].forEach(d=>{try{fs.rmSync(d,{recursive:true,force:true});console.log('Cleaned:',d)}catch(e){}})\" && cd client && npm run build && cd ../server && npm run build",
+    "build": "node -e \"const fs=require('fs');['client/dist','server/dist'].forEach(d=>{try{fs.rmSync(d,{recursive:true,force:true});console.log('Cleaned:',d)}catch(e){}})\" && cd client && npm run build && cd ../server && npm run build && node -e \"const fs=require('fs');const path=require('path');const distPath=path.join('server','dist','index.js');if(fs.existsSync(distPath)){const content=fs.readFileSync(distPath,'utf8');if(content.includes('v2.1.0-FIXED')){console.log('✅ NEW CODE VERSION FOUND in dist');}else{console.log('❌ WARNING: Old code version in dist');process.exit(1);}}else{console.log('❌ ERROR: dist/index.js not found');process.exit(1);}\"",
     "start": "cd server && export BUILD_TIMESTAMP=$(date -u +\"%Y-%m-%dT%H:%M:%SZ\" 2>/dev/null || node -e \"console.log(new Date().toISOString())\") && node dist/index.js",
     "install-server": "cd server && npm install",
     "postinstall": "cd server && npm install",

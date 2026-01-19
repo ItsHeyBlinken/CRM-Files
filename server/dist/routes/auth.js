@@ -108,16 +108,26 @@ router.post('/register', async (req, res) => {
             res.status(409).json({ error: 'User with this email already exists' });
             return;
         }
-        const newUser = await User_1.User.create({
-            email,
-            password,
-            firstName,
-            lastName,
-            phone,
-            company,
-            jobTitle,
-            role: 'CLIENT'
-        });
+        logger_1.logger.info('Attempting to create user:', { email, firstName, lastName });
+        let newUser;
+        try {
+            newUser = await User_1.User.create({
+                email,
+                password,
+                firstName,
+                lastName,
+                phone,
+                company,
+                jobTitle,
+                role: 'CLIENT'
+            });
+            logger_1.logger.info('User created successfully:', { id: newUser.id, email: newUser.email });
+        }
+        catch (createError) {
+            logger_1.logger.error('User.create() failed:', createError);
+            console.error('User.create() failed:', createError);
+            throw createError;
+        }
         const token = generateToken(newUser.id, newUser.role);
         res.status(201).json({
             token,
@@ -137,7 +147,56 @@ router.post('/register', async (req, res) => {
     }
     catch (error) {
         logger_1.logger.error('Registration error:', error);
-        res.status(500).json({ error: 'Registration failed' });
+        console.error('Registration error:', error);
+        logger_1.logger.error('Registration error details:', {
+            message: error?.message,
+            stack: error?.stack,
+            code: error?.code,
+            name: error?.name
+        });
+        console.error('Registration error details:', {
+            message: error?.message,
+            stack: error?.stack,
+            code: error?.code,
+            name: error?.name
+        });
+        if (error?.code === '23505') {
+            res.status(409).json({ error: 'User with this email already exists' });
+            return;
+        }
+        if (error?.code === 'ECONNREFUSED' || error?.message?.includes('connect')) {
+            res.status(503).json({ error: 'Database connection failed. Please try again later.' });
+            return;
+        }
+        if (error?.code === '42P01' || error?.message?.includes('does not exist') || error?.message?.includes('relation "users"')) {
+            logger_1.logger.error('Database table "users" does not exist. Please run database migrations.');
+            res.status(500).json({
+                error: 'Database not configured. Please contact support or run database migrations.'
+            });
+            return;
+        }
+        if (error?.code === '42703' || error?.message?.includes('column') && error?.message?.includes('does not exist')) {
+            logger_1.logger.error('Database schema mismatch. Column does not exist:', error?.message);
+            res.status(500).json({
+                error: 'Database schema error. Please contact support.'
+            });
+            return;
+        }
+        const errorDetails = {
+            message: error?.message,
+            stack: error?.stack,
+            code: error?.code,
+            name: error?.name,
+            errno: error?.errno,
+            sqlState: error?.sqlState,
+            sqlMessage: error?.sqlMessage
+        };
+        logger_1.logger.error('Full registration error:', JSON.stringify(errorDetails, null, 2));
+        console.error('Full registration error:', JSON.stringify(errorDetails, null, 2));
+        const errorMessage = process.env['NODE_ENV'] === 'development'
+            ? error?.message || 'Registration failed'
+            : 'Registration failed. Please try again.';
+        res.status(500).json({ error: errorMessage });
     }
 });
 router.post('/logout', async (_req, res) => {
