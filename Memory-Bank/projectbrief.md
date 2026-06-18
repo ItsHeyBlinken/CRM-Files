@@ -75,6 +75,8 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 - Invoice display for client
 - Vendor branding visible in client portal
 - **Client portal passes the "3-second test"** — status and next action obvious without instruction
+- **Client can find contract or invoice in under 30 seconds** (competitive benchmark — see `competitivePainPoints.md`)
+- **Client portal usable on mobile browser without app install**
 - Deployed and runnable in development
 
 ## Out of Scope (MVP)

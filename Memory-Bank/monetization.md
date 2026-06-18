@@ -47,6 +47,7 @@ Use this checklist when you're ready to lock a plan. Nothing here is final.
 
 - **Charge vendors, not couples** — client portal stays free to the end client
 - **Gate on business value** — quoting + active projects are natural upgrade triggers (vendor earns money through the tool)
+- **Transparent fees** — HoneyBook pain point: surprise transaction fees; state pricing clearly, avoid hidden client-side charges
 - **Stripe later** — MVP has no billing; add subscription after quoting + core loop are proven
 - **Don't gate client UX** — never paywall "view your contract" for the couple
 

@@ -90,23 +90,34 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 ## Competitive Positioning
 
 ### Market gap
-Tools like **HoneyBook**, **17hats**, **Tripleseat**, and similar platforms are powerful but often criticized for:
-- Cluttered interfaces and too many clicks to find basic info
-- Client-facing views that feel like an afterthought (vendor CRM first, couple experience second)
-- Overwhelming settings, modules, and terminology aimed at power users
-- Poor mobile experience for clients checking status on the go
+Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle Planner** are powerful but often criticized for:
+
+- **Unreliable email** — platform messages hit spam or glitch; clients miss critical steps
+- **Clunky, outdated client portals** — especially on mobile; some require bad native apps
+- **Hard to find information** — couples can't locate contracts, invoices, or next steps quickly
+- **Payment friction** — too many clicks to pay; complex login walls
+- **Communication fragmentation** — clients revert to text/email when the portal disappoints
+- **Vendor setup overload** — steep learning curves (Dubsado) hurt client experience indirectly
+- **Overkill complexity** — enterprise-feeling tools for solo vendors and simple weddings
+
+**Research source:** `competitivePainPoints.md` (synthesis) and repo-root pain points report.
 
 ### PortalHub differentiation
 **Win on two fronts:** (1) **vendor workflow** — one streamlined path from lead to delivery; (2) **client UX** — the clearest, easiest portal in the category.
 
 | Competitor weakness | PortalHub response |
 |--------------------|-------------------|
+| Email / spam / missed messages | Link-first flows (`/invite`, `/quote`); portal as source of truth; transactional email post-MVP |
 | Vendor tools scattered / too many apps | Unified vendor dashboard: quote → project → contract → invoice → files |
-| Client portal buried / confusing | One project, one screen hub — status + next action always visible |
-| Too many tabs and menus | Client sees 3–4 clear sections max: Overview, Documents, Payments, Files |
+| Client portal buried / confusing | One project, one hub — status + next action always visible |
+| Can't find info in 30 seconds | 3-second test on Home; max 4 client tabs |
+| Too many tabs and menus | Home, Documents, Payments, Files — nothing else |
+| Payment takes too many clicks | Payments tab designed for 2-click Stripe pay (post-MVP) |
+| Clients fall back to email/text | Portal must be faster than inbox for contract, invoice, files |
+| Clunky mobile / app required | Mobile-first **web** — no download |
+| Dubsado-style setup hell | Opinionated defaults; project + invite in minutes |
 | Generic, corporate feel | Vendor-branded, warm, wedding-appropriate tone |
-| Desktop-first client views | Mobile-first client portal layout |
-| Jargon ("workflows", "pipelines") | Plain language: "Your wedding", "What's next", "Sign contract", "View invoice" |
+| Jargon ("workflows", "pipelines") | Plain language: "Your wedding", "What's next", "Review contract" |
 
 ### Client portal UX principles (design north star)
 1. **One glance clarity** — Within 3 seconds, the couple knows: wedding date, current status, and the single most important next step

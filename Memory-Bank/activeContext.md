@@ -7,6 +7,8 @@
 
 **Streamline vendor business processes on the dashboard; keep the client portal simple and easy to use.**
 
+**Market entry angle:** Address documented competitor pain points — unreliable email, clunky mobile portals, hard-to-find info, payment friction, communication fragmentation. See `competitivePainPoints.md`.
+
 This is the guiding principle for all future work — not feature parity between sides.
 
 | Side | Focus | UX bar |

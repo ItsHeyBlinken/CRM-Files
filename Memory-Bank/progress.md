@@ -274,3 +274,9 @@
 - [x] Created `monetization.md` — decision checklist, tier hypothesis, build order vs billing
 - [x] Cross-linked from activeContext, projectbrief, productContext, progress
 - [ ] Dedicated session to fill in pricing decisions before launch
+
+### Session: Competitive pain points research (June 2026)
+- [x] User research report added (repo root): HoneyBook, 17hats, Tripleseat, Dubsado, Aisle Planner
+- [x] Created `competitivePainPoints.md` — pain point → PortalHub response matrix + roadmap mapping
+- [x] Updated productContext competitive table, projectbrief success criteria, activeContext north star
+- [x] Key takeaway: link-first flows + mobile web portal + 30-second findability + 2-click pay (post-MVP)
