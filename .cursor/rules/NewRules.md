@@ -17,3 +17,10 @@
 
 ## Rule 6
   # Lets have a great session of coding!
+
+## Rule 7
+  # The user handles all git commits and all database migrations manually.
+  # - Do NOT run git commit, push, or other git write operations unless the user explicitly asks.
+  # - Do NOT run database migrations or execute SQL against the database (psql, npm db:migrate, etc.).
+  # - Provide SQL files and pgAdmin instructions when schema changes are needed; the user applies them in pgAdmin.
+  # - When changes are ready to commit, summarize what to stage and suggest a commit message — the user commits.

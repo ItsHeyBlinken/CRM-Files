@@ -162,6 +162,9 @@ npm run start        # Start production server
 ```
 
 ### Database Setup
+
+**Migrations are manual.** The user runs all SQL in pgAdmin. The agent provides scripts (e.g. `database/schema_portalhub.sql`) and step-by-step instructions — never executes migrations against the database.
+
 ```bash
 # PortalHub schema (pgAdmin: run database/schema_portalhub.sql)
 # Optional dev seed: database/seed_portalhub_dev.sql

@@ -76,6 +76,8 @@
 - REST API with project-scoped middleware for client routes
 - File storage: local/uploads for MVP (existing multer pattern)
 - No Stripe, no e-sign in MVP
+- **Git commits:** user only — agent prepares changes and suggests messages; does not commit unless explicitly asked
+- **Database migrations:** user applies SQL in pgAdmin — agent writes SQL files and instructions; does not run migrations
 
 ## Open Questions (Deferred)
 - Email delivery provider for client invites (post-MVP or MVP?)

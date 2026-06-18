@@ -183,6 +183,7 @@
 - [x] Updated User model and register default role to VENDOR
 - [x] Schema applied in pgAdmin; legacy `client_event_access` removed
 - [x] Documented dev test logins in `techContext.md`
+- [x] Rule 7 added: user handles git commits and pgAdmin migrations
 
 ### Reusable from pre-pivot work
 - [x] Auth backend + frontend (needs role update PLANNER → VENDOR)
