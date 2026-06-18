@@ -208,6 +208,13 @@
 - [x] Vendor register creates `vendor_profiles` row
 - [x] Legacy CRM routes moved under `/legacy/*`
 
+### Session: Vendor projects + client portal UI
+- [x] `Project` model + vendor CRUD + invite API
+- [x] `GET /api/portal/project` — client-scoped project data
+- [x] Vendor dashboard: create project, list projects, generate invite link
+- [x] Client portal: mobile-first, bottom nav (Home / Documents / Payments / Files)
+- [x] Client portal: 3-second test UX — status, next action, timeline, invoices
+
 ### Session: Product differentiation — client UX
 - [x] Documented competitive positioning vs HoneyBook, 17hats, Tripleseat
 - [x] Defined client portal UX principles and target IA in `productContext.md`

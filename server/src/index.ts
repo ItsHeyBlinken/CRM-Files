@@ -44,6 +44,8 @@ import { socketHandler } from './services/socketService'
 
 // Import routes
 import authRoutes from './routes/auth'
+import vendorProjectRoutes from './routes/vendorProjects'
+import portalRoutes from './routes/portal'
 import userRoutes from './routes/users'
 import eventRoutes from './routes/events'
 import vendorRoutes from './routes/vendors'
@@ -241,6 +243,8 @@ function setupMiddleware() {
 
   // API routes
   app.use('/api/auth', authRoutes)
+  app.use('/api/vendor/projects', vendorProjectRoutes)
+  app.use('/api/portal', portalRoutes)
   app.use('/api/users', userRoutes)
   app.use('/api/events', eventRoutes)
   app.use('/api/vendors', vendorRoutes)

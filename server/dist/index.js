@@ -23,6 +23,8 @@ const notFound_1 = require("./middleware/notFound");
 const logger_1 = require("./utils/logger");
 const socketService_1 = require("./services/socketService");
 const auth_1 = __importDefault(require("./routes/auth"));
+const vendorProjects_1 = __importDefault(require("./routes/vendorProjects"));
+const portal_1 = __importDefault(require("./routes/portal"));
 const users_1 = __importDefault(require("./routes/users"));
 const events_1 = __importDefault(require("./routes/events"));
 const vendors_1 = __importDefault(require("./routes/vendors"));
@@ -167,6 +169,8 @@ function setupMiddleware() {
         });
     });
     app.use('/api/auth', auth_1.default);
+    app.use('/api/vendor/projects', vendorProjects_1.default);
+    app.use('/api/portal', portal_1.default);
     app.use('/api/users', users_1.default);
     app.use('/api/events', events_1.default);
     app.use('/api/vendors', vendors_1.default);

@@ -4,7 +4,14 @@
 **PortalHub** — generic placeholder for the platform. Vendor-facing branding (logo, colors) is per-vendor inside the app; this name is only for the product itself until a final name is chosen.
 
 ## Current Work Focus
-**Auth phase complete.** Role-based login redirect, client invite registration, and minimal dashboard/portal shells. Next: vendor project CRUD and client portal data.
+**Vendor projects + client portal data live.** Vendors create projects and invite links; clients get a mobile-first portal (status, next action, timeline, invoices). Next: contract PDF + acknowledgement, deliverable downloads.
+
+## Next Steps (Priority Order)
+1. ~~**Vendor dashboard**~~ — project list/create, client invite ✅
+2. ~~**Client portal data**~~ — milestones, invoices, next-action UX ✅
+3. **Contracts** — PDF upload (vendor) + client acknowledgement
+4. **Deliverables** — upload + client download
+5. **Remove/archive** legacy CRM pages and unused models
 
 ## Database Status
 - [x] `schema_portalhub.sql` applied
@@ -61,15 +68,6 @@
 - Legacy models: Lead, Deal, Contact, supplier Vendor
 - `PLANNER` role → `VENDOR`
 - Memory Bank and README event-planner framing
-
-## Next Steps (Priority Order)
-1. ~~**Design & write new schema**~~ — applied in pgAdmin ✅
-2. ~~**Run dev seed**~~ — done ✅
-3. ~~**Update auth**~~ — role redirect, client invite registration ✅
-4. **Vendor dashboard** — project list/create, client invite API
-5. **Client portal** — fetch scoped project, milestones, invoices
-6. **MVP features** — contract PDF + ack, deliverables upload
-7. **Remove/archive** legacy CRM pages and unused models
 
 ## Active Technical Decisions
 - Same monorepo structure (`client/`, `server/`, `database/`)
