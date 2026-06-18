@@ -1,10 +1,11 @@
 import React, { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { getHomePathForRole } from '../../utils/roleRedirect'
 
 interface ProtectedRouteProps {
   children: ReactNode
-  requiredRole?: string
+  requiredRole?: 'VENDOR' | 'CLIENT' | 'ADMIN'
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
@@ -21,13 +22,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     )
   }
 
-  // Require authentication
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/" replace />
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to={getHomePathForRole(user.role)} replace />
   }
 
   return <>{children}</>

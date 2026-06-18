@@ -7,6 +7,9 @@ const express_1 = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_1 = require("../middleware/auth");
 const User_1 = require("../models/User");
+const ProjectInvite_1 = require("../models/ProjectInvite");
+const authHelpers_1 = require("../utils/authHelpers");
+const database_1 = require("../config/database");
 const logger_1 = require("../utils/logger");
 const router = (0, express_1.Router)();
 const generateToken = (userId, role) => {
@@ -23,18 +26,7 @@ router.get('/me', auth_1.protect, async (req, res) => {
             res.status(401).json({ error: 'Not authenticated' });
             return;
         }
-        res.json({
-            id: req.user.id,
-            email: req.user.email,
-            name: User_1.User.getFullName(req.user),
-            firstName: req.user.firstName,
-            lastName: req.user.lastName,
-            role: req.user.role,
-            avatarUrl: req.user.avatarUrl,
-            phone: req.user.phone,
-            company: req.user.company,
-            jobTitle: req.user.jobTitle
-        });
+        res.json((0, authHelpers_1.formatAuthUser)(req.user));
     }
     catch (error) {
         logger_1.logger.error('Error in /me endpoint:', error);
@@ -66,18 +58,7 @@ router.post('/login', async (req, res) => {
         const token = generateToken(user.id, user.role);
         res.json({
             token,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: User_1.User.getFullName(user),
-                firstName: user.firstName,
-                lastName: user.lastName,
-                role: user.role,
-                avatarUrl: user.avatarUrl,
-                phone: user.phone,
-                company: user.company,
-                jobTitle: user.jobTitle
-            }
+            user: (0, authHelpers_1.formatAuthUser)(user),
         });
     }
     catch (error) {
@@ -119,9 +100,11 @@ router.post('/register', async (req, res) => {
                 phone,
                 company,
                 jobTitle,
-                role: 'CLIENT'
+                role: 'VENDOR'
             });
             logger_1.logger.info('User created successfully:', { id: newUser.id, email: newUser.email });
+            const businessName = company?.trim() || `${firstName} ${lastName}`.trim();
+            await (0, database_1.getPool)().query(`INSERT INTO vendor_profiles (user_id, business_name) VALUES ($1, $2)`, [newUser.id, businessName]);
         }
         catch (createError) {
             logger_1.logger.error('User.create() failed:', createError);
@@ -131,18 +114,7 @@ router.post('/register', async (req, res) => {
         const token = generateToken(newUser.id, newUser.role);
         res.status(201).json({
             token,
-            user: {
-                id: newUser.id,
-                email: newUser.email,
-                name: User_1.User.getFullName(newUser),
-                firstName: newUser.firstName,
-                lastName: newUser.lastName,
-                role: newUser.role,
-                avatarUrl: newUser.avatarUrl,
-                phone: newUser.phone,
-                company: newUser.company,
-                jobTitle: newUser.jobTitle
-            }
+            user: (0, authHelpers_1.formatAuthUser)(newUser),
         });
     }
     catch (error) {
@@ -197,6 +169,106 @@ router.post('/register', async (req, res) => {
             ? error?.message || 'Registration failed'
             : 'Registration failed. Please try again.';
         res.status(500).json({ error: errorMessage });
+    }
+});
+router.get('/invite/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        if (!token) {
+            res.status(400).json({ error: 'Invite token is required' });
+            return;
+        }
+        const invite = await ProjectInvite_1.ProjectInvite.findByToken(token);
+        if (!invite) {
+            res.status(404).json({ error: 'Invite not found' });
+            return;
+        }
+        if (invite.acceptedAt) {
+            res.status(410).json({ error: 'This invite has already been used' });
+            return;
+        }
+        if (!ProjectInvite_1.ProjectInvite.isValid(invite)) {
+            res.status(410).json({ error: 'This invite has expired' });
+            return;
+        }
+        res.json({
+            email: invite.email,
+            projectTitle: invite.projectTitle,
+            coupleDisplayName: invite.coupleDisplayName,
+            vendorBusinessName: invite.vendorBusinessName,
+            expiresAt: invite.expiresAt,
+        });
+    }
+    catch (error) {
+        logger_1.logger.error('Invite lookup error:', error);
+        res.status(500).json({ error: 'Failed to load invite' });
+    }
+});
+router.post('/register/client', async (req, res) => {
+    try {
+        const { token, email, password, firstName, lastName, phone } = req.body;
+        if (!token || !email || !password || !firstName || !lastName) {
+            res.status(400).json({
+                error: 'Invite token, email, password, first name, and last name are required',
+            });
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            res.status(400).json({ error: 'Invalid email format' });
+            return;
+        }
+        if (password.length < 8) {
+            res.status(400).json({ error: 'Password must be at least 8 characters long' });
+            return;
+        }
+        const invite = await ProjectInvite_1.ProjectInvite.findByToken(token);
+        if (!invite) {
+            res.status(404).json({ error: 'Invite not found' });
+            return;
+        }
+        if (invite.acceptedAt) {
+            res.status(410).json({ error: 'This invite has already been used' });
+            return;
+        }
+        if (!ProjectInvite_1.ProjectInvite.isValid(invite)) {
+            res.status(410).json({ error: 'This invite has expired' });
+            return;
+        }
+        if (email.toLowerCase() !== invite.email.toLowerCase()) {
+            res.status(400).json({ error: 'Email must match the address on the invite' });
+            return;
+        }
+        const existingUser = await User_1.User.findByEmail(email);
+        if (existingUser) {
+            res.status(409).json({
+                error: 'An account with this email already exists. Please sign in instead.',
+            });
+            return;
+        }
+        const newUser = await User_1.User.create({
+            email,
+            password,
+            firstName,
+            lastName,
+            phone,
+            role: 'CLIENT',
+        });
+        const coupleDisplayName = invite.coupleDisplayName || `${firstName} ${lastName}`.trim();
+        await ProjectInvite_1.ProjectInvite.acceptInvite(invite.id, invite.projectId, Number(newUser.id), coupleDisplayName);
+        const authToken = generateToken(newUser.id, newUser.role);
+        res.status(201).json({
+            token: authToken,
+            user: (0, authHelpers_1.formatAuthUser)(newUser),
+        });
+    }
+    catch (error) {
+        logger_1.logger.error('Client registration error:', error);
+        if (error?.code === '23505') {
+            res.status(409).json({ error: 'User with this email already exists' });
+            return;
+        }
+        res.status(500).json({ error: 'Registration failed. Please try again.' });
     }
 });
 router.post('/logout', async (_req, res) => {

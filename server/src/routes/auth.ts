@@ -3,6 +3,9 @@ import { Request, Response } from 'express'
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { protect, AuthRequest } from '../middleware/auth'
 import { User } from '../models/User'
+import { ProjectInvite } from '../models/ProjectInvite'
+import { formatAuthUser } from '../utils/authHelpers'
+import { getPool } from '../config/database'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -30,18 +33,7 @@ router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void
     }
 
     // Return user data without password
-    res.json({
-      id: req.user.id,
-      email: req.user.email,
-      name: User.getFullName(req.user),
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      role: req.user.role,
-      avatarUrl: req.user.avatarUrl,
-      phone: req.user.phone,
-      company: req.user.company,
-      jobTitle: req.user.jobTitle
-    })
+    res.json(formatAuthUser(req.user))
   } catch (error) {
     logger.error('Error in /me endpoint:', error)
     res.status(500).json({ error: 'Failed to get user data' })
@@ -88,18 +80,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     // Return user data and token
     res.json({
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: User.getFullName(user),
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        avatarUrl: user.avatarUrl,
-        phone: user.phone,
-        company: user.company,
-        jobTitle: user.jobTitle
-      }
+      user: formatAuthUser(user),
     })
   } catch (error) {
     logger.error('Login error:', error)
@@ -155,6 +136,12 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         role: 'VENDOR' // Default role for vendor self-registration
       })
       logger.info('User created successfully:', { id: newUser.id, email: newUser.email })
+
+      const businessName = company?.trim() || `${firstName} ${lastName}`.trim()
+      await getPool().query(
+        `INSERT INTO vendor_profiles (user_id, business_name) VALUES ($1, $2)`,
+        [newUser.id, businessName]
+      )
     } catch (createError: any) {
       logger.error('User.create() failed:', createError)
       console.error('User.create() failed:', createError)
@@ -167,18 +154,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     // Return user data and token
     res.status(201).json({
       token,
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        name: User.getFullName(newUser),
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        role: newUser.role,
-        avatarUrl: newUser.avatarUrl,
-        phone: newUser.phone,
-        company: newUser.company,
-        jobTitle: newUser.jobTitle
-      }
+      user: formatAuthUser(newUser),
     })
   } catch (error: any) {
     // Log error with both logger and console for visibility
@@ -244,6 +220,134 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       : 'Registration failed. Please try again.'
     
     res.status(500).json({ error: errorMessage })
+  }
+})
+
+// GET /api/auth/invite/:token — validate client invite (public)
+router.get('/invite/:token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = req.params
+    if (!token) {
+      res.status(400).json({ error: 'Invite token is required' })
+      return
+    }
+
+    const invite = await ProjectInvite.findByToken(token)
+
+    if (!invite) {
+      res.status(404).json({ error: 'Invite not found' })
+      return
+    }
+
+    if (invite.acceptedAt) {
+      res.status(410).json({ error: 'This invite has already been used' })
+      return
+    }
+
+    if (!ProjectInvite.isValid(invite)) {
+      res.status(410).json({ error: 'This invite has expired' })
+      return
+    }
+
+    res.json({
+      email: invite.email,
+      projectTitle: invite.projectTitle,
+      coupleDisplayName: invite.coupleDisplayName,
+      vendorBusinessName: invite.vendorBusinessName,
+      expiresAt: invite.expiresAt,
+    })
+  } catch (error) {
+    logger.error('Invite lookup error:', error)
+    res.status(500).json({ error: 'Failed to load invite' })
+  }
+})
+
+// POST /api/auth/register/client — client signup via invite token
+router.post('/register/client', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token, email, password, firstName, lastName, phone } = req.body
+
+    if (!token || !email || !password || !firstName || !lastName) {
+      res.status(400).json({
+        error: 'Invite token, email, password, first name, and last name are required',
+      })
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Invalid email format' })
+      return
+    }
+
+    if (password.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters long' })
+      return
+    }
+
+    const invite = await ProjectInvite.findByToken(token)
+    if (!invite) {
+      res.status(404).json({ error: 'Invite not found' })
+      return
+    }
+
+    if (invite.acceptedAt) {
+      res.status(410).json({ error: 'This invite has already been used' })
+      return
+    }
+
+    if (!ProjectInvite.isValid(invite)) {
+      res.status(410).json({ error: 'This invite has expired' })
+      return
+    }
+
+    if (email.toLowerCase() !== invite.email.toLowerCase()) {
+      res.status(400).json({ error: 'Email must match the address on the invite' })
+      return
+    }
+
+    const existingUser = await User.findByEmail(email)
+    if (existingUser) {
+      res.status(409).json({
+        error: 'An account with this email already exists. Please sign in instead.',
+      })
+      return
+    }
+
+    const newUser = await User.create({
+      email,
+      password,
+      firstName,
+      lastName,
+      phone,
+      role: 'CLIENT',
+    })
+
+    const coupleDisplayName =
+      invite.coupleDisplayName || `${firstName} ${lastName}`.trim()
+
+    await ProjectInvite.acceptInvite(
+      invite.id,
+      invite.projectId,
+      Number(newUser.id),
+      coupleDisplayName
+    )
+
+    const authToken = generateToken(newUser.id, newUser.role)
+
+    res.status(201).json({
+      token: authToken,
+      user: formatAuthUser(newUser),
+    })
+  } catch (error: any) {
+    logger.error('Client registration error:', error)
+
+    if (error?.code === '23505') {
+      res.status(409).json({ error: 'User with this email already exists' })
+      return
+    }
+
+    res.status(500).json({ error: 'Registration failed. Please try again.' })
   }
 })
 

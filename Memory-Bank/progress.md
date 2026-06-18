@@ -190,14 +190,23 @@
 - [x] PostgreSQL connection, session store, deploy pipeline
 - [x] Express middleware stack, build tooling
 
-### What to build (MVP — not started)
+### What to build (MVP — in progress)
 - [x] New database schema — `database/schema_portalhub.sql` (+ optional `seed_portalhub_dev.sql`)
-- [ ] Run schema in pgAdmin (user action)
-- [ ] Auth updates: client invite registration, login role redirect
-- [ ] Vendor dashboard: layout, projects CRUD, client invite, branding settings
-- [ ] Client portal: layout, project view, contract ack, invoice display, deliverable download
-- [ ] Project-scoped authorization middleware
+- [x] Run schema in pgAdmin (user action)
+- [x] Auth updates: role redirect, client invite registration, vendor profile on signup
+- [x] Minimal `/dashboard` (vendor) and `/portal` (client) shells
+- [ ] Vendor project CRUD + invite creation from dashboard
+- [ ] Client portal: project data, milestones, invoices
+- [ ] Contract PDF + acknowledgement, deliverables upload
 - [ ] Remove/archive legacy CRM pages and models
+
+### Session: Auth implementation
+- [x] `GET /api/auth/invite/:token` — validate invite
+- [x] `POST /api/auth/register/client` — client signup via invite token
+- [x] Role redirect: VENDOR → `/dashboard`, CLIENT → `/portal`
+- [x] `AcceptInvite` page at `/invite/:token`
+- [x] Vendor register creates `vendor_profiles` row
+- [x] Legacy CRM routes moved under `/legacy/*`
 
 ### Post-MVP backlog
 - Stripe invoice payment

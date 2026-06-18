@@ -4,12 +4,12 @@
 **PortalHub** — generic placeholder for the platform. Vendor-facing branding (logo, colors) is per-vendor inside the app; this name is only for the product itself until a final name is chosen.
 
 ## Current Work Focus
-**Schema applied in pgAdmin.** Database has 9 PortalHub tables. Dev test logins documented in `techContext.md`. Next: auth updates (role redirect, client invite flow), then dashboard/portal shells.
+**Auth phase complete.** Role-based login redirect, client invite registration, and minimal dashboard/portal shells. Next: vendor project CRUD and client portal data.
 
 ## Database Status
 - [x] `schema_portalhub.sql` applied
 - [x] Legacy `client_event_access` dropped
-- [ ] Confirm `seed_portalhub_dev.sql` run (test logins — see **Development Test Accounts** in `techContext.md`)
+- [x] Dev seed applied (test logins in `techContext.md`)
 
 ## Pivot Summary (Session Decision)
 - **From**: Event Planner CRM (planner manages clients, events, supplier vendors)
@@ -64,11 +64,11 @@
 
 ## Next Steps (Priority Order)
 1. ~~**Design & write new schema**~~ — applied in pgAdmin ✅
-2. **Run dev seed** (if not yet) — `database/seed_portalhub_dev.sql`
-3. **Update auth** — VENDOR/CLIENT roles, invite-based client registration, role redirect on login
-4. **Vendor dashboard shell** — layout, routes, project list/create
-5. **Client portal shell** — layout, routes, project-scoped data fetch
-6. **MVP features** — invite flow, milestones, contract PDF + ack, invoice display, deliverables upload
+2. ~~**Run dev seed**~~ — done ✅
+3. ~~**Update auth**~~ — role redirect, client invite registration ✅
+4. **Vendor dashboard** — project list/create, client invite API
+5. **Client portal** — fetch scoped project, milestones, invoices
+6. **MVP features** — contract PDF + ack, deliverables upload
 7. **Remove/archive** legacy CRM pages and unused models
 
 ## Active Technical Decisions

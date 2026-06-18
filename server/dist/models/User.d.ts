@@ -4,7 +4,7 @@ export interface IUser {
     password: string;
     firstName: string;
     lastName: string;
-    role: 'PLANNER' | 'CLIENT' | 'ADMIN';
+    role: 'VENDOR' | 'CLIENT' | 'ADMIN';
     isActive: boolean;
     emailVerified: boolean;
     avatarUrl?: string;
@@ -37,7 +37,7 @@ export interface IUserCreate {
     password: string;
     firstName: string;
     lastName: string;
-    role?: 'PLANNER' | 'CLIENT' | 'ADMIN';
+    role?: 'VENDOR' | 'CLIENT' | 'ADMIN';
     phone?: string;
     bio?: string;
     company?: string;

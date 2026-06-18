@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import api from '../services/api'
 
-interface User {
+export interface AuthUser {
   id: string
   email: string
   name: string
@@ -12,12 +12,31 @@ interface User {
   phone?: string
   company?: string
   jobTitle?: string
+  redirectPath?: string
+}
+
+interface ClientRegisterInput {
+  token: string
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  phone?: string
 }
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, firstName: string, lastName: string, phone?: string, company?: string, jobTitle?: string) => Promise<void>
+  user: AuthUser | null
+  login: (email: string, password: string) => Promise<AuthUser>
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    phone?: string,
+    company?: string,
+    jobTitle?: string
+  ) => Promise<AuthUser>
+  registerClient: (input: ClientRegisterInput) => Promise<AuthUser>
   logout: () => void
   loading: boolean
   isAuthenticated: boolean
@@ -37,23 +56,25 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+const persistSession = (token: string, user: AuthUser) => {
+  localStorage.setItem('token', token)
+  localStorage.setItem('user', JSON.stringify(user))
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session on mount
     checkAuthStatus()
   }, [])
 
   const checkAuthStatus = async () => {
     try {
-      // Check if token exists in localStorage
       const token = localStorage.getItem('token')
       const savedUser = localStorage.getItem('user')
-      
+
       if (token && savedUser) {
-        // Set user from localStorage immediately for faster initial render
         try {
           setUser(JSON.parse(savedUser))
         } catch (e) {
@@ -61,16 +82,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
 
-      // Verify token with server
       const response = await api.get('/auth/me')
-      
+
       if (response.data) {
         setUser(response.data)
-        // Update localStorage with fresh user data
         localStorage.setItem('user', JSON.stringify(response.data))
       }
     } catch (error: any) {
-      // If auth check fails, clear stored data
       if (error.response?.status === 401) {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
@@ -81,18 +99,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<AuthUser> => {
     try {
       const response = await api.post('/auth/login', { email, password })
-      
+
       if (response.data.token && response.data.user) {
-        // Store token and user data
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+        persistSession(response.data.token, response.data.user)
         setUser(response.data.user)
-      } else {
-        throw new Error('Invalid response from server')
+        return response.data.user
       }
+
+      throw new Error('Invalid response from server')
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Login failed. Please try again.'
       throw new Error(errorMessage)
@@ -107,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     phone?: string,
     company?: string,
     jobTitle?: string
-  ) => {
+  ): Promise<AuthUser> => {
     try {
       const response = await api.post('/auth/register', {
         email,
@@ -116,17 +133,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         lastName,
         phone,
         company,
-        jobTitle
+        jobTitle,
       })
-      
+
       if (response.data.token && response.data.user) {
-        // Store token and user data
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
+        persistSession(response.data.token, response.data.user)
         setUser(response.data.user)
-      } else {
-        throw new Error('Invalid response from server')
+        return response.data.user
       }
+
+      throw new Error('Invalid response from server')
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.'
+      throw new Error(errorMessage)
+    }
+  }
+
+  const registerClient = async (input: ClientRegisterInput): Promise<AuthUser> => {
+    try {
+      const response = await api.post('/auth/register/client', input)
+
+      if (response.data.token && response.data.user) {
+        persistSession(response.data.token, response.data.user)
+        setUser(response.data.user)
+        return response.data.user
+      }
+
+      throw new Error('Invalid response from server')
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.'
       throw new Error(errorMessage)
@@ -139,7 +172,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
-      // Clear local storage and user state
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       setUser(null)
@@ -150,14 +182,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     login,
     register,
+    registerClient,
     logout,
     loading,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

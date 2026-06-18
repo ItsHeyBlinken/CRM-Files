@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Navigate, Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getHomePathForRole } from '../utils/roleRedirect'
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,10 +16,11 @@ const Register: React.FC = () => {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { register, isAuthenticated } = useAuth()
+  const { register, isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
 
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />
+  if (isAuthenticated && user) {
+    return <Navigate to={getHomePathForRole(user.role)} replace />
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +62,7 @@ const Register: React.FC = () => {
     setLoading(true)
 
     try {
-      await register(
+      const registeredUser = await register(
         formData.email,
         formData.password,
         formData.firstName,
@@ -69,7 +71,7 @@ const Register: React.FC = () => {
         formData.company || undefined,
         formData.jobTitle || undefined
       )
-      // Navigation will happen automatically via isAuthenticated check
+      navigate(getHomePathForRole(registeredUser.role))
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.')
     } finally {
@@ -82,10 +84,10 @@ const Register: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            Create your vendor account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Event Planner CRM
+            PortalHub — for wedding vendors and freelancers
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -193,7 +195,7 @@ const Register: React.FC = () => {
                 name="company"
                 type="text"
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Company (optional)"
+                placeholder="Business name (optional)"
                 value={formData.company}
                 onChange={handleChange}
               />

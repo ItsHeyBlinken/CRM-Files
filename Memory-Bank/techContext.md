@@ -61,6 +61,28 @@ Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
 
 **Re-seed:** Re-run `seed_portalhub_dev.sql` only on a fresh schema (will fail if emails already exist). To reset: run `schema_portalhub.sql` again, then seed.
 
+**After login — role redirect:**
+| Role | Route |
+|------|-------|
+| VENDOR | `/dashboard` |
+| CLIENT | `/portal` |
+| ADMIN | `/admin` |
+
+**Test client invite flow (pgAdmin):** Seed invite for `client@test.com` is already accepted. To test `/invite/:token`, create a new pending invite:
+
+```sql
+INSERT INTO project_invites (project_id, email, expires_at, created_by)
+VALUES (
+  (SELECT id FROM projects LIMIT 1),
+  'newcouple@test.com',
+  NOW() + INTERVAL '14 days',
+  (SELECT id FROM users WHERE role = 'VENDOR' LIMIT 1)
+);
+SELECT token FROM project_invites WHERE email = 'newcouple@test.com';
+```
+
+Then open `/invite/{token}` in the app.
+
 ### Environment Variables
 ```env
 # Database

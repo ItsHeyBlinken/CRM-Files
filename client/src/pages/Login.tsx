@@ -1,29 +1,29 @@
 import React, { useState } from 'react'
-import { Navigate, Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getHomePathForRole } from '../utils/roleRedirect'
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
 
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />
+  if (isAuthenticated && user) {
+    return <Navigate to={getHomePathForRole(user.role)} replace />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
-    // Basic validation
+
     if (!email || !password) {
       setError('Please fill in all fields')
       return
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address')
@@ -33,8 +33,8 @@ const Login: React.FC = () => {
     setLoading(true)
 
     try {
-      await login(email, password)
-      // Navigation will happen automatically via isAuthenticated check
+      const loggedInUser = await login(email, password)
+      navigate(getHomePathForRole(loggedInUser.role))
     } catch (err: any) {
       setError(err.message || 'Invalid email or password. Please try again.')
     } finally {
@@ -47,10 +47,10 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Sign in to PortalHub
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Event Planner CRM
+            Vendors and clients use the same sign-in page
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -107,9 +107,9 @@ const Login: React.FC = () => {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              Wedding vendor?{' '}
               <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign up
+                Create a vendor account
               </Link>
             </p>
           </div>
