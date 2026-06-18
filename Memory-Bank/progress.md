@@ -195,9 +195,9 @@
 - [x] Run schema in pgAdmin (user action)
 - [x] Auth updates: role redirect, client invite registration, vendor profile on signup
 - [x] Minimal `/dashboard` (vendor) and `/portal` (client) shells
-- [ ] Vendor project CRUD + invite creation from dashboard
-- [ ] Client portal: project data, milestones, invoices
-- [ ] Contract PDF + acknowledgement, deliverables upload
+- [x] Vendor project CRUD + invite creation from dashboard
+- [x] Client portal: project data, milestones, invoices
+- [x] Contract PDF + acknowledgement, deliverables upload
 - [ ] Remove/archive legacy CRM pages and models
 
 ### Session: Auth implementation
@@ -221,8 +221,41 @@
 - [x] Added "3-second test" to MVP success criteria in `projectbrief.md`
 
 ### Post-MVP backlog
+- **Quoting / proposals** — inquiry → quote → email → client accept → convert to project (see `productContext.md`, `activeContext.md`)
 - Stripe invoice payment
 - E-signature integration
-- Email notifications (invites, reminders)
+- Email notifications (invites, reminders, quotes)
 - Vendor staff accounts
 - Custom subdomain per vendor
+
+8. **Vendor dashboard can be denser** — Vendors tolerate complexity when it saves time; clients do not. **Main focus = vendor process; client = simple surface.**
+
+### Session: Product north star confirmed (June 2026)
+- [x] End goal documented: streamline vendor business processes; keep client portal simple and easy
+- [x] Asymmetric UX strategy explicit in Memory Bank (activeContext, projectbrief, productContext)
+- [x] Quoting workflow aligned as vendor-first feature; client only sees accept/decline when needed
+
+### Session: Invite registration fix (June 2026)
+- [x] Guard invite + register when project already has linked client
+- [x] Block duplicate invites on seeded Miller Wedding project
+- [x] AcceptInvite page shows "Portal already set up" when appropriate
+
+### Session: Contracts + vendor project detail + deliverables (June 2026)
+- [x] `Contract` model — vendor PDF upload, client view + acknowledgement
+- [x] `Deliverable` model — vendor upload (PDF/images/ZIP), client download
+- [x] Vendor project detail page `/dashboard/projects/:id` — overview, status, invite, contract, deliverables, timeline, invoices
+- [x] Vendor dashboard simplified to project list with links into detail
+- [x] Client portal Documents tab — view PDF, acknowledge contract
+- [x] Client portal Files tab — download deliverables
+- [x] `Project.findDetailForVendor` — aggregated project detail API
+- [x] Invite flow UX copy clarified (login at invite, not at contract)
+
+### What to build (MVP — status)
+- [x] New database schema — `database/schema_portalhub.sql` (+ optional `seed_portalhub_dev.sql`)
+- [x] Run schema in pgAdmin (user action)
+- [x] Auth updates: role redirect, client invite registration, vendor profile on signup
+- [x] Vendor dashboard + project detail
+- [x] Client portal: project data, milestones, invoices, next-action UX
+- [x] Contract PDF + acknowledgement, deliverables upload + download
+- [ ] Remove/archive legacy CRM pages and models
+- [ ] Quoting workflow (next major feature)

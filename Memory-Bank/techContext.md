@@ -68,6 +68,21 @@ Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
 | CLIENT | `/portal` |
 | ADMIN | `/admin` |
 
+**Vendor project detail:** `/dashboard/projects/:id`
+
+### Key Application Files (PortalHub)
+
+| Area | Paths |
+|------|-------|
+| Schema / seed | `database/schema_portalhub.sql`, `database/seed_portalhub_dev.sql` |
+| Auth | `server/src/routes/auth.ts`, `client/src/pages/AcceptInvite.tsx` |
+| Vendor API | `server/src/routes/vendorProjects.ts`, `server/src/models/Project.ts` |
+| Contracts | `server/src/models/Contract.ts`, `client/src/services/contractService.ts` |
+| Deliverables | `server/src/models/Deliverable.ts`, `client/src/services/deliverableService.ts` |
+| Client portal | `server/src/routes/portal.ts`, `client/src/pages/ClientPortal.tsx` |
+| Vendor UI | `client/src/pages/VendorDashboard.tsx`, `client/src/pages/VendorProjectDetail.tsx` |
+| Uploads | `server/src/middleware/projectUpload.ts`, `server/uploads/` |
+
 **Test client invite flow (pgAdmin):** Seed invite for `client@test.com` is already accepted. To test `/invite/:token`, create a new pending invite:
 
 ```sql

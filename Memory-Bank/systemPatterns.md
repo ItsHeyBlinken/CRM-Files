@@ -91,6 +91,7 @@
 | **Contract** | PDF file + acknowledgement fields |
 | **Invoice** | Amount, due date, status (display MVP) |
 | **Deliverable** | File metadata + download path |
+| **Quote** *(planned)* | Pre-project proposal; line items; accept → convert to Project |
 
 ### Deprecated (Legacy CRM — Remove)
 - Supplier `vendors` table (planner's vendor directory)
@@ -102,19 +103,23 @@
 
 ### Vendor Routes (prefix `/api/vendor/`)
 - `GET/POST /projects`
-- `GET/PUT /projects/:id`
+- `GET/PUT/DELETE /projects/:id` — GET returns full detail (linked client, contracts, milestones, invoices, deliverables)
 - `POST /projects/:id/invite`
-- `POST/GET /projects/:id/contracts`
-- `POST/GET /projects/:id/invoices`
-- `POST/GET /projects/:id/deliverables`
-- `GET/PUT /profile` (vendor branding)
+- `GET/POST /projects/:id/contracts` — PDF upload; one contract per project (MVP)
+- `GET/POST /projects/:id/deliverables` — multi-file upload
+- `GET/PUT /profile` (vendor branding) — *not yet built*
 
 ### Client Routes (prefix `/api/portal/`)
-- `GET /project` — client's current project (or list if multiple later)
-- `GET /project/milestones`
-- `GET /project/contracts`, `POST .../acknowledge`
-- `GET /project/invoices`
-- `GET /project/deliverables`, `GET .../:id/download`
+- `GET /project` — aggregated portal payload
+- `GET /contracts/:id/file`, `POST /contracts/:id/acknowledge`
+- `GET /deliverables/:id/file` — authenticated download
+
+### Quote Routes *(planned — Phase 2)*
+- `GET/POST /api/vendor/quotes`
+- `POST /api/vendor/quotes/:id/send`
+- `GET /api/quotes/:token` — public quote view
+- `POST /api/quotes/:token/accept`
+- `POST /api/vendor/quotes/:id/convert-to-project`
 
 ### Error Handling
 - 401 unauthenticated, 403 wrong role or no project access, 404 not found

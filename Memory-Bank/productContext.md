@@ -2,6 +2,15 @@
 
 > **Platform name:** **PortalHub** — temporary working title for the vendor/client portal product.
 
+## End Goal
+
+**Streamline vendor business processes while keeping the client experience simple and easy to use.**
+
+- **Vendor dashboard** = where the product earns its keep: quotes, projects, clients, money, files, status — wired together so vendors spend less time in email, spreadsheets, and disconnected tools.
+- **Client portal** = thin, branded window into *their* wedding with that vendor — never a second CRM.
+
+When trade-offs arise, **default to vendor workflow efficiency** on the dashboard and **ruthless simplicity** on the portal.
+
 ## Why This Project Exists
 
 ### Problem Statement
@@ -71,10 +80,11 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 - Portal styled with vendor branding (logo, colors, business name)
 
 ### User Experience Goals
-- **Vendor dashboard**: Admin-style, efficient, business-focused — functional over flashy
-- **Client portal**: **Primary competitive differentiator** — dead simple, calm, obvious; couples should never feel lost
+- **Vendor dashboard**: **Primary product focus** — streamline business processes (inquiry → quote → project → contract → invoice → delivery); efficient, connected workflows; density acceptable if it saves steps
+- **Client portal**: **Non-negotiable simplicity** — dead simple, calm, obvious; couples should never feel lost
+- **Asymmetric investment**: Build depth for vendors; expose only client-facing outcomes on the portal
 - **Trust**: Clear status, no hunting through email
-- **Mobile responsive**: Couples often check on phone (client portal must feel native on mobile first)
+- **Mobile responsive**: Client portal mobile-first; vendor dashboard desktop-friendly with mobile usable
 - **Secure isolation**: Clients never see other projects or vendors
 
 ## Competitive Positioning
@@ -87,10 +97,11 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, and similar platforms are 
 - Poor mobile experience for clients checking status on the go
 
 ### PortalHub differentiation
-**Win on client-side UX** — not by out-featureing incumbents on vendor CRM depth, but by giving couples the clearest, easiest portal in the category.
+**Win on two fronts:** (1) **vendor workflow** — one streamlined path from lead to delivery; (2) **client UX** — the clearest, easiest portal in the category.
 
 | Competitor weakness | PortalHub response |
 |--------------------|-------------------|
+| Vendor tools scattered / too many apps | Unified vendor dashboard: quote → project → contract → invoice → files |
 | Client portal buried / confusing | One project, one screen hub — status + next action always visible |
 | Too many tabs and menus | Client sees 3–4 clear sections max: Overview, Documents, Payments, Files |
 | Generic, corporate feel | Vendor-branded, warm, wedding-appropriate tone |
@@ -136,10 +147,34 @@ No sidebar with 12 items. No settings the client doesn't need. Optional vendor m
 - Invoice display
 
 ### Post-MVP
+- **Quoting / proposals** — pre-project sales: inquiry → quote → email → client accept → convert to project (priority feature for next phase)
 - Stripe (or similar) invoice payment
 - E-signature for contracts
-- Email notifications (invite, invoice, deliverable ready)
+- Email notifications (invite, invoice, deliverable ready, quote sent)
 - Vendor staff accounts
 - Custom subdomain per vendor (`smithphoto.app.com`)
 - Questionnaires (shot list, timeline)
 - Photo gallery delivery UX
+
+## Quoting Workflow (Planned — June 2026)
+
+Extends PortalHub **upstream** of the current project lifecycle so vendors can win new business in the same tool.
+
+### Intended flow
+1. **Inquiry** — couple asks about services (captured in-app or vendor enters manually)
+2. **Quote** — vendor builds quote (services, line items, total, optional notes/PDF)
+3. **Send** — vendor emails quote link to client (mailto MVP or integrated email later)
+4. **Accept** — client opens link, reviews quote, accepts (or declines)
+5. **Convert** — vendor creates/confirms project from accepted quote
+6. **Existing portal flow** — invite client → contract → invoice → deliverables
+
+### Design notes
+- Reuse patterns from **invite tokens** for quote acceptance links (public URL, no account required until later if desired)
+- Quote acceptance should **not** require portal login; acceptance is a sales step, portal login remains at invite
+- After conversion, quote links to `projects.id`; project status likely starts at `inquiry` or `booked`
+- Competitive angle: simpler quote-to-portal handoff than bloated CRM suites
+
+### Out of scope for quoting v1 (TBD next session)
+- Payment collection on quote accept
+- Multi-version quote revisions
+- Automated inquiry forms on vendor websites

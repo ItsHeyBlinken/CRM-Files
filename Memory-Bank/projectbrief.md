@@ -3,7 +3,14 @@
 > **Product name:** **PortalHub** — generic placeholder; rebrand before launch.
 
 ## Project Overview
-A two-sided web application for wedding freelancers and vendors (photographers, florists, DJs, etc.). Each vendor gets an admin-style dashboard to manage their business. Each vendor's clients (couples) log in to a branded portal to view only the project they hired that vendor for — status, contracts, invoices, and deliverables — all in one place instead of scattered across email, Google Drive, and separate invoicing tools.
+A two-sided web application for wedding freelancers and vendors (photographers, florists, DJs, etc.). Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.
+
+## End Goal
+**Vendor side:** Main product focus — efficient workflows, fewer manual steps, one place to run the business.
+
+**Client side:** Simple and easy — couples should always know status and their next step without instruction.
+
+Asymmetric by design: depth and capability on the vendor dashboard; clarity and calm on the client portal.
 
 ## Product Model
 - **Vendor side**: Freelancer/wedding vendor manages projects, clients, invoices, contracts, deliverables, and portal branding.
@@ -51,6 +58,12 @@ A two-sided web application for wedding freelancers and vendors (photographers, 
 3. Vendor sets branding, adds milestone, uploads contract PDF, creates invoice
 4. Client sees project status, acknowledges contract, views invoice, downloads deliverables
 
+## Approach: Full Vendor Lifecycle (Planned)
+
+**Phase 1 (MVP — largely complete):** Post-booking project hub + client portal.
+
+**Phase 2 (Next):** Pre-booking **quoting tool** — inquiry → quote → email → client accept → create project → existing portal flow. See `productContext.md` and `activeContext.md`.
+
 ## Approach: Greenfield Product, Reuse Infrastructure
 The previous Event Planner CRM direction is deprecated. Keep auth patterns, build/deploy pipeline, and stack. Replace planner-centric schema, CRM boilerplate pages, and entity models with the vendor/client portal model.
 
@@ -70,3 +83,4 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 - Multi-staff vendor accounts
 - Custom subdomains per vendor
 - Platform-wide analytics / reporting
+- **Quoting / proposals** — planned for Phase 2 (see productContext.md)
