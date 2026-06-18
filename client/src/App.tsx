@@ -7,6 +7,7 @@ import ProtectedRoute from './components/Auth/ProtectedRoute'
 import HomeRedirect from './components/Auth/HomeRedirect'
 
 import VendorDashboard from './pages/VendorDashboard'
+import VendorProjectDetail from './pages/VendorProjectDetail'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="VENDOR">
                 <VendorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/projects/:id"
+            element={
+              <ProtectedRoute requiredRole="VENDOR">
+                <VendorProjectDetail />
               </ProtectedRoute>
             }
           />

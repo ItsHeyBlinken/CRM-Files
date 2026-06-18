@@ -4,10 +4,12 @@ import {
   acknowledgeContract,
   fetchContractPdfBlob,
 } from '../services/contractService'
+import { downloadDeliverableBlob } from '../services/deliverableService'
 import { fetchClientPortal } from '../services/projectService'
 import type { ClientPortalData, PortalTab } from '../types/portal'
 import {
   formatCurrency,
+  formatFileSize,
   formatWeddingDate,
   getInvoiceStatusLabel,
   getNextAction,
@@ -25,6 +27,8 @@ const ClientPortal: React.FC = () => {
   const [ackSubmitting, setAckSubmitting] = useState(false)
   const [docError, setDocError] = useState('')
   const [viewingContractId, setViewingContractId] = useState<number | null>(null)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
+  const [filesError, setFilesError] = useState('')
 
   const loadPortal = useCallback(async () => {
     try {
@@ -80,6 +84,28 @@ const ClientPortal: React.FC = () => {
       setDocError(message)
     } finally {
       setAckSubmitting(false)
+    }
+  }
+
+  const handleDownload = async (deliverableId: number) => {
+    setFilesError('')
+    setDownloadingId(deliverableId)
+
+    try {
+      const { blob, fileName } = await downloadDeliverableBlob(deliverableId)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        'Could not download file'
+      setFilesError(message)
+    } finally {
+      setDownloadingId(null)
     }
   }
 
@@ -289,10 +315,27 @@ const ClientPortal: React.FC = () => {
 
     return (
       <ul className="space-y-3">
+        {filesError && (
+          <li className="list-none">
+            <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{filesError}</div>
+          </li>
+        )}
         {data.deliverables.map((file) => (
           <li key={file.id} className="rounded-2xl bg-white p-5 shadow-sm">
             <p className="font-medium text-gray-900">{file.title}</p>
-            <p className="mt-1 text-sm text-gray-500">Download coming soon</p>
+            <p className="mt-1 text-sm text-gray-500">{file.fileName}</p>
+            {file.fileSizeBytes != null && (
+              <p className="text-xs text-gray-400">{formatFileSize(file.fileSizeBytes)}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => handleDownload(file.id)}
+              disabled={downloadingId === file.id}
+              className="mt-3 text-sm font-medium disabled:opacity-50"
+              style={{ color: accent }}
+            >
+              {downloadingId === file.id ? 'Downloading...' : 'Download'}
+            </button>
           </li>
         ))}
       </ul>

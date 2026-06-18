@@ -1,35 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import {
-  fetchProjectContracts,
-  uploadProjectContract,
-  type VendorContract,
-} from '../services/contractService'
-import {
-  createProject,
-  createProjectInvite,
-  fetchVendorProjects,
-  type InviteResult,
-} from '../services/projectService'
+import { createProject, fetchVendorProjects } from '../services/projectService'
 import type { Project } from '../types/portal'
-
-function getApiError(err: unknown, fallback: string): string {
-  const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-  return message || fallback
-}
 
 const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
-  const [inviteProjectId, setInviteProjectId] = useState<number | null>(null)
-  const [contractProjectId, setContractProjectId] = useState<number | null>(null)
-  const [projectContracts, setProjectContracts] = useState<VendorContract[]>([])
-  const [contractTitle, setContractTitle] = useState('Photography Agreement')
-  const [contractFile, setContractFile] = useState<File | null>(null)
-  const [inviteLink, setInviteLink] = useState<InviteResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const [createForm, setCreateForm] = useState({
@@ -39,8 +20,6 @@ const VendorDashboard: React.FC = () => {
     location: '',
     clientEmail: '',
   })
-
-  const [inviteEmail, setInviteEmail] = useState('')
 
   const loadProjects = useCallback(async () => {
     try {
@@ -58,23 +37,6 @@ const VendorDashboard: React.FC = () => {
     loadProjects()
   }, [loadProjects])
 
-  const loadProjectContracts = useCallback(async (projectId: number) => {
-    try {
-      const contracts = await fetchProjectContracts(projectId)
-      setProjectContracts(contracts)
-    } catch {
-      setProjectContracts([])
-    }
-  }, [])
-
-  useEffect(() => {
-    if (contractProjectId) {
-      loadProjectContracts(contractProjectId)
-    } else {
-      setProjectContracts([])
-    }
-  }, [contractProjectId, loadProjectContracts])
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!createForm.title.trim()) return
@@ -83,7 +45,7 @@ const VendorDashboard: React.FC = () => {
     setError('')
 
     try {
-      await createProject({
+      const project = await createProject({
         title: createForm.title.trim(),
         coupleDisplayName: createForm.coupleDisplayName || undefined,
         weddingDate: createForm.weddingDate || undefined,
@@ -99,74 +61,12 @@ const VendorDashboard: React.FC = () => {
         clientEmail: '',
       })
       setShowCreate(false)
-      await loadProjects()
+      navigate(`/dashboard/projects/${project.id}`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create project')
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!inviteProjectId || !inviteEmail.trim()) return
-
-    setSubmitting(true)
-    setError('')
-
-    try {
-      const invite = await createProjectInvite(inviteProjectId, inviteEmail.trim())
-      setInviteLink(invite)
-      setInviteEmail('')
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to create invite'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleContractUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!contractProjectId || !contractTitle.trim() || !contractFile) return
-
-    setSubmitting(true)
-    setError('')
-
-    try {
-      await uploadProjectContract(contractProjectId, contractTitle.trim(), contractFile)
-      setContractFile(null)
-      setContractTitle('Photography Agreement')
-      await loadProjectContracts(contractProjectId)
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to upload contract'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const copyInviteLink = () => {
-    if (!inviteLink) return
-    const fullUrl = getInviteFullUrl(inviteLink.invitePath)
-    navigator.clipboard.writeText(fullUrl)
-  }
-
-  const getInviteFullUrl = (path: string) => `${window.location.origin}${path}`
-
-  const openInviteEmailDraft = () => {
-    if (!inviteLink) return
-    const project = projects.find((p) => p.id === inviteProjectId)
-    const fullUrl = getInviteFullUrl(inviteLink.invitePath)
-    const subject = encodeURIComponent(
-      `Your wedding portal${project ? ` — ${project.title}` : ''}`
-    )
-    const body = encodeURIComponent(
-      `Hi,\n\n` +
-        `I've set up your client portal. You don't have an account yet — this link will let you create one and view your project:\n\n` +
-        `${fullUrl}\n\n` +
-        `Open the link, choose a password, and you'll be taken straight to your wedding portal.\n\n` +
-        `After that, you can sign in anytime at ${window.location.origin}/login\n`
-    )
-    window.location.href = `mailto:${inviteLink.email}?subject=${subject}&body=${body}`
   }
 
   return (
@@ -196,16 +96,13 @@ const VendorDashboard: React.FC = () => {
             <h2 className="text-lg font-medium text-gray-900">
               Welcome{user?.firstName ? `, ${user.firstName}` : ''}
             </h2>
-            <p className="text-sm text-gray-600">Manage your wedding projects and client invites.</p>
+            <p className="text-sm text-gray-600">
+              Select a project to manage invites, contracts, and client portal setup.
+            </p>
           </div>
           <button
             type="button"
-            onClick={() => {
-              setShowCreate(true)
-              setInviteProjectId(null)
-              setContractProjectId(null)
-              setInviteLink(null)
-            }}
+            onClick={() => setShowCreate(true)}
             className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
           >
             New project
@@ -272,140 +169,6 @@ const VendorDashboard: React.FC = () => {
           </form>
         )}
 
-        {contractProjectId && (
-          <form onSubmit={handleContractUpload} className="bg-white rounded-lg shadow p-6 space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-900">Upload contract</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Upload a PDF for your client to review and acknowledge in their portal. One
-                contract per project for MVP.
-              </p>
-            </div>
-
-            {projectContracts.length > 0 ? (
-              <div className="rounded-md bg-gray-50 p-4 text-sm space-y-2">
-                {projectContracts.map((contract) => (
-                  <div key={contract.id}>
-                    <p className="font-medium text-gray-900">{contract.title}</p>
-                    <p className="text-gray-600">{contract.fileName}</p>
-                    <p className="text-xs text-gray-500">
-                      {contract.acknowledgedAt
-                        ? `Acknowledged ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
-                        : 'Waiting for client acknowledgement'}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <>
-                <input
-                  required
-                  placeholder="Contract title (e.g. Photography Agreement)"
-                  value={contractTitle}
-                  onChange={(e) => setContractTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-                <input
-                  required
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  onChange={(e) => setContractFile(e.target.files?.[0] ?? null)}
-                  className="w-full text-sm text-gray-600"
-                />
-              </>
-            )}
-
-            <div className="flex gap-3">
-              {projectContracts.length === 0 && (
-                <button
-                  type="submit"
-                  disabled={submitting || !contractFile}
-                  className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-                >
-                  {submitting ? 'Uploading...' : 'Upload PDF'}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setContractProjectId(null)
-                  setContractFile(null)
-                }}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
-              >
-                Done
-              </button>
-            </div>
-          </form>
-        )}
-
-        {inviteProjectId && (
-          <form onSubmit={handleInvite} className="bg-white rounded-lg shadow p-6 space-y-4">
-            <div>
-              <h3 className="font-medium text-gray-900">Invite client to portal</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Your client does not need an account yet. Enter their email, generate a link, and
-                send it to them. They will create their login when they open the link.
-              </p>
-            </div>
-            <input
-              type="email"
-              required
-              placeholder="Client email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-            {inviteLink && (
-              <div className="rounded-md bg-green-50 p-4 text-sm text-green-900 space-y-3">
-                <p className="font-medium">Invite ready — send this to your client</p>
-                <p className="text-green-800">
-                  They will open the link, set a password, and land in their portal. No separate
-                  sign-up page needed.
-                </p>
-                <code className="block break-all text-xs bg-white p-2 rounded border text-gray-800">
-                  {getInviteFullUrl(inviteLink.invitePath)}
-                </code>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={copyInviteLink}
-                    className="text-indigo-600 hover:text-indigo-500 font-medium"
-                  >
-                    Copy link
-                  </button>
-                  <button
-                    type="button"
-                    onClick={openInviteEmailDraft}
-                    className="text-indigo-600 hover:text-indigo-500 font-medium"
-                  >
-                    Open in email app
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-              >
-                {submitting ? 'Creating...' : 'Generate invite link'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setInviteProjectId(null)
-                  setInviteLink(null)
-                }}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
-              >
-                Done
-              </button>
-            </div>
-          </form>
-        )}
-
         <section className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="font-medium text-gray-900">Your projects</h3>
@@ -420,42 +183,27 @@ const VendorDashboard: React.FC = () => {
           ) : (
             <ul className="divide-y divide-gray-200">
               {projects.map((project) => (
-                <li key={project.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-gray-900">{project.title}</p>
-                    <p className="text-sm text-gray-500">
-                      {project.coupleDisplayName || 'No couple name yet'}
-                      {project.weddingDate ? ` · ${project.weddingDate}` : ''}
+                <li key={project.id}>
+                  <Link
+                    to={`/dashboard/projects/${project.id}`}
+                    className="block px-6 py-4 hover:bg-gray-50 transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-gray-900">{project.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {project.coupleDisplayName || 'No couple name yet'}
+                          {project.weddingDate ? ` · ${project.weddingDate}` : ''}
+                        </p>
+                      </div>
+                      <span className="text-xs capitalize text-indigo-600 font-medium self-start sm:self-center">
+                        View project →
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 capitalize mt-1">
+                      {project.status.replace('_', ' ')}
                     </p>
-                    <p className="text-xs text-gray-400 capitalize">{project.status.replace('_', ' ')}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-3 self-start sm:self-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setContractProjectId(project.id)
-                        setInviteProjectId(null)
-                        setInviteLink(null)
-                        setShowCreate(false)
-                      }}
-                      className="text-sm text-indigo-600 hover:text-indigo-500"
-                    >
-                      Upload contract
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInviteProjectId(project.id)
-                        setContractProjectId(null)
-                        setInviteLink(null)
-                        setInviteEmail(project.clientEmail || '')
-                        setShowCreate(false)
-                      }}
-                      className="text-sm text-indigo-600 hover:text-indigo-500"
-                    >
-                      Invite client
-                    </button>
-                  </div>
+                  </Link>
                 </li>
               ))}
             </ul>

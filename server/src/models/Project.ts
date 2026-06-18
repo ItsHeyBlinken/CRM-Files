@@ -1,4 +1,6 @@
 import { getPool } from '../config/database'
+import { Contract } from './Contract'
+import { Deliverable } from './Deliverable'
 
 export type ProjectStatus =
   | 'inquiry'
@@ -78,6 +80,8 @@ export interface IContractSummary {
 export interface IDeliverableSummary {
   id: number
   title: string
+  fileName: string
+  fileSizeBytes: number | null
   clientVisible: boolean
 }
 
@@ -91,6 +95,34 @@ export interface IClientPortalProject {
   contracts: IContractSummary[]
   deliverables: IDeliverableSummary[]
   pendingInvite: { token: string; email: string; expiresAt: Date } | null
+}
+
+export interface ILinkedClient {
+  email: string
+  coupleDisplayName: string | null
+  linkedAt: Date
+}
+
+export interface IVendorProjectDetail {
+  project: IProject
+  linkedClient: ILinkedClient | null
+  contracts: Array<{
+    id: number
+    title: string
+    fileName: string
+    acknowledgedAt: Date | null
+    createdAt: Date
+  }>
+  milestones: IMilestone[]
+  invoices: IInvoice[]
+  deliverables: Array<{
+    id: number
+    title: string
+    fileName: string
+    fileSizeBytes: number | null
+    clientVisible: boolean
+    createdAt: Date
+  }>
 }
 
 function mapProjectRow(row: any): IProject {
@@ -137,6 +169,88 @@ export class ProjectModel {
       [id, vendorId]
     )
     return result.rows.length > 0 ? mapProjectRow(result.rows[0]) : null
+  }
+
+  static async findDetailForVendor(
+    id: number,
+    vendorId: number
+  ): Promise<IVendorProjectDetail | null> {
+    const project = await this.findByIdForVendor(id, vendorId)
+    if (!project) {
+      return null
+    }
+
+    const pool = getPool()
+
+    const [linkedClientResult, milestonesResult, invoicesResult, contracts, deliverables] =
+      await Promise.all([
+      pool.query(
+        `
+        SELECT u.email, pc.couple_display_name, pc.linked_at
+        FROM project_clients pc
+        INNER JOIN users u ON u.id = pc.client_user_id
+        WHERE pc.project_id = $1
+        LIMIT 1
+        `,
+        [id]
+      ),
+      pool.query(
+        `
+        SELECT * FROM milestones
+        WHERE project_id = $1
+        ORDER BY sort_order ASC, id ASC
+        `,
+        [id]
+      ),
+      pool.query(
+        `
+        SELECT * FROM invoices
+        WHERE project_id = $1
+        ORDER BY due_date ASC NULLS LAST, id ASC
+        `,
+        [id]
+      ),
+      Contract.findByProjectForVendor(id, vendorId),
+      Deliverable.findByProjectForVendor(id, vendorId),
+    ])
+
+    const linkedRow = linkedClientResult.rows[0]
+    const linkedClient = linkedRow
+      ? {
+          email: linkedRow.email as string,
+          coupleDisplayName: (linkedRow.couple_display_name as string | null) ?? null,
+          linkedAt: linkedRow.linked_at as Date,
+        }
+      : null
+
+    return {
+      project,
+      linkedClient,
+      contracts,
+      milestones: milestonesResult.rows.map((m) => ({
+        id: m.id,
+        projectId: m.project_id,
+        title: m.title,
+        description: m.description,
+        dueDate: m.due_date ? String(m.due_date).slice(0, 10) : null,
+        status: m.status,
+        clientVisible: m.client_visible,
+        sortOrder: m.sort_order,
+        completedAt: m.completed_at,
+      })),
+      invoices: invoicesResult.rows.map((inv) => ({
+        id: inv.id,
+        projectId: inv.project_id,
+        invoiceNumber: inv.invoice_number,
+        title: inv.title,
+        description: inv.description,
+        amount: parseFloat(inv.amount),
+        currency: inv.currency,
+        dueDate: inv.due_date ? String(inv.due_date).slice(0, 10) : null,
+        status: inv.status,
+      })),
+      deliverables,
+    }
   }
 
   static async create(vendorId: number, data: IProjectCreate): Promise<IProject> {
@@ -268,9 +382,9 @@ export class ProjectModel {
       ),
       pool.query(
         `
-        SELECT id, title, client_visible FROM deliverables
+        SELECT id, title, file_name, file_size_bytes, client_visible FROM deliverables
         WHERE project_id = $1 AND client_visible = true
-        ORDER BY id ASC
+        ORDER BY id DESC
         `,
         [projectId]
       ),
@@ -311,6 +425,8 @@ export class ProjectModel {
       deliverables: deliverables.rows.map((d) => ({
         id: d.id,
         title: d.title,
+        fileName: d.file_name,
+        fileSizeBytes: d.file_size_bytes != null ? Number(d.file_size_bytes) : null,
         clientVisible: d.client_visible,
       })),
       pendingInvite: null,

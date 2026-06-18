@@ -16,6 +16,35 @@ export interface Project {
   status: ProjectStatus
   coupleDisplayName: string | null
   clientEmail: string | null
+  internalNotes?: string | null
+}
+
+export interface LinkedClient {
+  email: string
+  coupleDisplayName: string | null
+  linkedAt: string
+}
+
+export interface VendorProjectDetail {
+  project: Project
+  linkedClient: LinkedClient | null
+  contracts: Array<{
+    id: number
+    title: string
+    fileName: string
+    acknowledgedAt: string | null
+    createdAt: string
+  }>
+  milestones: Milestone[]
+  invoices: Invoice[]
+  deliverables: Array<{
+    id: number
+    title: string
+    fileName: string
+    fileSizeBytes: number | null
+    clientVisible: boolean
+    createdAt: string
+  }>
 }
 
 export interface Milestone {
@@ -24,6 +53,7 @@ export interface Milestone {
   description: string | null
   dueDate: string | null
   status: 'pending' | 'in_progress' | 'complete'
+  clientVisible?: boolean
 }
 
 export interface Invoice {
@@ -46,6 +76,8 @@ export interface ContractSummary {
 export interface DeliverableSummary {
   id: number
   title: string
+  fileName: string
+  fileSizeBytes: number | null
 }
 
 export interface ClientPortalData {

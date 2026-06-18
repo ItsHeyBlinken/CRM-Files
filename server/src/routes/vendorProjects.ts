@@ -1,9 +1,10 @@
 import { Router, Response, NextFunction } from 'express'
 import path from 'path'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
-import { contractPdfUpload } from '../middleware/projectUpload'
+import { contractPdfUpload, deliverableFileUpload } from '../middleware/projectUpload'
 import { Project, ProjectStatus } from '../models/Project'
 import { Contract } from '../models/Contract'
+import { Deliverable } from '../models/Deliverable'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -132,20 +133,90 @@ router.post(
   }
 )
 
+// GET /api/vendor/projects/:id/deliverables
+router.get('/:id/deliverables', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const deliverables = await Deliverable.findByProjectForVendor(
+      projectId,
+      Number(req.user.id)
+    )
+    res.json({ deliverables })
+  } catch (error) {
+    logger.error('List deliverables error:', error)
+    res.status(500).json({ error: 'Failed to load deliverables' })
+  }
+})
+
+// POST /api/vendor/projects/:id/deliverables
+router.post(
+  '/:id/deliverables',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    deliverableFileUpload.single('file')(req, res, (err: unknown) => {
+      if (err) {
+        const message = err instanceof Error ? err.message : 'File upload failed'
+        res.status(400).json({ error: message })
+        return
+      }
+      next()
+    })
+  },
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const projectId = Number(req.params['id'])
+      const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
+      const description =
+        typeof req.body.description === 'string' ? req.body.description.trim() : null
+
+      if (!title) {
+        res.status(400).json({ error: 'Deliverable title is required' })
+        return
+      }
+
+      if (!req.file) {
+        res.status(400).json({ error: 'File is required' })
+        return
+      }
+
+      const relativeFilePath = path
+        .join('deliverables', String(projectId), req.file.filename)
+        .replace(/\\/g, '/')
+
+      const deliverable = await Deliverable.create(projectId, Number(req.user.id), {
+        title,
+        description,
+        relativeFilePath,
+        fileName: req.file.originalname,
+        fileSizeBytes: req.file.size,
+        mimeType: req.file.mimetype || null,
+      })
+
+      res.status(201).json({ deliverable })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {
+        res.status(404).json({ error: 'Project not found' })
+        return
+      }
+      logger.error('Upload deliverable error:', error)
+      res.status(500).json({ error: 'Failed to upload deliverable' })
+    }
+  }
+)
+
 // GET /api/vendor/projects/:id
 router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const project = await Project.findByIdForVendor(
+    const detail = await Project.findDetailForVendor(
       Number(req.params['id']),
       Number(req.user.id)
     )
 
-    if (!project) {
+    if (!detail) {
       res.status(404).json({ error: 'Project not found' })
       return
     }
 
-    res.json({ project })
+    res.json({ detail })
   } catch (error) {
     logger.error('Get project error:', error)
     res.status(500).json({ error: 'Failed to load project' })
