@@ -1,6 +1,9 @@
-import { Router, Response } from 'express'
+import { Router, Response, NextFunction } from 'express'
+import path from 'path'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
+import { contractPdfUpload } from '../middleware/projectUpload'
 import { Project, ProjectStatus } from '../models/Project'
+import { Contract } from '../models/Contract'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -60,6 +63,74 @@ router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
     res.status(500).json({ error: 'Failed to create project' })
   }
 })
+
+// GET /api/vendor/projects/:id/contracts
+router.get('/:id/contracts', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const contracts = await Contract.findByProjectForVendor(projectId, Number(req.user.id))
+    res.json({ contracts })
+  } catch (error) {
+    logger.error('List contracts error:', error)
+    res.status(500).json({ error: 'Failed to load contracts' })
+  }
+})
+
+// POST /api/vendor/projects/:id/contracts
+router.post(
+  '/:id/contracts',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    contractPdfUpload.single('file')(req, res, (err: unknown) => {
+      if (err) {
+        const message = err instanceof Error ? err.message : 'File upload failed'
+        res.status(400).json({ error: message })
+        return
+      }
+      next()
+    })
+  },
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const projectId = Number(req.params['id'])
+      const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
+
+      if (!title) {
+        res.status(400).json({ error: 'Contract title is required' })
+        return
+      }
+
+      if (!req.file) {
+        res.status(400).json({ error: 'PDF file is required' })
+        return
+      }
+
+      const relativeFilePath = path.join('contracts', String(projectId), req.file.filename)
+
+      const contract = await Contract.create(projectId, Number(req.user.id), {
+        title,
+        relativeFilePath: relativeFilePath.replace(/\\/g, '/'),
+        fileName: req.file.originalname,
+        fileSizeBytes: req.file.size,
+        mimeType: req.file.mimetype,
+      })
+
+      res.status(201).json({ contract })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {
+        res.status(404).json({ error: 'Project not found' })
+        return
+      }
+      if (error instanceof Error && error.message === 'CONTRACT_ALREADY_EXISTS') {
+        res.status(409).json({
+          error: 'This project already has a contract. MVP supports one contract per project.',
+        })
+        return
+      }
+      logger.error('Upload contract error:', error)
+      res.status(500).json({ error: 'Failed to upload contract' })
+    }
+  }
+)
 
 // GET /api/vendor/projects/:id
 router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {

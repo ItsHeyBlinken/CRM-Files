@@ -1,12 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import {
+  fetchProjectContracts,
+  uploadProjectContract,
+  type VendorContract,
+} from '../services/contractService'
+import {
   createProject,
   createProjectInvite,
   fetchVendorProjects,
   type InviteResult,
 } from '../services/projectService'
 import type { Project } from '../types/portal'
+
+function getApiError(err: unknown, fallback: string): string {
+  const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+  return message || fallback
+}
 
 const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
@@ -15,6 +25,10 @@ const VendorDashboard: React.FC = () => {
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [inviteProjectId, setInviteProjectId] = useState<number | null>(null)
+  const [contractProjectId, setContractProjectId] = useState<number | null>(null)
+  const [projectContracts, setProjectContracts] = useState<VendorContract[]>([])
+  const [contractTitle, setContractTitle] = useState('Photography Agreement')
+  const [contractFile, setContractFile] = useState<File | null>(null)
   const [inviteLink, setInviteLink] = useState<InviteResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -43,6 +57,23 @@ const VendorDashboard: React.FC = () => {
   useEffect(() => {
     loadProjects()
   }, [loadProjects])
+
+  const loadProjectContracts = useCallback(async (projectId: number) => {
+    try {
+      const contracts = await fetchProjectContracts(projectId)
+      setProjectContracts(contracts)
+    } catch {
+      setProjectContracts([])
+    }
+  }, [])
+
+  useEffect(() => {
+    if (contractProjectId) {
+      loadProjectContracts(contractProjectId)
+    } else {
+      setProjectContracts([])
+    }
+  }, [contractProjectId, loadProjectContracts])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,7 +119,26 @@ const VendorDashboard: React.FC = () => {
       setInviteLink(invite)
       setInviteEmail('')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create invite')
+      setError(getApiError(err, 'Failed to create invite'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleContractUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contractProjectId || !contractTitle.trim() || !contractFile) return
+
+    setSubmitting(true)
+    setError('')
+
+    try {
+      await uploadProjectContract(contractProjectId, contractTitle.trim(), contractFile)
+      setContractFile(null)
+      setContractTitle('Photography Agreement')
+      await loadProjectContracts(contractProjectId)
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to upload contract'))
     } finally {
       setSubmitting(false)
     }
@@ -153,6 +203,7 @@ const VendorDashboard: React.FC = () => {
             onClick={() => {
               setShowCreate(true)
               setInviteProjectId(null)
+              setContractProjectId(null)
               setInviteLink(null)
             }}
             className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
@@ -216,6 +267,73 @@ const VendorDashboard: React.FC = () => {
                 className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
               >
                 Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {contractProjectId && (
+          <form onSubmit={handleContractUpload} className="bg-white rounded-lg shadow p-6 space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-900">Upload contract</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Upload a PDF for your client to review and acknowledge in their portal. One
+                contract per project for MVP.
+              </p>
+            </div>
+
+            {projectContracts.length > 0 ? (
+              <div className="rounded-md bg-gray-50 p-4 text-sm space-y-2">
+                {projectContracts.map((contract) => (
+                  <div key={contract.id}>
+                    <p className="font-medium text-gray-900">{contract.title}</p>
+                    <p className="text-gray-600">{contract.fileName}</p>
+                    <p className="text-xs text-gray-500">
+                      {contract.acknowledgedAt
+                        ? `Acknowledged ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
+                        : 'Waiting for client acknowledgement'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <input
+                  required
+                  placeholder="Contract title (e.g. Photography Agreement)"
+                  value={contractTitle}
+                  onChange={(e) => setContractTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+                <input
+                  required
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  onChange={(e) => setContractFile(e.target.files?.[0] ?? null)}
+                  className="w-full text-sm text-gray-600"
+                />
+              </>
+            )}
+
+            <div className="flex gap-3">
+              {projectContracts.length === 0 && (
+                <button
+                  type="submit"
+                  disabled={submitting || !contractFile}
+                  className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                >
+                  {submitting ? 'Uploading...' : 'Upload PDF'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setContractProjectId(null)
+                  setContractFile(null)
+                }}
+                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
+              >
+                Done
               </button>
             </div>
           </form>
@@ -311,18 +429,33 @@ const VendorDashboard: React.FC = () => {
                     </p>
                     <p className="text-xs text-gray-400 capitalize">{project.status.replace('_', ' ')}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInviteProjectId(project.id)
-                      setInviteLink(null)
-                      setInviteEmail(project.clientEmail || '')
-                      setShowCreate(false)
-                    }}
-                    className="text-sm text-indigo-600 hover:text-indigo-500 self-start sm:self-center"
-                  >
-                    Invite client
-                  </button>
+                  <div className="flex flex-wrap gap-3 self-start sm:self-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setContractProjectId(project.id)
+                        setInviteProjectId(null)
+                        setInviteLink(null)
+                        setShowCreate(false)
+                      }}
+                      className="text-sm text-indigo-600 hover:text-indigo-500"
+                    >
+                      Upload contract
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInviteProjectId(project.id)
+                        setContractProjectId(null)
+                        setInviteLink(null)
+                        setInviteEmail(project.clientEmail || '')
+                        setShowCreate(false)
+                      }}
+                      className="text-sm text-indigo-600 hover:text-indigo-500"
+                    >
+                      Invite client
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

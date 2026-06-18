@@ -9,7 +9,7 @@
 ## Next Steps (Priority Order)
 1. ~~**Vendor dashboard**~~ — project list/create, client invite ✅
 2. ~~**Client portal data**~~ — milestones, invoices, next-action UX ✅
-3. **Contracts** — PDF upload (vendor) + client acknowledgement
+3. ~~**Contracts**~~ — PDF upload (vendor) + client acknowledgement ✅
 4. **Deliverables** — upload + client download
 5. **Remove/archive** legacy CRM pages and unused models
 

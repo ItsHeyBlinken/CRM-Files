@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import {
+  acknowledgeContract,
+  fetchContractPdfBlob,
+} from '../services/contractService'
 import { fetchClientPortal } from '../services/projectService'
 import type { ClientPortalData, PortalTab } from '../types/portal'
 import {
@@ -17,6 +21,10 @@ const ClientPortal: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<PortalTab>('home')
+  const [ackChecked, setAckChecked] = useState(false)
+  const [ackSubmitting, setAckSubmitting] = useState(false)
+  const [docError, setDocError] = useState('')
+  const [viewingContractId, setViewingContractId] = useState<number | null>(null)
 
   const loadPortal = useCallback(async () => {
     try {
@@ -36,6 +44,44 @@ const ClientPortal: React.FC = () => {
   useEffect(() => {
     loadPortal()
   }, [loadPortal])
+
+  const handleViewContract = async (contractId: number) => {
+    setDocError('')
+    setViewingContractId(contractId)
+    try {
+      const blob = await fetchContractPdfBlob(contractId)
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        'Could not open contract'
+      setDocError(message)
+    } finally {
+      setViewingContractId(null)
+    }
+  }
+
+  const handleAcknowledge = async (contractId: number) => {
+    if (!ackChecked) return
+
+    setAckSubmitting(true)
+    setDocError('')
+
+    try {
+      await acknowledgeContract(contractId)
+      setAckChecked(false)
+      await loadPortal()
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        'Could not acknowledge contract'
+      setDocError(message)
+    } finally {
+      setAckSubmitting(false)
+    }
+  }
 
   const accent = data?.primaryColor || '#2563eb'
   const nextAction = data ? getNextAction(data) : null
@@ -123,19 +169,54 @@ const ClientPortal: React.FC = () => {
 
     return (
       <ul className="space-y-3">
+        {docError && (
+          <li className="list-none">
+            <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{docError}</div>
+          </li>
+        )}
         {data.contracts.map((contract) => (
-          <li key={contract.id} className="rounded-2xl bg-white p-5 shadow-sm">
-            <p className="font-medium text-gray-900">{contract.title}</p>
-            <p className="mt-1 text-sm text-gray-600">
-              {contract.acknowledgedAt
-                ? 'Acknowledged — thank you!'
-                : 'Waiting for your review'}
-            </p>
-            {!contract.acknowledgedAt && (
-              <p className="mt-3 text-sm" style={{ color: accent }}>
-                Contract review coming soon
+          <li key={contract.id}>
+            <div className="rounded-2xl bg-white p-5 shadow-sm">
+              <p className="font-medium text-gray-900">{contract.title}</p>
+              <p className="mt-1 text-sm text-gray-600">
+                {contract.acknowledgedAt
+                  ? 'Acknowledged — thank you!'
+                  : 'Please review and acknowledge this contract'}
               </p>
-            )}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleViewContract(contract.id)}
+                  disabled={viewingContractId === contract.id}
+                  className="text-sm font-medium disabled:opacity-50"
+                  style={{ color: accent }}
+                >
+                  {viewingContractId === contract.id ? 'Opening...' : 'View PDF'}
+                </button>
+              </div>
+              {!contract.acknowledgedAt && (
+                <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
+                  <label className="flex items-start gap-3 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={ackChecked}
+                      onChange={(e) => setAckChecked(e.target.checked)}
+                      className="mt-0.5 rounded border-gray-300"
+                    />
+                    <span>I have read this contract and agree to its terms.</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleAcknowledge(contract.id)}
+                    disabled={!ackChecked || ackSubmitting}
+                    className="w-full rounded-xl py-3 text-sm font-medium text-white disabled:opacity-50"
+                    style={{ backgroundColor: accent }}
+                  >
+                    {ackSubmitting ? 'Saving...' : 'Acknowledge contract'}
+                  </button>
+                </div>
+              )}
+            </div>
           </li>
         ))}
       </ul>
