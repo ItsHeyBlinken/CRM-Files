@@ -123,6 +123,11 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 # Client (when configured)
 VITE_APP_NAME=PortalHub
+
+# Stripe — client invoice payments (optional for dev; P2P works without)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+FRONTEND_URL=http://localhost:5173
 ```
 
 ### Installation Commands
@@ -207,7 +212,7 @@ npm run start        # Start production server
 # Optional dev seed: database/seed_portalhub_dev.sql
 ```
 
-**Current tables:** `users`, `vendor_profiles`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`
+**Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `quotes`, `quote_line_items`
 
 Legacy `client_event_access` removed — not used by PortalHub.
 

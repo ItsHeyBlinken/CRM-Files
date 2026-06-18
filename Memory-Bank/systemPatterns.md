@@ -85,11 +85,12 @@
 |--------|---------|
 | **User** | Auth; role VENDOR or CLIENT |
 | **VendorProfile** | Business name, logo, brand colors |
+| **VendorPaymentSettings** | Stripe Connect account, P2P handles (venmo, zelle, cashapp, paypal) |
 | **Project** | Wedding/booking; status, date, location |
 | **ProjectClient** | Links client user to project |
 | **Milestone** | Timeline step; `client_visible` flag |
 | **Contract** | PDF file + acknowledgement fields |
-| **Invoice** | Amount, due date, status (display MVP) |
+| **Invoice** | Amount, due date, status; payment_method, paid_at, Stripe session IDs, client claim fields |
 | **Deliverable** | File metadata + download path |
 | **Quote** *(planned)* | Pre-project proposal; line items; accept → convert to Project |
 
@@ -109,10 +110,19 @@
 - `GET/POST /projects/:id/deliverables` — multi-file upload
 - `GET/PUT /profile` (vendor branding) — *not yet built*
 
+- `GET/POST /projects/:id/invoices` — create, send, mark paid, delete
+- `GET/PUT /api/vendor/payment-settings` — P2P handles + Stripe Connect status
+- `POST /api/vendor/payment-settings/stripe/connect` — onboarding link
+
 ### Client Routes (prefix `/api/portal/`)
-- `GET /project` — aggregated portal payload
+- `GET /project` — aggregated portal payload (includes `paymentOptions`)
 - `GET /contracts/:id/file`, `POST /contracts/:id/acknowledge`
 - `GET /deliverables/:id/file` — authenticated download
+- `POST /invoices/:id/checkout` — Stripe Checkout URL
+- `POST /invoices/:id/claim-sent` — client P2P payment reported
+
+### Webhooks
+- `POST /api/webhooks/stripe` — `checkout.session.completed` marks invoice paid
 
 ### Quote Routes *(planned — Phase 2)*
 - `GET/POST /api/vendor/quotes`

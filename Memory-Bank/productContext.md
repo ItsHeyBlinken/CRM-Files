@@ -40,9 +40,13 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 ### Vendor User Flows
 
-**Onboarding**
-- Register as vendor
-- Set business name and basic portal branding
+**Onboarding** *(current vs planned)*
+- **Today:** Register as vendor (name, email, password, optional business name) → `/dashboard`
+- **Payment setup:** Separate page `/dashboard/payments` — not part of signup yet
+- **Planned (next session):** Signup/onboarding includes **how the vendor gets paid**
+  - P2P handles (Venmo, Zelle, Cash App, PayPal) — minimum viable path
+  - Optional **Stripe Connect** in same flow for card payments in client portal
+  - Vendor is the main customer; clients must never see setup complexity — only pay buttons and clear status
 
 **Project management**
 - Create project (title, wedding date, location, notes)
@@ -59,8 +63,14 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 - Client views and acknowledges; timestamp stored
 
 **Invoices**
-- Create invoice (amount, description, due date, status)
-- Client views in portal (no online payment in MVP)
+- Create invoice on project detail (title, amount, due date, optional # and description)
+- Send draft to client → appears on Payments tab
+- Client pays via **card (Stripe Checkout)** or **P2P** (clickable Venmo/Cash App/PayPal; Zelle copy)
+- Vendor marks P2P payments paid after confirmation
+
+**Payment settings**
+- `/dashboard/payments` — P2P handles + Stripe Connect Express onboarding
+- Moving into **vendor signup onboarding** (planned)
 
 **Deliverables**
 - Upload files; client downloads from portal
@@ -74,8 +84,8 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 **Portal experience**
 - See project overview: wedding date, current status, milestone timeline
-- View and acknowledge contract PDF
-- View invoices and payment status (display only)
+- View and sign contract (e-sign with audit trail)
+- **Pay invoices** — full-width Pay with card + P2P options; redirect to Home after pay/report
 - Download deliverables
 - Portal styled with vendor branding (logo, colors, business name)
 
@@ -112,7 +122,7 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle P
 | Client portal buried / confusing | One project, one hub — status + next action always visible |
 | Can't find info in 30 seconds | 3-second test on Home; max 4 client tabs |
 | Too many tabs and menus | Home, Documents, Payments, Files — nothing else |
-| Payment takes too many clicks | Payments tab designed for 2-click Stripe pay (post-MVP) |
+| Payment takes too many clicks | Payments tab: prominent card + P2P buttons; Home redirect on complete |
 | Clients fall back to email/text | Portal must be faster than inbox for contract, invoice, files |
 | Clunky mobile / app required | Mobile-first **web** — no download |
 | Dubsado-style setup hell | Opinionated defaults; project + invite in minutes |

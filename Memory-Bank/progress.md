@@ -295,5 +295,19 @@
 - [x] **3b** — `/dashboard/payments` — Stripe Connect onboarding + P2P handle settings
 - [x] **3c** — Client Payments tab: Stripe Checkout, P2P display, "I've sent payment", success banner on Home
 - [x] Webhook route `/api/webhooks/stripe` for checkout.session.completed
-- [ ] User runs `schema_payments_addition.sql` in pgAdmin
+- [x] User applied `schema_payments_addition.sql` in pgAdmin
 - [ ] Stripe test keys + webhook configured for end-to-end card pay test
+
+### Session: Payments UX polish (June 2026 — same day)
+- [x] Invoice form labels on vendor project detail (Title, Amount, Due date, etc.)
+- [x] P2P clickable links — `p2pPaymentLinks.ts` (Venmo, Cash App, PayPal); Zelle copy-only
+- [x] Client Payments — full-width Pay with card / Open Venmo / I've sent payment buttons
+- [x] Client redirect to **Home** after payment reported or vendor marks paid (8s poll on Payments tab)
+- [x] Prominent green paid card + Home success banners (mirror contract post-sign UX)
+- [x] Product decision: vendor payment setup should move into **signup onboarding** (P2P + optional Stripe)
+
+### Next up: Vendor onboarding + payment at signup
+- [ ] Post-register or multi-step signup: business name + P2P handles + optional Stripe Connect
+- [ ] Dashboard checklist / guard when sending invoice without payment methods
+- [ ] Keep client portal dead simple while vendor setup gets richer
+- [ ] Phase 3e: PortalHub vendor subscription (Stripe Billing) — separate from client→vendor pay
