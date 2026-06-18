@@ -66,6 +66,19 @@ export interface Invoice {
   currency: string
   dueDate: string | null
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  paidAt?: string | null
+  paymentMethod?: string | null
+  clientPaymentClaimedAt?: string | null
+  clientPaymentNote?: string | null
+}
+
+export interface ClientPaymentOptions {
+  stripeEnabled: boolean
+  venmoHandle: string | null
+  zelleHandle: string | null
+  cashappHandle: string | null
+  paypalHandle: string | null
+  paymentInstructions: string | null
 }
 
 export interface ContractSummary {
@@ -87,6 +100,7 @@ export interface ClientPortalData {
   vendorBusinessName: string
   vendorLogoUrl: string | null
   primaryColor: string
+  paymentOptions: ClientPaymentOptions
   milestones: Milestone[]
   invoices: Invoice[]
   contracts: ContractSummary[]

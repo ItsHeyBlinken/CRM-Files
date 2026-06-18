@@ -5,6 +5,7 @@ import { contractPdfUpload, deliverableFileUpload } from '../middleware/projectU
 import { Project, ProjectStatus } from '../models/Project'
 import { Contract } from '../models/Contract'
 import { Deliverable } from '../models/Deliverable'
+import { Invoice } from '../models/Invoice'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -199,6 +200,171 @@ router.post(
       }
       logger.error('Upload deliverable error:', error)
       res.status(500).json({ error: 'Failed to upload deliverable' })
+    }
+  }
+)
+
+// GET /api/vendor/projects/:id/invoices
+router.get('/:id/invoices', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const invoices = await Invoice.findByProjectForVendor(projectId, Number(req.user.id))
+    res.json({ invoices })
+  } catch (error) {
+    logger.error('List invoices error:', error)
+    res.status(500).json({ error: 'Failed to load invoices' })
+  }
+})
+
+// POST /api/vendor/projects/:id/invoices
+router.post('/:id/invoices', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const { title, invoiceNumber, description, amount, currency, dueDate, notes, status } =
+      req.body
+
+    const invoice = await Invoice.create(projectId, Number(req.user.id), {
+      title,
+      invoiceNumber,
+      description,
+      amount: Number(amount),
+      currency,
+      dueDate,
+      notes,
+      status,
+    })
+
+    res.status(201).json({ invoice })
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+    if (error instanceof Error && error.message === 'TITLE_REQUIRED') {
+      res.status(400).json({ error: 'Invoice title is required' })
+      return
+    }
+    if (error instanceof Error && error.message === 'INVALID_AMOUNT') {
+      res.status(400).json({ error: 'Amount must be zero or greater' })
+      return
+    }
+    logger.error('Create invoice error:', error)
+    res.status(500).json({ error: 'Failed to create invoice' })
+  }
+})
+
+// PUT /api/vendor/projects/:id/invoices/:invoiceId
+router.put('/:id/invoices/:invoiceId', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const invoiceId = Number(req.params['invoiceId'])
+
+    const invoice = await Invoice.update(invoiceId, projectId, Number(req.user.id), req.body)
+
+    if (!invoice) {
+      res.status(404).json({ error: 'Invoice not found' })
+      return
+    }
+
+    res.json({ invoice })
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'INVOICE_ALREADY_PAID') {
+      res.status(409).json({ error: 'Paid invoices cannot be edited' })
+      return
+    }
+    if (error instanceof Error && error.message === 'INVALID_AMOUNT') {
+      res.status(400).json({ error: 'Amount must be zero or greater' })
+      return
+    }
+    logger.error('Update invoice error:', error)
+    res.status(500).json({ error: 'Failed to update invoice' })
+  }
+})
+
+// DELETE /api/vendor/projects/:id/invoices/:invoiceId
+router.delete(
+  '/:id/invoices/:invoiceId',
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const projectId = Number(req.params['id'])
+      const invoiceId = Number(req.params['invoiceId'])
+
+      const deleted = await Invoice.delete(invoiceId, projectId, Number(req.user.id))
+
+      if (!deleted) {
+        res.status(404).json({ error: 'Invoice not found' })
+        return
+      }
+
+      res.json({ message: 'Invoice deleted' })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'INVOICE_ALREADY_PAID') {
+        res.status(409).json({ error: 'Paid invoices cannot be deleted' })
+        return
+      }
+      logger.error('Delete invoice error:', error)
+      res.status(500).json({ error: 'Failed to delete invoice' })
+    }
+  }
+)
+
+// POST /api/vendor/projects/:id/invoices/:invoiceId/send
+router.post(
+  '/:id/invoices/:invoiceId/send',
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const projectId = Number(req.params['id'])
+      const invoiceId = Number(req.params['invoiceId'])
+
+      const invoice = await Invoice.sendToClient(invoiceId, projectId, Number(req.user.id))
+
+      if (!invoice) {
+        res.status(404).json({ error: 'Invoice not found' })
+        return
+      }
+
+      res.json({ invoice })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'INVALID_STATUS_TRANSITION') {
+        res.status(409).json({ error: 'This invoice cannot be sent to the client' })
+        return
+      }
+      logger.error('Send invoice error:', error)
+      res.status(500).json({ error: 'Failed to send invoice' })
+    }
+  }
+)
+
+// POST /api/vendor/projects/:id/invoices/:invoiceId/mark-paid
+router.post(
+  '/:id/invoices/:invoiceId/mark-paid',
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const projectId = Number(req.params['id'])
+      const invoiceId = Number(req.params['invoiceId'])
+      const paymentMethod =
+        typeof req.body.paymentMethod === 'string' ? req.body.paymentMethod : 'manual'
+
+      const invoice = await Invoice.markPaid(
+        invoiceId,
+        projectId,
+        Number(req.user.id),
+        paymentMethod as 'manual' | 'venmo' | 'zelle' | 'cashapp' | 'paypal'
+      )
+
+      if (!invoice) {
+        res.status(404).json({ error: 'Invoice not found' })
+        return
+      }
+
+      res.json({ invoice })
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'INVALID_STATUS_TRANSITION') {
+        res.status(409).json({ error: 'This invoice cannot be marked as paid' })
+        return
+      }
+      logger.error('Mark invoice paid error:', error)
+      res.status(500).json({ error: 'Failed to mark invoice as paid' })
     }
   }
 )

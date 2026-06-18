@@ -46,8 +46,10 @@ import { socketHandler } from './services/socketService'
 import authRoutes from './routes/auth'
 import vendorProjectRoutes from './routes/vendorProjects'
 import vendorQuoteRoutes from './routes/vendorQuotes'
+import vendorPaymentSettingsRoutes from './routes/vendorPaymentSettings'
 import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
+import stripeWebhookRoutes from './routes/stripeWebhook'
 
 // Models are now using PostgreSQL - no imports needed for basic functionality
 
@@ -187,6 +189,9 @@ function setupMiddleware() {
 
   app.use('/api/', limiter)
 
+  // Stripe webhook needs raw body — register before JSON parser
+  app.use('/api/webhooks', express.raw({ type: 'application/json' }), stripeWebhookRoutes)
+
   // Body parsing middleware
   app.use(express.json({ limit: '10mb' }))
   app.use(express.urlencoded({ extended: true, limit: '10mb' }))
@@ -239,6 +244,7 @@ function setupMiddleware() {
   app.use('/api/auth', authRoutes)
   app.use('/api/vendor/projects', vendorProjectRoutes)
   app.use('/api/vendor/quotes', vendorQuoteRoutes)
+  app.use('/api/vendor/payment-settings', vendorPaymentSettingsRoutes)
   app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 

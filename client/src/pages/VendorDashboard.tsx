@@ -80,6 +80,9 @@ const VendorDashboard: React.FC = () => {
               <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
                 Quotes
               </Link>
+              <Link to="/dashboard/payments" className="text-gray-500 hover:text-indigo-600">
+                Payments
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

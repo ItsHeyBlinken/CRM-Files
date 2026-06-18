@@ -1,6 +1,7 @@
 import { getPool } from '../config/database'
 import { Contract } from './Contract'
 import { Deliverable } from './Deliverable'
+import { VendorPaymentSettings } from './VendorPaymentSettings'
 import { formatDateOnly } from '../utils/dateOnly'
 
 export type ProjectStatus =
@@ -70,6 +71,19 @@ export interface IInvoice {
   currency: string
   dueDate: string | null
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  paidAt?: Date | null
+  paymentMethod?: string | null
+  clientPaymentClaimedAt?: Date | null
+  clientPaymentNote?: string | null
+}
+
+export interface IClientPaymentOptions {
+  stripeEnabled: boolean
+  venmoHandle: string | null
+  zelleHandle: string | null
+  cashappHandle: string | null
+  paypalHandle: string | null
+  paymentInstructions: string | null
 }
 
 export interface IContractSummary {
@@ -92,6 +106,7 @@ export interface IClientPortalProject {
   vendorBusinessName: string
   vendorLogoUrl: string | null
   primaryColor: string
+  paymentOptions: IClientPaymentOptions
   milestones: IMilestone[]
   invoices: IInvoice[]
   contracts: IContractSummary[]
@@ -141,6 +156,38 @@ function mapProjectRow(row: any): IProject {
     internalNotes: row.internal_notes ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  }
+}
+
+function mapInvoiceSummary(inv: {
+  id: number
+  project_id: number
+  invoice_number: string | null
+  title: string
+  description: string | null
+  amount: string | number
+  currency: string
+  due_date: Date | string | null
+  status: IInvoice['status']
+  paid_at?: Date | null
+  payment_method?: string | null
+  client_payment_claimed_at?: Date | null
+  client_payment_note?: string | null
+}): IInvoice {
+  return {
+    id: inv.id,
+    projectId: inv.project_id,
+    invoiceNumber: inv.invoice_number,
+    title: inv.title,
+    description: inv.description,
+    amount: parseFloat(String(inv.amount)),
+    currency: inv.currency,
+    dueDate: formatDateOnly(inv.due_date),
+    status: inv.status,
+    paidAt: inv.paid_at ?? null,
+    paymentMethod: inv.payment_method ?? null,
+    clientPaymentClaimedAt: inv.client_payment_claimed_at ?? null,
+    clientPaymentNote: inv.client_payment_note ?? null,
   }
 }
 
@@ -240,17 +287,7 @@ export class ProjectModel {
         sortOrder: m.sort_order,
         completedAt: m.completed_at,
       })),
-      invoices: invoicesResult.rows.map((inv) => ({
-        id: inv.id,
-        projectId: inv.project_id,
-        invoiceNumber: inv.invoice_number,
-        title: inv.title,
-        description: inv.description,
-        amount: parseFloat(inv.amount),
-        currency: inv.currency,
-        dueDate: inv.due_date ? String(inv.due_date).slice(0, 10) : null,
-        status: inv.status,
-      })),
+      invoices: invoicesResult.rows.map(mapInvoiceSummary),
       deliverables,
     }
   }
@@ -361,7 +398,7 @@ export class ProjectModel {
     const project = mapProjectRow(row)
     const projectId = project.id
 
-    const [milestones, invoices, contracts, deliverables] = await Promise.all([
+    const [milestones, invoices, contracts, deliverables, paymentOptions] = await Promise.all([
       pool.query(
         `
         SELECT * FROM milestones
@@ -390,6 +427,7 @@ export class ProjectModel {
         `,
         [projectId]
       ),
+      VendorPaymentSettings.findByProjectForClient(projectId),
     ])
 
     return {
@@ -397,6 +435,7 @@ export class ProjectModel {
       vendorBusinessName: row.vendor_business_name,
       vendorLogoUrl: row.logo_url ?? null,
       primaryColor: row.primary_color,
+      paymentOptions,
       milestones: milestones.rows.map((m) => ({
         id: m.id,
         projectId: m.project_id,
@@ -408,17 +447,7 @@ export class ProjectModel {
         sortOrder: m.sort_order,
         completedAt: m.completed_at,
       })),
-      invoices: invoices.rows.map((inv) => ({
-        id: inv.id,
-        projectId: inv.project_id,
-        invoiceNumber: inv.invoice_number,
-        title: inv.title,
-        description: inv.description,
-        amount: parseFloat(inv.amount),
-        currency: inv.currency,
-        dueDate: inv.due_date ? String(inv.due_date).slice(0, 10) : null,
-        status: inv.status,
-      })),
+      invoices: invoices.rows.map(mapInvoiceSummary),
       contracts: contracts.rows.map((c) => ({
         id: c.id,
         title: c.title,

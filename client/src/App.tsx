@@ -10,6 +10,7 @@ import VendorDashboard from './pages/VendorDashboard'
 import VendorProjectDetail from './pages/VendorProjectDetail'
 import VendorQuotes from './pages/VendorQuotes'
 import VendorQuoteDetail from './pages/VendorQuoteDetail'
+import VendorPaymentSettings from './pages/VendorPaymentSettings'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -61,6 +62,15 @@ function App() {
             element={
               <ProtectedRoute requiredRole="VENDOR">
                 <VendorQuoteDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/payments"
+            element={
+              <ProtectedRoute requiredRole="VENDOR">
+                <VendorPaymentSettings />
               </ProtectedRoute>
             }
           />

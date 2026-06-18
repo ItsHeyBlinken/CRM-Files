@@ -19,7 +19,7 @@ This is the guiding principle for all future work — not feature parity between
 **Implication for roadmap:** New features (e.g. quoting) are designed **vendor-first**; the client only sees what they need to act on (accept quote, sign contract, pay/view invoice, download files) — never vendor admin complexity.
 
 ## Current Work Focus
-**Quoting workflow implemented (code complete).** User must run `schema_quotes_addition.sql` in pgAdmin before testing. Next: vendor polish (invoices/milestones on project detail), then monetization session.
+**Payments Phase 3a–3c implemented (code complete).** User must run `schema_payments_addition.sql` in pgAdmin. Stripe card pay requires server env vars (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`). P2P handles work without Stripe.
 
 ## MVP Status
 
@@ -34,14 +34,17 @@ This is the guiding principle for all future work — not feature parity between
 | Deliverable upload + client download | ✅ Done |
 | Legacy CRM cleanup | ✅ Done (June 2026) |
 | Quoting / proposals | ✅ Built — run SQL migration, then test |
+| Vendor invoice CRUD (3a) | ✅ Built — project detail |
+| Vendor payment settings (3b) | ✅ Built — `/dashboard/payments` |
+| Client card pay + P2P (3c) | ✅ Built — Stripe Checkout + manual handles |
 | Monetization plan | 📋 Document started — decisions in `monetization.md` |
 
 ## Next Session — Priority Order
 
-1. **Run quoting SQL** — `database/schema_quotes_addition.sql` in pgAdmin, then test full flow
-2. **Vendor polish (optional)** — create/edit invoices and milestones from project detail
-3. **Monetization plan** — dedicated session to fill decisions in `monetization.md` (before launch / before Stripe)
-4. **Automatic invite/quote emails** — post-MVP unless needed for quoting MVP
+1. **Run payments SQL** — `database/schema_payments_addition.sql` in pgAdmin
+2. **Configure Stripe (optional for dev)** — Connect Express + webhook endpoint `/api/webhooks/stripe`
+3. **Test flows** — vendor creates/sends invoice → client pays (card or P2P claim) → vendor marks paid
+4. **Monetization plan** — Phase 3e vendor subscription billing before launch
 
 ## Quoting Workflow (Shipped — June 2026)
 
@@ -60,6 +63,7 @@ Vendor creates quote → mailto / copy link → Client opens /quote/:token (no l
 - [x] Legacy `client_event_access` dropped
 - [x] Dev seed applied (test logins in `techContext.md`)
 - [ ] **`schema_quotes_addition.sql`** — user must run in pgAdmin
+- [ ] **`schema_payments_addition.sql`** — user must run in pgAdmin
 
 ## Key Routes (current)
 
@@ -69,6 +73,7 @@ Vendor creates quote → mailto / copy link → Client opens /quote/:token (no l
 | `/dashboard/projects/:id` | VENDOR | Project detail (overview, invite, contract, deliverables, timeline, invoices) |
 | `/dashboard/quotes` | VENDOR | Quote list + create |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, client link, convert to project |
+| `/dashboard/payments` | VENDOR | Stripe Connect + Venmo/Zelle/Cash App handles |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
 | `/quote/:token` | Public | Client quote review + accept/decline |
@@ -79,7 +84,7 @@ Vendor creates quote → mailto / copy link → Client opens /quote/:token (no l
 | Client accounts | One login per couple |
 | Login UX | Single login page with role-based redirect |
 | Login timing | At **invite acceptance**, not at contract acknowledgement |
-| Payments (MVP) | Invoice display only |
+| Payments (MVP) | Stripe Connect card pay in portal + P2P handles (Venmo/Zelle/Cash App); vendor marks P2P paid |
 | Contracts (MVP) | PDF upload + electronic signature (typed name, consent, review gate, audit trail) |
 | One client per project (MVP) | Enforced in API + UI |
 | One contract per project (MVP) | Enforced on upload |

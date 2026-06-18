@@ -4,6 +4,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { uploadProjectContract } from '../services/contractService'
 import { uploadProjectDeliverable } from '../services/deliverableService'
 import {
+  createProjectInvoice,
+  deleteProjectInvoice,
+  markProjectInvoicePaid,
+  sendProjectInvoice,
+} from '../services/invoiceService'
+import {
   createProjectInvite,
   fetchVendorProject,
   updateVendorProject,
@@ -46,6 +52,12 @@ const VendorProjectDetail: React.FC = () => {
   const [deliverableTitle, setDeliverableTitle] = useState('')
   const [deliverableDescription, setDeliverableDescription] = useState('')
   const [deliverableFile, setDeliverableFile] = useState<File | null>(null)
+
+  const [invoiceTitle, setInvoiceTitle] = useState('')
+  const [invoiceNumber, setInvoiceNumber] = useState('')
+  const [invoiceAmount, setInvoiceAmount] = useState('')
+  const [invoiceDueDate, setInvoiceDueDate] = useState('')
+  const [invoiceDescription, setInvoiceDescription] = useState('')
 
   const loadDetail = useCallback(async () => {
     if (!projectId || Number.isNaN(projectId)) {
@@ -148,6 +160,81 @@ const VendorProjectDetail: React.FC = () => {
     }
   }
 
+  const handleCreateInvoice = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!invoiceTitle.trim() || !invoiceAmount.trim()) return
+
+    const amount = Number(invoiceAmount)
+    if (Number.isNaN(amount) || amount < 0) {
+      setError('Enter a valid amount')
+      return
+    }
+
+    setSubmitting(true)
+    setError('')
+
+    try {
+      await createProjectInvoice(projectId, {
+        title: invoiceTitle.trim(),
+        invoiceNumber: invoiceNumber.trim() || undefined,
+        description: invoiceDescription.trim() || undefined,
+        amount,
+        dueDate: invoiceDueDate || undefined,
+      })
+      setInvoiceTitle('')
+      setInvoiceNumber('')
+      setInvoiceAmount('')
+      setInvoiceDueDate('')
+      setInvoiceDescription('')
+      await loadDetail()
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to create invoice'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleSendInvoice = async (invoiceId: number) => {
+    setSubmitting(true)
+    setError('')
+    try {
+      await sendProjectInvoice(projectId, invoiceId)
+      await loadDetail()
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to send invoice'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleMarkInvoicePaid = async (invoiceId: number) => {
+    setSubmitting(true)
+    setError('')
+    try {
+      await markProjectInvoicePaid(projectId, invoiceId)
+      await loadDetail()
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to mark invoice paid'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteInvoice = async (invoiceId: number) => {
+    if (!window.confirm('Delete this invoice?')) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await deleteProjectInvoice(projectId, invoiceId)
+      await loadDetail()
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to delete invoice'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const getInviteFullUrl = (path: string) => `${window.location.origin}${path}`
 
   const copyInviteLink = () => {
@@ -204,6 +291,9 @@ const VendorProjectDetail: React.FC = () => {
               </Link>
               <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
                 Quotes
+              </Link>
+              <Link to="/dashboard/payments" className="text-gray-500 hover:text-indigo-600">
+                Payments
               </Link>
             </div>
             <h1 className="text-xl font-semibold text-gray-900 mt-1">{project.title}</h1>
@@ -456,14 +546,22 @@ const VendorProjectDetail: React.FC = () => {
           </section>
         )}
 
-        {invoices.length > 0 && (
-          <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="font-medium text-gray-900 mb-4">Invoices</h2>
-            <ul className="space-y-3">
+        <section className="bg-white rounded-lg shadow p-6">
+          <h2 className="font-medium text-gray-900 mb-4">Invoices</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Create invoices for this project. Send them to your client when ready — they appear on
+            the Payments tab in the client portal.{' '}
+            <Link to="/dashboard/payments" className="text-indigo-600 hover:text-indigo-500">
+              Set up payment methods
+            </Link>
+          </p>
+
+          {invoices.length > 0 && (
+            <ul className="space-y-3 mb-6">
               {invoices.map((invoice) => (
                 <li
                   key={invoice.id}
-                  className="flex items-start justify-between gap-3 text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0"
+                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 text-sm border border-gray-100 rounded-md p-4"
                 >
                   <div>
                     <p className="font-medium text-gray-900">{invoice.title}</p>
@@ -473,15 +571,127 @@ const VendorProjectDetail: React.FC = () => {
                     <p className="text-gray-600 mt-1">
                       {formatCurrency(invoice.amount, invoice.currency)}
                     </p>
+                    {invoice.dueDate && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Due {new Date(`${invoice.dueDate}T12:00:00`).toLocaleDateString()}
+                      </p>
+                    )}
+                    {invoice.clientPaymentClaimedAt && invoice.status !== 'paid' && (
+                      <p className="text-xs text-amber-700 mt-1">
+                        Client reported payment sent — confirm and mark paid
+                      </p>
+                    )}
+                    {invoice.status === 'paid' && invoice.paidAt && (
+                      <p className="text-xs text-green-700 mt-1">
+                        Paid {new Date(invoice.paidAt).toLocaleDateString()}
+                        {invoice.paymentMethod ? ` via ${invoice.paymentMethod}` : ''}
+                      </p>
+                    )}
                   </div>
-                  <span className="text-xs font-medium text-gray-500 shrink-0">
-                    {getInvoiceStatusLabel(invoice.status)}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <span className="text-xs font-medium text-gray-500">
+                      {getInvoiceStatusLabel(invoice.status)}
+                    </span>
+                    {invoice.status === 'draft' && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => handleSendInvoice(invoice.id)}
+                          className="px-2 py-1 text-xs text-white bg-indigo-600 rounded disabled:opacity-50"
+                        >
+                          Send to client
+                        </button>
+                        <button
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => handleDeleteInvoice(invoice.id)}
+                          className="px-2 py-1 text-xs text-red-700 bg-red-50 rounded disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {(invoice.status === 'sent' || invoice.status === 'overdue') && (
+                      <button
+                        type="button"
+                        disabled={submitting}
+                        onClick={() => handleMarkInvoicePaid(invoice.id)}
+                        className="px-2 py-1 text-xs text-green-800 bg-green-50 rounded disabled:opacity-50"
+                      >
+                        Mark paid
+                      </button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
-          </section>
-        )}
+          )}
+
+          <form onSubmit={handleCreateInvoice} className="space-y-4 border-t border-gray-100 pt-4">
+            <p className="text-sm font-medium text-gray-900">Add invoice</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm">
+                <span className="text-gray-700">Title</span>
+                <input
+                  required
+                  placeholder="e.g. Retainer"
+                  value={invoiceTitle}
+                  onChange={(e) => setInvoiceTitle(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-gray-700">Invoice # (optional)</span>
+                <input
+                  placeholder="e.g. INV-002"
+                  value={invoiceNumber}
+                  onChange={(e) => setInvoiceNumber(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-gray-700">Amount (USD)</span>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={invoiceAmount}
+                  onChange={(e) => setInvoiceAmount(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-gray-700">Due date (optional)</span>
+                <input
+                  type="date"
+                  value={invoiceDueDate}
+                  onChange={(e) => setInvoiceDueDate(e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </label>
+            </div>
+            <label className="block text-sm">
+              <span className="text-gray-700">Description (optional)</span>
+              <textarea
+                placeholder="e.g. 50% retainer due at booking"
+                value={invoiceDescription}
+                onChange={(e) => setInvoiceDescription(e.target.value)}
+                rows={2}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+            >
+              {submitting ? 'Saving...' : 'Create draft invoice'}
+            </button>
+          </form>
+        </section>
 
         <div className="flex gap-3">
           <button

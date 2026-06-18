@@ -47,8 +47,9 @@ export function getNextAction(data: ClientPortalData): NextAction | null {
     (inv) => inv.status === 'sent' || inv.status === 'overdue'
   )
   if (openInvoice) {
+    const canPayWithCard = data.paymentOptions.stripeEnabled
     return {
-      label: 'View your invoice',
+      label: canPayWithCard ? 'Pay your invoice' : 'View your invoice',
       description: `${openInvoice.title} — ${formatCurrency(openInvoice.amount, openInvoice.currency)}`,
       tab: 'payments',
     }

@@ -288,3 +288,12 @@
 - [x] Flow: create quote → mailto/copy link → client accepts → convert to project → invite flow
 - [x] Save as PDF (MVP): browser print on vendor quote detail + public quote page; server-generated PDF later
 - [ ] User runs SQL in pgAdmin before testing
+
+### Session: Payments Phase 3a–3c (June 2026)
+- [x] `database/schema_payments_addition.sql` — vendor_payment_settings + invoice payment columns
+- [x] **3a** — Invoice model + vendor CRUD on project detail (create draft, send, mark paid, delete)
+- [x] **3b** — `/dashboard/payments` — Stripe Connect onboarding + P2P handle settings
+- [x] **3c** — Client Payments tab: Stripe Checkout, P2P display, "I've sent payment", success banner on Home
+- [x] Webhook route `/api/webhooks/stripe` for checkout.session.completed
+- [ ] User runs `schema_payments_addition.sql` in pgAdmin
+- [ ] Stripe test keys + webhook configured for end-to-end card pay test

@@ -480,3 +480,33 @@
 {"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"email":"vendor2@test.com","firstName":"Vendor","lastName":"Two","level":"info","message":"Attempting to create user:","service":"crm-platform","timestamp":"2026-06-18 17:52:34"}
+{"email":"vendor2@test.com","id":"7","level":"info","message":"User created successfully:","service":"crm-platform","timestamp":"2026-06-18 17:52:34"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:55:46"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:55:51"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:55:59"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:58:16"}
