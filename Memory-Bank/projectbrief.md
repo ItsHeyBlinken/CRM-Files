@@ -61,6 +61,7 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 - Contract PDF view + acknowledgement recorded
 - Invoice display for client
 - Vendor branding visible in client portal
+- **Client portal passes the "3-second test"** — status and next action obvious without instruction
 - Deployed and runnable in development
 
 ## Out of Scope (MVP)

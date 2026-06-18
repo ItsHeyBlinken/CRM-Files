@@ -70,11 +70,58 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 - Portal styled with vendor branding (logo, colors, business name)
 
 ### User Experience Goals
-- **Vendor dashboard**: Admin-style, efficient, business-focused
-- **Client portal**: Simple, calm, branded — couple sees only what matters to them
+- **Vendor dashboard**: Admin-style, efficient, business-focused — functional over flashy
+- **Client portal**: **Primary competitive differentiator** — dead simple, calm, obvious; couples should never feel lost
 - **Trust**: Clear status, no hunting through email
-- **Mobile responsive**: Couples often check on phone
+- **Mobile responsive**: Couples often check on phone (client portal must feel native on mobile first)
 - **Secure isolation**: Clients never see other projects or vendors
+
+## Competitive Positioning
+
+### Market gap
+Tools like **HoneyBook**, **17hats**, **Tripleseat**, and similar platforms are powerful but often criticized for:
+- Cluttered interfaces and too many clicks to find basic info
+- Client-facing views that feel like an afterthought (vendor CRM first, couple experience second)
+- Overwhelming settings, modules, and terminology aimed at power users
+- Poor mobile experience for clients checking status on the go
+
+### PortalHub differentiation
+**Win on client-side UX** — not by out-featureing incumbents on vendor CRM depth, but by giving couples the clearest, easiest portal in the category.
+
+| Competitor weakness | PortalHub response |
+|--------------------|-------------------|
+| Client portal buried / confusing | One project, one screen hub — status + next action always visible |
+| Too many tabs and menus | Client sees 3–4 clear sections max: Overview, Documents, Payments, Files |
+| Generic, corporate feel | Vendor-branded, warm, wedding-appropriate tone |
+| Desktop-first client views | Mobile-first client portal layout |
+| Jargon ("workflows", "pipelines") | Plain language: "Your wedding", "What's next", "Sign contract", "View invoice" |
+
+### Client portal UX principles (design north star)
+1. **One glance clarity** — Within 3 seconds, the couple knows: wedding date, current status, and the single most important next step
+2. **Progressive disclosure** — Show summary first; details on tap/click — never dump everything on one page
+3. **Obvious next action** — One primary CTA per visit (e.g. "Review contract", "View invoice") — not a wall of equal buttons
+4. **Plain language** — No CRM jargon on the client side; write for stressed couples, not event planners
+5. **Mobile first** — Design client portal for phone, then scale up to desktop
+6. **Calm visual hierarchy** — Generous whitespace, limited color palette (vendor accent + neutrals), large readable type
+7. **Zero training** — If a couple needs instructions to use the portal, the design failed
+8. **Vendor dashboard can be denser** — Vendors tolerate complexity; clients do not. Asymmetric UX investment favors the portal
+
+### Client portal information architecture (target)
+```
+/portal
+├── Home (overview + next action + timeline snippet)
+├── Documents (contracts — sign/acknowledge)
+├── Payments (invoices — view status)
+└── Files (deliverables — download)
+```
+No sidebar with 12 items. No settings the client doesn't need. Optional vendor message/notes on home only.
+
+### What we intentionally avoid (client side)
+- Multi-project dashboards for couples (MVP: one project — even simpler)
+- Feature parity with vendor dashboard exposed to clients
+- Nested menus, hamburger-with-everything navigation
+- Empty states without guidance ("No data" → "Sam will upload your contract soon")
+- Modal overload and multi-step wizards for simple tasks
 
 ## Key Features
 

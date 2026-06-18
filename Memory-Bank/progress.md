@@ -208,6 +208,11 @@
 - [x] Vendor register creates `vendor_profiles` row
 - [x] Legacy CRM routes moved under `/legacy/*`
 
+### Session: Product differentiation — client UX
+- [x] Documented competitive positioning vs HoneyBook, 17hats, Tripleseat
+- [x] Defined client portal UX principles and target IA in `productContext.md`
+- [x] Added "3-second test" to MVP success criteria in `projectbrief.md`
+
 ### Post-MVP backlog
 - Stripe invoice payment
 - E-signature integration
