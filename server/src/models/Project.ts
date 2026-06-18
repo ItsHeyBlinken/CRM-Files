@@ -330,6 +330,20 @@ export class ProjectModel {
       throw new Error('PROJECT_NOT_FOUND')
     }
 
+    const existingClient = await pool.query(
+      `
+      SELECT u.email FROM project_clients pc
+      INNER JOIN users u ON u.id = pc.client_user_id
+      WHERE pc.project_id = $1
+      LIMIT 1
+      `,
+      [projectId]
+    )
+
+    if (existingClient.rows.length > 0) {
+      throw new Error('PROJECT_ALREADY_HAS_CLIENT')
+    }
+
     const result = await pool.query(
       `
       INSERT INTO project_invites (project_id, email, expires_at, created_by)

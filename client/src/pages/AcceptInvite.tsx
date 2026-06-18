@@ -10,6 +10,8 @@ interface InviteDetails {
   coupleDisplayName: string | null
   vendorBusinessName: string
   expiresAt: string
+  projectHasClient?: boolean
+  linkedClientEmail?: string | null
 }
 
 const AcceptInvite: React.FC = () => {
@@ -122,13 +124,36 @@ const AcceptInvite: React.FC = () => {
     )
   }
 
+  if (invite.projectHasClient) {
+    const isSameEmail =
+      invite.linkedClientEmail?.toLowerCase() === invite.email.toLowerCase()
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center space-y-3">
+          <h2 className="text-lg font-medium text-gray-900">Portal already set up</h2>
+          <p className="text-sm text-gray-600">
+            {isSameEmail
+              ? 'This project already has an account for your email. Sign in to view your portal.'
+              : 'This project already has a client linked. Only one couple per project in MVP — ask your vendor for help.'}
+          </p>
+          <Link to="/login" className="inline-block text-indigo-600 hover:text-indigo-500 font-medium">
+            Go to sign in
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Create your portal account</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900">Set up your portal login</h2>
           <p className="mt-2 text-sm text-gray-600">
             {invite.vendorBusinessName} invited you to <strong>{invite.projectTitle}</strong>
+          </p>
+          <p className="mt-2 text-xs text-gray-500">
+            You do not have an account yet — choose a password below. This is a one-time setup.
           </p>
         </div>
 

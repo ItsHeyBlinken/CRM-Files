@@ -42,7 +42,8 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 **Client management**
 - Add couple name and email to project
-- Send invite; couple creates one shared account
+- Send invite link — client has no account yet; the link is their sign-up (not `/register` or `/login` first)
+- Client opens `/invite/{token}` → sets password → linked to project → future visits use `/login`
 
 **Contracts**
 - Upload contract PDF to project

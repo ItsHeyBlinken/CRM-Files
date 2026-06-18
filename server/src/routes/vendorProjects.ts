@@ -160,6 +160,13 @@ router.post('/:id/invite', async (req: AuthRequest, res: Response): Promise<void
       res.status(404).json({ error: 'Project not found' })
       return
     }
+    if (error instanceof Error && error.message === 'PROJECT_ALREADY_HAS_CLIENT') {
+      res.status(409).json({
+        error:
+          'This project already has a client on the portal. MVP supports one couple per project — create a new project to invite someone else.',
+      })
+      return
+    }
     logger.error('Create invite error:', error)
     res.status(500).json({ error: 'Failed to create invite' })
   }

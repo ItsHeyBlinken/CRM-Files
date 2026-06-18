@@ -20,10 +20,10 @@ const generateToken = (userId, role) => {
     const expiresIn = process.env['JWT_EXPIRE'] || '7d';
     return jsonwebtoken_1.default.sign({ id: userId, role }, jwtSecret, { expiresIn });
 };
-router.get('/me', auth_1.protect, async (req, res) => {
+router.get('/me', auth_1.optionalAuth, async (req, res) => {
     try {
         if (!req.user) {
-            res.status(401).json({ error: 'Not authenticated' });
+            res.status(200).json(null);
             return;
         }
         res.json((0, authHelpers_1.formatAuthUser)(req.user));
@@ -191,12 +191,15 @@ router.get('/invite/:token', async (req, res) => {
             res.status(410).json({ error: 'This invite has expired' });
             return;
         }
+        const link = await ProjectInvite_1.ProjectInvite.findProjectClientLink(invite.projectId);
         res.json({
             email: invite.email,
             projectTitle: invite.projectTitle,
             coupleDisplayName: invite.coupleDisplayName,
             vendorBusinessName: invite.vendorBusinessName,
             expiresAt: invite.expiresAt,
+            projectHasClient: !!link,
+            linkedClientEmail: link?.clientEmail ?? null,
         });
     }
     catch (error) {
@@ -239,6 +242,20 @@ router.post('/register/client', async (req, res) => {
             res.status(400).json({ error: 'Email must match the address on the invite' });
             return;
         }
+        const existingLink = await ProjectInvite_1.ProjectInvite.findProjectClientLink(invite.projectId);
+        if (existingLink) {
+            if (existingLink.clientEmail.toLowerCase() === email.toLowerCase()) {
+                res.status(409).json({
+                    error: 'This project already has your account. Please sign in instead.',
+                });
+            }
+            else {
+                res.status(409).json({
+                    error: 'This project already has a client linked. MVP supports one couple per project — ask your vendor to create a new project or use the existing client email.',
+                });
+            }
+            return;
+        }
         const existingUser = await User_1.User.findByEmail(email);
         if (existingUser) {
             res.status(409).json({
@@ -264,7 +281,20 @@ router.post('/register/client', async (req, res) => {
     }
     catch (error) {
         logger_1.logger.error('Client registration error:', error);
-        if (error?.code === '23505') {
+        if (error instanceof Error && error.message === 'PROJECT_ALREADY_HAS_CLIENT') {
+            res.status(409).json({
+                error: 'This project already has a client linked. Please sign in if that is your account.',
+            });
+            return;
+        }
+        const pgError = error;
+        if (pgError?.code === '23505') {
+            if (pgError.message?.includes('project_clients')) {
+                res.status(409).json({
+                    error: 'This project already has a client linked.',
+                });
+                return;
+            }
             res.status(409).json({ error: 'User with this email already exists' });
             return;
         }

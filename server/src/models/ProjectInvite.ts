@@ -12,6 +12,14 @@ export interface IProjectInviteDetails {
   vendorBusinessName: string
 }
 
+export interface IProjectClientLink {
+  id: number
+  projectId: number
+  clientUserId: number
+  clientEmail: string
+  coupleDisplayName: string | null
+}
+
 export class ProjectInviteModel {
   static async findByToken(token: string): Promise<IProjectInviteDetails | null> {
     const pool = getPool()
@@ -54,6 +62,33 @@ export class ProjectInviteModel {
     }
   }
 
+  static async findProjectClientLink(projectId: number): Promise<IProjectClientLink | null> {
+    const pool = getPool()
+    const result = await pool.query(
+      `
+      SELECT pc.id, pc.project_id, pc.client_user_id, pc.couple_display_name, u.email AS client_email
+      FROM project_clients pc
+      INNER JOIN users u ON u.id = pc.client_user_id
+      WHERE pc.project_id = $1
+      LIMIT 1
+      `,
+      [projectId]
+    )
+
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    const row = result.rows[0]
+    return {
+      id: row.id,
+      projectId: row.project_id,
+      clientUserId: row.client_user_id,
+      clientEmail: row.client_email,
+      coupleDisplayName: row.couple_display_name,
+    }
+  }
+
   static isValid(invite: IProjectInviteDetails): boolean {
     if (invite.acceptedAt) {
       return false
@@ -72,6 +107,23 @@ export class ProjectInviteModel {
 
     try {
       await client.query('BEGIN')
+
+      const existing = await client.query(
+        `SELECT client_user_id FROM project_clients WHERE project_id = $1`,
+        [projectId]
+      )
+
+      if (existing.rows.length > 0) {
+        if (existing.rows[0].client_user_id === clientUserId) {
+          await client.query(
+            `UPDATE project_invites SET accepted_at = NOW() WHERE id = $1`,
+            [inviteId]
+          )
+          await client.query('COMMIT')
+          return
+        }
+        throw new Error('PROJECT_ALREADY_HAS_CLIENT')
+      }
 
       await client.query(
         `

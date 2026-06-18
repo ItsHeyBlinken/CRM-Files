@@ -186,3 +186,82 @@
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 20:44:29"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 20:44:29"}
 {"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 20:44:31"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 20:55:32"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 20:55:45"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 20:55:53"}
+{"code":"23505","constraint":"project_clients_project_id_key","detail":"Key (project_id)=(1) already exists.","file":"nbtinsert.c","length":238,"level":"error","line":"666","message":"Client registration error: duplicate key value violates unique constraint \"project_clients_project_id_key\"","name":"error","routine":"_bt_check_unique","schema":"public","service":"crm-platform","severity":"ERROR","stack":"error: duplicate key value violates unique constraint \"project_clients_project_id_key\"\n    at C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\node_modules\\pg\\lib\\client.js:545:17\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Function.acceptInvite (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\ProjectInvite.ts:76:7)\n    at async C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\routes\\auth.ts:328:5","table":"project_clients","timestamp":"2026-06-17 20:59:28"}
+{"code":"23505","constraint":"project_clients_project_id_key","detail":"Key (project_id)=(1) already exists.","file":"nbtinsert.c","length":238,"level":"error","line":"666","message":"Client registration error: duplicate key value violates unique constraint \"project_clients_project_id_key\"","name":"error","routine":"_bt_check_unique","schema":"public","service":"crm-platform","severity":"ERROR","stack":"error: duplicate key value violates unique constraint \"project_clients_project_id_key\"\n    at C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\node_modules\\pg\\lib\\client.js:545:17\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Function.acceptInvite (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\ProjectInvite.ts:76:7)\n    at async C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\routes\\auth.ts:328:5","table":"project_clients","timestamp":"2026-06-17 21:00:46"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:02:11"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:02:14"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:02:19"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:02:22"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:02:26"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:03:33"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:03:36"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"🚀 Event Planner CRM Server running on port 3000","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:03:40"}

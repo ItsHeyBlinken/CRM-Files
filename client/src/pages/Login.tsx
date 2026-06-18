@@ -52,6 +52,10 @@ const Login: React.FC = () => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Vendors and clients use the same sign-in page
           </p>
+          <p className="mt-2 text-center text-xs text-gray-500 max-w-sm mx-auto">
+            First time here? If your vendor sent you a link, open that invite link to create your
+            account — you cannot sign in until you have done that once.
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">

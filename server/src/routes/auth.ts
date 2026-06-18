@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { Request, Response } from 'express'
 import jwt, { SignOptions } from 'jsonwebtoken'
-import { protect, AuthRequest } from '../middleware/auth'
+import { optionalAuth, AuthRequest } from '../middleware/auth'
 import { User } from '../models/User'
 import { ProjectInvite } from '../models/ProjectInvite'
 import { formatAuthUser } from '../utils/authHelpers'
@@ -24,15 +24,14 @@ const generateToken = (userId: string, role: string): string => {
   )
 }
 
-// GET /api/auth/me
-router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void> => {
+// GET /api/auth/me — session check; returns 200 + null when not signed in (no 401 noise)
+router.get('/me', optionalAuth, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
-      res.status(401).json({ error: 'Not authenticated' })
+      res.status(200).json(null)
       return
     }
 
-    // Return user data without password
     res.json(formatAuthUser(req.user))
   } catch (error) {
     logger.error('Error in /me endpoint:', error)
@@ -249,12 +248,16 @@ router.get('/invite/:token', async (req: Request, res: Response): Promise<void> 
       return
     }
 
+    const link = await ProjectInvite.findProjectClientLink(invite.projectId)
+
     res.json({
       email: invite.email,
       projectTitle: invite.projectTitle,
       coupleDisplayName: invite.coupleDisplayName,
       vendorBusinessName: invite.vendorBusinessName,
       expiresAt: invite.expiresAt,
+      projectHasClient: !!link,
+      linkedClientEmail: link?.clientEmail ?? null,
     })
   } catch (error) {
     logger.error('Invite lookup error:', error)
@@ -306,6 +309,21 @@ router.post('/register/client', async (req: Request, res: Response): Promise<voi
       return
     }
 
+    const existingLink = await ProjectInvite.findProjectClientLink(invite.projectId)
+    if (existingLink) {
+      if (existingLink.clientEmail.toLowerCase() === email.toLowerCase()) {
+        res.status(409).json({
+          error: 'This project already has your account. Please sign in instead.',
+        })
+      } else {
+        res.status(409).json({
+          error:
+            'This project already has a client linked. MVP supports one couple per project — ask your vendor to create a new project or use the existing client email.',
+        })
+      }
+      return
+    }
+
     const existingUser = await User.findByEmail(email)
     if (existingUser) {
       res.status(409).json({
@@ -339,10 +357,25 @@ router.post('/register/client', async (req: Request, res: Response): Promise<voi
       token: authToken,
       user: formatAuthUser(newUser),
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Client registration error:', error)
 
-    if (error?.code === '23505') {
+    if (error instanceof Error && error.message === 'PROJECT_ALREADY_HAS_CLIENT') {
+      res.status(409).json({
+        error:
+          'This project already has a client linked. Please sign in if that is your account.',
+      })
+      return
+    }
+
+    const pgError = error as { code?: string; message?: string }
+    if (pgError?.code === '23505') {
+      if (pgError.message?.includes('project_clients')) {
+        res.status(409).json({
+          error: 'This project already has a client linked.',
+        })
+        return
+      }
       res.status(409).json({ error: 'User with this email already exists' })
       return
     }

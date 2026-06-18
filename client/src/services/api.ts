@@ -58,17 +58,22 @@ api.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const requestUrl = originalRequest?.url ?? ''
+    const isSessionCheck = requestUrl.includes('/auth/me')
 
-    // Handle 401 Unauthorized errors
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isSessionCheck) {
       originalRequest._retry = true
 
-      // Clear token and redirect to login
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      
-      // Only redirect if we're not already on the login page
-      if (window.location.pathname !== '/login') {
+
+      const path = window.location.pathname
+      const isPublicPage =
+        path === '/login' ||
+        path === '/register' ||
+        path.startsWith('/invite/')
+
+      if (!isPublicPage) {
         window.location.href = '/login'
       }
     }

@@ -96,8 +96,27 @@ const VendorDashboard: React.FC = () => {
 
   const copyInviteLink = () => {
     if (!inviteLink) return
-    const fullUrl = `${window.location.origin}${inviteLink.invitePath}`
+    const fullUrl = getInviteFullUrl(inviteLink.invitePath)
     navigator.clipboard.writeText(fullUrl)
+  }
+
+  const getInviteFullUrl = (path: string) => `${window.location.origin}${path}`
+
+  const openInviteEmailDraft = () => {
+    if (!inviteLink) return
+    const project = projects.find((p) => p.id === inviteProjectId)
+    const fullUrl = getInviteFullUrl(inviteLink.invitePath)
+    const subject = encodeURIComponent(
+      `Your wedding portal${project ? ` — ${project.title}` : ''}`
+    )
+    const body = encodeURIComponent(
+      `Hi,\n\n` +
+        `I've set up your client portal. You don't have an account yet — this link will let you create one and view your project:\n\n` +
+        `${fullUrl}\n\n` +
+        `Open the link, choose a password, and you'll be taken straight to your wedding portal.\n\n` +
+        `After that, you can sign in anytime at ${window.location.origin}/login\n`
+    )
+    window.location.href = `mailto:${inviteLink.email}?subject=${subject}&body=${body}`
   }
 
   return (
@@ -204,7 +223,13 @@ const VendorDashboard: React.FC = () => {
 
         {inviteProjectId && (
           <form onSubmit={handleInvite} className="bg-white rounded-lg shadow p-6 space-y-4">
-            <h3 className="font-medium text-gray-900">Invite client to portal</h3>
+            <div>
+              <h3 className="font-medium text-gray-900">Invite client to portal</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Your client does not need an account yet. Enter their email, generate a link, and
+                send it to them. They will create their login when they open the link.
+              </p>
+            </div>
             <input
               type="email"
               required
@@ -214,18 +239,31 @@ const VendorDashboard: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
             {inviteLink && (
-              <div className="rounded-md bg-green-50 p-3 text-sm text-green-900 space-y-2">
-                <p>Invite created! Share this link with your client:</p>
-                <code className="block break-all text-xs bg-white p-2 rounded border">
-                  {window.location.origin}{inviteLink.invitePath}
+              <div className="rounded-md bg-green-50 p-4 text-sm text-green-900 space-y-3">
+                <p className="font-medium">Invite ready — send this to your client</p>
+                <p className="text-green-800">
+                  They will open the link, set a password, and land in their portal. No separate
+                  sign-up page needed.
+                </p>
+                <code className="block break-all text-xs bg-white p-2 rounded border text-gray-800">
+                  {getInviteFullUrl(inviteLink.invitePath)}
                 </code>
-                <button
-                  type="button"
-                  onClick={copyInviteLink}
-                  className="text-indigo-600 hover:text-indigo-500"
-                >
-                  Copy link
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={copyInviteLink}
+                    className="text-indigo-600 hover:text-indigo-500 font-medium"
+                  >
+                    Copy link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openInviteEmailDraft}
+                    className="text-indigo-600 hover:text-indigo-500 font-medium"
+                  >
+                    Open in email app
+                  </button>
+                </div>
               </div>
             )}
             <div className="flex gap-3">
