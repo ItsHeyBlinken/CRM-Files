@@ -17,9 +17,9 @@ This is the guiding principle for all future work — not feature parity between
 **Implication for roadmap:** New features (e.g. quoting) are designed **vendor-first**; the client only sees what they need to act on (accept quote, sign contract, pay/view invoice, download files) — never vendor admin complexity.
 
 ## Current Work Focus
-**MVP core loop is largely complete.** Vendors manage projects from a list + detail page; clients use a mobile-first portal with contracts, invoices, and deliverables. Next session: legacy cleanup, then **quoting workflow** (pre-project sales tool).
+**Legacy CRM cleanup complete.** Next: **quoting workflow** (vendor-first pre-project sales tool), then continue vendor dashboard depth.
 
-## MVP Status (June 2026 session)
+## MVP Status
 
 | Area | Status |
 |------|--------|
@@ -30,14 +30,15 @@ This is the guiding principle for all future work — not feature parity between
 | Client portal (Home / Documents / Payments / Files) | ✅ Done |
 | Contract PDF upload + client acknowledgement | ✅ Done |
 | Deliverable upload + client download | ✅ Done |
-| Legacy CRM cleanup | ⏳ Not started |
-| Quoting / proposals | 📋 Planned (see below) |
+| Legacy CRM cleanup | ✅ Done (June 2026) |
+| Quoting / proposals | 📋 Next up |
+| Monetization plan | 📋 Document started — decisions in `monetization.md` |
 
 ## Next Session — Priority Order
 
-1. **Remove/archive legacy CRM** — `/legacy/*` pages, unused routes/models (Leads, Deals, Contacts, etc.)
-2. **Quoting tool (new feature)** — vendor creates quote → emails client → client accepts → vendor converts to project and continues existing portal flow
-3. **Vendor polish (optional)** — create/edit invoices and milestones from project detail (currently seed-driven for Miller Wedding)
+1. **Quoting tool** — vendor creates quote → mailto link → client accepts → convert to project → existing portal flow
+2. **Vendor polish (optional)** — create/edit invoices and milestones from project detail
+3. **Monetization plan** — dedicated session to fill decisions in `monetization.md` (before launch / before Stripe)
 4. **Automatic invite/quote emails** — post-MVP unless needed for quoting MVP
 
 ## Planned: Quoting Workflow (User Decision — June 2026)
@@ -51,12 +52,12 @@ Inquiry → Vendor creates quote → Email quote to client
     → Existing flow: invite → portal → contract → invoice → deliverables
 ```
 
-**Open design questions (resolve at start of next session):**
-- Does inquiry capture live in-app (lead form) or vendor manually starts a quote from dashboard?
-- Quote content: line items + total only, or PDF attachment, or both?
-- Client acceptance: magic link (no account yet) similar to invite token, or requires email match only?
-- On accept: auto-create project in `inquiry`/`booked` status, or vendor confirms conversion?
-- Email: manual mailto draft (like invites today) vs integrated send (Post-MVP?)
+**Open design questions (defaults agreed for MVP — confirm when building):**
+- Inquiry: vendor manually creates quote from dashboard
+- Quote content: line items + total + optional notes
+- Client acceptance: public magic link `/quote/:token` (no login)
+- After accept: vendor clicks **Convert to project** → then invite flow
+- Email: mailto draft with link (like invites today)
 
 **Likely new entities:** `quotes` (or `proposals`), line items, status (`draft` | `sent` | `accepted` | `declined` | `expired`), optional link to `projects` after conversion.
 
@@ -97,3 +98,4 @@ Inquiry → Vendor creates quote → Email quote to client
 - Email delivery provider for invites and quotes
 - Whether to archive vs delete old schema SQL files
 - Quoting MVP scope (see design questions above)
+- **Monetization** — pricing model, tiers, free trial, Stripe Billing timeline (see `monetization.md`)

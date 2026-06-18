@@ -46,14 +46,6 @@ import { socketHandler } from './services/socketService'
 import authRoutes from './routes/auth'
 import vendorProjectRoutes from './routes/vendorProjects'
 import portalRoutes from './routes/portal'
-import userRoutes from './routes/users'
-import eventRoutes from './routes/events'
-import vendorRoutes from './routes/vendors'
-import paymentRoutes from './routes/payments'
-import taskRoutes from './routes/tasks'
-import clientRoutes from './routes/clients'
-import uploadRoutes from './routes/upload'
-import reportRoutes from './routes/reports'
 
 // Models are now using PostgreSQL - no imports needed for basic functionality
 
@@ -245,14 +237,6 @@ function setupMiddleware() {
   app.use('/api/auth', authRoutes)
   app.use('/api/vendor/projects', vendorProjectRoutes)
   app.use('/api/portal', portalRoutes)
-  app.use('/api/users', userRoutes)
-  app.use('/api/events', eventRoutes)
-  app.use('/api/vendors', vendorRoutes)
-  app.use('/api/payments', paymentRoutes)
-  app.use('/api/tasks', taskRoutes)
-  app.use('/api/clients', clientRoutes)
-  app.use('/api/upload', uploadRoutes)
-  app.use('/api/reports', reportRoutes)
 
   // Serve static files
   app.use('/uploads', express.static('uploads'))
@@ -285,7 +269,7 @@ function setupMiddleware() {
 // Function to start the server (called after middleware setup)
 function startServer() {
   server.listen(PORT, () => {
-    logger.info(`🚀 Event Planner CRM Server running on port ${PORT}`)
+    logger.info(`🚀 PortalHub server running on port ${PORT}`)
     logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
     logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
     logger.info(`🔌 Socket.io enabled for real-time communication`)

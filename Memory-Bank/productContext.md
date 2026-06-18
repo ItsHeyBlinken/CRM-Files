@@ -146,6 +146,8 @@ No sidebar with 12 items. No settings the client doesn't need. Optional vendor m
 - PDF contract acknowledgement
 - Invoice display
 
+**Monetization:** Vendors pay; clients use portal free. Plan TBD — see `monetization.md`.
+
 ### Post-MVP
 - **Quoting / proposals** — pre-project sales: inquiry → quote → email → client accept → convert to project (priority feature for next phase)
 - Stripe (or similar) invoice payment

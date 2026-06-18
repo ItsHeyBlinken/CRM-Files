@@ -221,8 +221,9 @@
 - [x] Added "3-second test" to MVP success criteria in `projectbrief.md`
 
 ### Post-MVP backlog
+- **Monetization / Stripe Billing** — vendor subscriptions; see `monetization.md`
 - **Quoting / proposals** — inquiry → quote → email → client accept → convert to project (see `productContext.md`, `activeContext.md`)
-- Stripe invoice payment
+- Stripe invoice payment (client-facing; optional platform fee)
 - E-signature integration
 - Email notifications (invites, reminders, quotes)
 - Vendor staff accounts
@@ -257,5 +258,19 @@
 - [x] Vendor dashboard + project detail
 - [x] Client portal: project data, milestones, invoices, next-action UX
 - [x] Contract PDF + acknowledgement, deliverables upload + download
-- [ ] Remove/archive legacy CRM pages and models
+- [x] Remove/archive legacy CRM pages and models
 - [ ] Quoting workflow (next major feature)
+- [ ] **Monetization plan finalized** — complete checklist in `monetization.md` before launch
+
+### Session: Legacy CRM cleanup (June 2026)
+- [x] Removed `/legacy/*` routes and 13 placeholder CRM pages from client
+- [x] Removed stub API routes: events, vendors, payments, tasks, clients, reports, upload, users
+- [x] Removed unused models: Event, Vendor (supplier), Payment, Activity
+- [x] Updated admin Layout for `/admin` nav only (PortalHub branding)
+- [x] Updated `database/README.md` + `database/archive/legacy-crm/README.md`
+- [x] Active API surface: `/api/auth`, `/api/vendor/projects`, `/api/portal` only
+
+### Session: Monetization planning doc (June 2026)
+- [x] Created `monetization.md` — decision checklist, tier hypothesis, build order vs billing
+- [x] Cross-linked from activeContext, projectbrief, productContext, progress
+- [ ] Dedicated session to fill in pricing decisions before launch

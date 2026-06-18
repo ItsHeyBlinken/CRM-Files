@@ -25,14 +25,6 @@ const socketService_1 = require("./services/socketService");
 const auth_1 = __importDefault(require("./routes/auth"));
 const vendorProjects_1 = __importDefault(require("./routes/vendorProjects"));
 const portal_1 = __importDefault(require("./routes/portal"));
-const users_1 = __importDefault(require("./routes/users"));
-const events_1 = __importDefault(require("./routes/events"));
-const vendors_1 = __importDefault(require("./routes/vendors"));
-const payments_1 = __importDefault(require("./routes/payments"));
-const tasks_1 = __importDefault(require("./routes/tasks"));
-const clients_1 = __importDefault(require("./routes/clients"));
-const upload_1 = __importDefault(require("./routes/upload"));
-const reports_1 = __importDefault(require("./routes/reports"));
 dotenv_1.default.config();
 const CODE_VERSION = 'v2.1.0-FIXED';
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString();
@@ -171,14 +163,6 @@ function setupMiddleware() {
     app.use('/api/auth', auth_1.default);
     app.use('/api/vendor/projects', vendorProjects_1.default);
     app.use('/api/portal', portal_1.default);
-    app.use('/api/users', users_1.default);
-    app.use('/api/events', events_1.default);
-    app.use('/api/vendors', vendors_1.default);
-    app.use('/api/payments', payments_1.default);
-    app.use('/api/tasks', tasks_1.default);
-    app.use('/api/clients', clients_1.default);
-    app.use('/api/upload', upload_1.default);
-    app.use('/api/reports', reports_1.default);
     app.use('/uploads', express_1.default.static('uploads'));
     (0, socketService_1.socketHandler)(io);
     if (process.env['NODE_ENV'] === 'production') {
@@ -196,7 +180,7 @@ function setupMiddleware() {
 }
 function startServer() {
     server.listen(PORT, () => {
-        logger_1.logger.info(`🚀 Event Planner CRM Server running on port ${PORT}`);
+        logger_1.logger.info(`🚀 PortalHub server running on port ${PORT}`);
         logger_1.logger.info(`📱 Environment: ${process.env['NODE_ENV']}`);
         logger_1.logger.info(`🌐 API URL: http://localhost:${PORT}/api`);
         logger_1.logger.info(`🔌 Socket.io enabled for real-time communication`);

@@ -78,9 +78,19 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 - Deployed and runnable in development
 
 ## Out of Scope (MVP)
-- Stripe / online payments
+- Stripe / online payments (vendor subscription billing also deferred — see `monetization.md`)
 - E-signature integrations (DocuSign, etc.)
 - Multi-staff vendor accounts
 - Custom subdomains per vendor
 - Platform-wide analytics / reporting
 - **Quoting / proposals** — planned for Phase 2 (see productContext.md)
+
+## Business & Monetization
+
+**Paying customer:** Wedding vendor (freelancer / small business) — not the couple.
+
+**Status:** Monetization plan **not finalized**. Before launch, complete the decision checklist in **`monetization.md`** (pricing model, tiers, trial, what features are gated).
+
+**Working hypothesis:** Freemium or low-tier starter + **Pro ~$29–39/mo** for quoting, unlimited projects, full portal — validate with vendor interviews before implementing Stripe.
+
+**Build order:** Product validation first (quoting + core loop) → define tiers → Stripe Billing → optional invoice payment fees later.
