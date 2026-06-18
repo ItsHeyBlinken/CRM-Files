@@ -17,12 +17,13 @@ interface InviteDetails {
 const AcceptInvite: React.FC = () => {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { registerClient, isAuthenticated, user } = useAuth()
+  const { registerClient, isAuthenticated, user, loading: authLoading, logout } = useAuth()
 
   const [invite, setInvite] = useState<InviteDetails | null>(null)
   const [loadingInvite, setLoadingInvite] = useState(true)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -42,8 +43,12 @@ const AcceptInvite: React.FC = () => {
       try {
         const response = await api.get(`/auth/invite/${token}`)
         setInvite(response.data)
-      } catch (err: any) {
-        setError(err.response?.data?.error || 'This invite link is invalid or expired')
+      } catch (err: unknown) {
+        const message =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+            : undefined
+        setError(message || 'This invite link is invalid or expired')
       } finally {
         setLoadingInvite(false)
       }
@@ -52,8 +57,14 @@ const AcceptInvite: React.FC = () => {
     loadInvite()
   }, [token])
 
-  if (isAuthenticated && user) {
-    return <Navigate to={getHomePathForRole(user.role)} replace />
+  const handleSignOutToContinue = async () => {
+    setSigningOut(true)
+    setError('')
+    try {
+      await logout()
+    } finally {
+      setSigningOut(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,14 +106,15 @@ const AcceptInvite: React.FC = () => {
         phone: formData.phone || undefined,
       })
       navigate(getHomePathForRole(registeredUser.role))
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.'
+      setError(message)
     } finally {
       setSubmitting(false)
     }
   }
 
-  if (loadingInvite) {
+  if (authLoading || loadingInvite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
@@ -122,6 +134,79 @@ const AcceptInvite: React.FC = () => {
         </div>
       </div>
     )
+  }
+
+  if (isAuthenticated && user) {
+    const role = user.role.toUpperCase()
+    const inviteEmail = invite.email.toLowerCase()
+    const userEmail = user.email.toLowerCase()
+
+    if (role === 'CLIENT') {
+      if (
+        invite.projectHasClient &&
+        invite.linkedClientEmail?.toLowerCase() === inviteEmail &&
+        userEmail === inviteEmail
+      ) {
+        return <Navigate to="/portal" replace />
+      }
+
+      if (userEmail !== inviteEmail) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+            <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center space-y-4">
+              <h2 className="text-lg font-medium text-gray-900">Different account signed in</h2>
+              <p className="text-sm text-gray-600">
+                This invite is for <strong>{invite.email}</strong>, but you are signed in as{' '}
+                <strong>{user.email}</strong>.
+              </p>
+              <button
+                type="button"
+                onClick={handleSignOutToContinue}
+                disabled={signingOut}
+                className="w-full py-2 px-4 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {signingOut ? 'Signing out...' : 'Sign out and continue'}
+              </button>
+              <Link to="/portal" className="inline-block text-sm text-indigo-600 hover:text-indigo-500">
+                Go to my portal
+              </Link>
+            </div>
+          </div>
+        )
+      }
+    }
+
+    if (role === 'VENDOR' || role === 'ADMIN') {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center space-y-4">
+            <h2 className="text-lg font-medium text-gray-900">Client invite link</h2>
+            <p className="text-sm text-gray-600">
+              You are signed in as a vendor. This link is for your client to create their portal
+              login for <strong>{invite.projectTitle}</strong>.
+            </p>
+            <p className="text-xs text-gray-500">
+              To test the client flow yourself, sign out first or open this link in a private
+              window.
+            </p>
+            <button
+              type="button"
+              onClick={handleSignOutToContinue}
+              disabled={signingOut}
+              className="w-full py-2 px-4 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {signingOut ? 'Signing out...' : 'Sign out and preview client setup'}
+            </button>
+            <Link
+              to={getHomePathForRole(user.role)}
+              className="inline-block text-sm text-gray-600 hover:text-indigo-600"
+            >
+              Back to dashboard
+            </Link>
+          </div>
+        </div>
+      )
+    }
   }
 
   if (invite.projectHasClient) {

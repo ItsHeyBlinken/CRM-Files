@@ -45,6 +45,8 @@ import { socketHandler } from './services/socketService'
 // Import routes
 import authRoutes from './routes/auth'
 import vendorProjectRoutes from './routes/vendorProjects'
+import vendorQuoteRoutes from './routes/vendorQuotes'
+import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
 
 // Models are now using PostgreSQL - no imports needed for basic functionality
@@ -236,6 +238,8 @@ function setupMiddleware() {
   // API routes
   app.use('/api/auth', authRoutes)
   app.use('/api/vendor/projects', vendorProjectRoutes)
+  app.use('/api/vendor/quotes', vendorQuoteRoutes)
+  app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 
   // Serve static files

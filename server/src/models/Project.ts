@@ -1,6 +1,7 @@
 import { getPool } from '../config/database'
 import { Contract } from './Contract'
 import { Deliverable } from './Deliverable'
+import { formatDateOnly } from '../utils/dateOnly'
 
 export type ProjectStatus =
   | 'inquiry'
@@ -75,6 +76,7 @@ export interface IContractSummary {
   id: number
   title: string
   acknowledgedAt: Date | null
+  acknowledgementLegalName?: string | null
 }
 
 export interface IDeliverableSummary {
@@ -131,7 +133,7 @@ function mapProjectRow(row: any): IProject {
     vendorId: row.vendor_id,
     title: row.title,
     description: row.description ?? null,
-    weddingDate: row.wedding_date ? String(row.wedding_date).slice(0, 10) : null,
+    weddingDate: formatDateOnly(row.wedding_date),
     location: row.location ?? null,
     status: row.status,
     coupleDisplayName: row.couple_display_name ?? null,
@@ -267,7 +269,7 @@ export class ProjectModel {
         vendorId,
         data.title,
         data.description ?? null,
-        data.weddingDate ?? null,
+        formatDateOnly(data.weddingDate),
         data.location ?? null,
         data.status ?? 'inquiry',
         data.coupleDisplayName ?? null,
@@ -294,7 +296,7 @@ export class ProjectModel {
 
     if (data.title !== undefined) setField('title', data.title)
     if (data.description !== undefined) setField('description', data.description)
-    if (data.weddingDate !== undefined) setField('wedding_date', data.weddingDate)
+    if (data.weddingDate !== undefined) setField('wedding_date', formatDateOnly(data.weddingDate))
     if (data.location !== undefined) setField('location', data.location)
     if (data.status !== undefined) setField('status', data.status)
     if (data.coupleDisplayName !== undefined) {

@@ -37,8 +37,8 @@ export function getNextAction(data: ClientPortalData): NextAction | null {
   const unackedContract = data.contracts.find((c) => !c.acknowledgedAt)
   if (unackedContract) {
     return {
-      label: 'Review your contract',
-      description: `${unackedContract.title} is waiting for your acknowledgement.`,
+      label: 'Sign your contract',
+      description: `${unackedContract.title} is ready for your electronic signature.`,
       tab: 'documents',
     }
   }

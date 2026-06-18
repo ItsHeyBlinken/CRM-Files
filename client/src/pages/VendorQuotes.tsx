@@ -1,0 +1,354 @@
+import React, { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { createQuote, fetchVendorQuotes } from '../services/quoteService'
+import type { Quote, QuoteLineItemInput } from '../types/quote'
+
+const emptyLineItem = (): QuoteLineItemInput => ({
+  description: '',
+  quantity: 1,
+  unitPrice: 0,
+})
+
+function formatMoney(amount: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
+}
+
+const statusLabel: Record<Quote['status'], string> = {
+  draft: 'Draft',
+  sent: 'Awaiting response',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  expired: 'Expired',
+  converted: 'Converted',
+}
+
+const VendorQuotes: React.FC = () => {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    clientEmail: '',
+    clientName: '',
+    weddingDate: '',
+    location: '',
+    notes: '',
+    lineItems: [emptyLineItem()],
+  })
+
+  const loadQuotes = useCallback(async () => {
+    try {
+      setError('')
+      const data = await fetchVendorQuotes()
+      setQuotes(data)
+    } catch {
+      setError('Failed to load quotes')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadQuotes()
+  }, [loadQuotes])
+
+  const updateLineItem = (index: number, field: keyof QuoteLineItemInput, value: string | number) => {
+    setCreateForm((prev) => {
+      const lineItems = [...prev.lineItems]
+      lineItems[index] = { ...lineItems[index], [field]: value }
+      return { ...prev, lineItems }
+    })
+  }
+
+  const addLineItem = () => {
+    setCreateForm((prev) => ({ ...prev, lineItems: [...prev.lineItems, emptyLineItem()] }))
+  }
+
+  const removeLineItem = (index: number) => {
+    setCreateForm((prev) => ({
+      ...prev,
+      lineItems: prev.lineItems.filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!createForm.title.trim() || !createForm.clientEmail.trim()) return
+
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const result = await createQuote({
+        title: createForm.title.trim(),
+        clientEmail: createForm.clientEmail.trim(),
+        clientName: createForm.clientName || undefined,
+        weddingDate: createForm.weddingDate || undefined,
+        location: createForm.location || undefined,
+        notes: createForm.notes || undefined,
+        lineItems: createForm.lineItems.map((item) => ({
+          description: item.description.trim(),
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+        })),
+      })
+      navigate(`/dashboard/quotes/${result.quote.id}`)
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined
+      setError(message || 'Failed to create quote')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">PortalHub</h1>
+            <nav className="mt-1 flex gap-4 text-sm">
+              <Link to="/dashboard" className="text-gray-500 hover:text-indigo-600">
+                Projects
+              </Link>
+              <span className="text-indigo-600 font-medium">Quotes</span>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="text-sm text-indigo-600 hover:text-indigo-500"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-medium text-gray-900">Quotes</h2>
+            <p className="text-sm text-gray-600">
+              Send a link your client can open on their phone — no login required to accept or decline.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+          >
+            New quote
+          </button>
+        </div>
+
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
+        )}
+
+        {showCreate && (
+          <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 space-y-4">
+            <h3 className="font-medium text-gray-900">Create quote</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <input
+                required
+                placeholder="Quote title (e.g. Miller Wedding — Photography)"
+                value={createForm.title}
+                onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md sm:col-span-2"
+              />
+              <input
+                type="email"
+                required
+                placeholder="Client email"
+                value={createForm.clientEmail}
+                onChange={(e) => setCreateForm({ ...createForm, clientEmail: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <input
+                placeholder="Client name (optional)"
+                value={createForm.clientName}
+                onChange={(e) => setCreateForm({ ...createForm, clientName: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="date"
+                value={createForm.weddingDate}
+                onChange={(e) => setCreateForm({ ...createForm, weddingDate: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <input
+                placeholder="Location (optional)"
+                value={createForm.location}
+                onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <textarea
+                placeholder="Notes for your client (optional)"
+                value={createForm.notes}
+                onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
+                rows={3}
+                className="px-3 py-2 border border-gray-300 rounded-md sm:col-span-2"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-900">Line items</h4>
+                <button
+                  type="button"
+                  onClick={addLineItem}
+                  className="text-sm text-indigo-600 hover:text-indigo-500"
+                >
+                  + Add item
+                </button>
+              </div>
+              {createForm.lineItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="grid gap-2 sm:grid-cols-12 items-end border-b border-gray-100 pb-3 last:border-0 last:pb-0"
+                >
+                  <div className="sm:col-span-6">
+                    <label
+                      htmlFor={`line-item-desc-${index}`}
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Description
+                    </label>
+                    <input
+                      id={`line-item-desc-${index}`}
+                      required
+                      placeholder="e.g. 8-hour wedding coverage"
+                      value={item.description}
+                      onChange={(e) => updateLineItem(index, 'description', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor={`line-item-qty-${index}`}
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Quantity
+                    </label>
+                    <input
+                      id={`line-item-qty-${index}`}
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      required
+                      value={item.quantity}
+                      onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label
+                      htmlFor={`line-item-cost-${index}`}
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Unit cost
+                    </label>
+                    <input
+                      id={`line-item-cost-${index}`}
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={item.unitPrice}
+                      onChange={(e) => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  {createForm.lineItems.length > 1 && (
+                    <div className="sm:col-span-1">
+                      <button
+                        type="button"
+                        onClick={() => removeLineItem(index)}
+                        className="text-sm text-red-600 hover:text-red-500 pb-2"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+              >
+                {submitting ? 'Creating...' : 'Create & get link'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        <section className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="font-medium text-gray-900">Your quotes</h3>
+          </div>
+
+          {loading ? (
+            <p className="p-6 text-sm text-gray-500">Loading quotes...</p>
+          ) : quotes.length === 0 ? (
+            <p className="p-6 text-sm text-gray-500">
+              No quotes yet. Create one to send a link your client can accept on their phone.
+            </p>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {quotes.map((quote) => (
+                <li key={quote.id}>
+                  <Link
+                    to={`/dashboard/quotes/${quote.id}`}
+                    className="block px-6 py-4 hover:bg-gray-50 transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-gray-900">{quote.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {quote.clientName || quote.clientEmail}
+                          {quote.weddingDate ? ` · ${quote.weddingDate}` : ''}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-gray-900">
+                          {formatMoney(quote.totalAmount, quote.currency)}
+                        </p>
+                        <p className="text-xs text-indigo-600 font-medium">View quote →</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">{statusLabel[quote.status]}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </main>
+    </div>
+  )
+}
+
+export default VendorQuotes

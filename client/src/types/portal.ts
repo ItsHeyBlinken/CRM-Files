@@ -33,6 +33,7 @@ export interface VendorProjectDetail {
     title: string
     fileName: string
     acknowledgedAt: string | null
+    acknowledgementLegalName?: string | null
     createdAt: string
   }>
   milestones: Milestone[]
@@ -71,6 +72,7 @@ export interface ContractSummary {
   id: number
   title: string
   acknowledgedAt: string | null
+  acknowledgementLegalName?: string | null
 }
 
 export interface DeliverableSummary {

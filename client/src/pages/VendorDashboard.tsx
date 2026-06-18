@@ -75,7 +75,12 @@ const VendorDashboard: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">PortalHub</h1>
-            <p className="text-sm text-gray-500">Vendor dashboard</p>
+            <nav className="mt-1 flex gap-4 text-sm">
+              <span className="text-indigo-600 font-medium">Projects</span>
+              <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
+                Quotes
+              </Link>
+            </nav>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>

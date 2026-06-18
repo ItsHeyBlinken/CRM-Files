@@ -28,6 +28,26 @@ router.get('/project', async (req: AuthRequest, res: Response): Promise<void> =>
   }
 })
 
+// GET /api/portal/contracts/:id/signing-context
+router.get('/contracts/:id/signing-context', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const context = await Contract.getSigningContext(
+      Number(req.params['id']),
+      Number(req.user.id)
+    )
+
+    if (!context) {
+      res.status(404).json({ error: 'Contract not found' })
+      return
+    }
+
+    res.json({ context })
+  } catch (error) {
+    logger.error('Contract signing context error:', error)
+    res.status(500).json({ error: 'Failed to load contract signing details' })
+  }
+})
+
 // GET /api/portal/contracts/:id/file
 router.get('/contracts/:id/file', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -61,16 +81,41 @@ router.get('/contracts/:id/file', async (req: AuthRequest, res: Response): Promi
 // POST /api/portal/contracts/:id/acknowledge
 router.post('/contracts/:id/acknowledge', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const {
+      legalName,
+      pdfHash,
+      viewDurationSeconds,
+      scrolledToEnd,
+      consentAccepted,
+      confirmLegalName,
+    } = req.body
+
+    if (!legalName || !pdfHash || typeof consentAccepted !== 'boolean') {
+      res.status(400).json({ error: 'Legal name, document hash, and consent are required' })
+      return
+    }
+
     const forwarded = req.headers['x-forwarded-for']
     const acknowledgementIp =
       typeof forwarded === 'string'
         ? forwarded.split(',')[0]?.trim() ?? null
         : req.ip ?? null
 
+    const userAgent = typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null
+
     const contract = await Contract.acknowledge(
       Number(req.params['id']),
       Number(req.user.id),
-      acknowledgementIp
+      acknowledgementIp,
+      userAgent,
+      {
+        legalName: String(legalName),
+        pdfHash: String(pdfHash),
+        viewDurationSeconds: Number(viewDurationSeconds) || 0,
+        scrolledToEnd: Boolean(scrolledToEnd),
+        consentAccepted,
+        confirmLegalName: Boolean(confirmLegalName),
+      }
     )
 
     if (!contract) {
@@ -81,7 +126,34 @@ router.post('/contracts/:id/acknowledge', async (req: AuthRequest, res: Response
     res.json({ contract })
   } catch (error) {
     logger.error('Contract acknowledge error:', error)
-    res.status(500).json({ error: 'Failed to acknowledge contract' })
+
+    if (error instanceof Error) {
+      switch (error.message) {
+        case 'LEGAL_NAME_REQUIRED':
+          res.status(400).json({ error: 'Please enter your full legal name' })
+          return
+        case 'CONSENT_REQUIRED':
+          res.status(400).json({ error: 'You must agree to the electronic signature statement' })
+          return
+        case 'PDF_HASH_MISMATCH':
+          res.status(409).json({
+            error: 'This contract was updated. Please review the document again before signing.',
+          })
+          return
+        case 'REVIEW_INCOMPLETE':
+          res.status(400).json({
+            error: 'Please review the full contract (scroll to the end or read for at least 15 seconds)',
+          })
+          return
+        case 'LEGAL_NAME_CONFIRMATION_REQUIRED':
+          res.status(400).json({
+            error: 'Please confirm that the name you entered is your full legal name',
+          })
+          return
+      }
+    }
+
+    res.status(500).json({ error: 'Failed to sign contract' })
   }
 })
 

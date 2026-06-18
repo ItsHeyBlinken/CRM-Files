@@ -71,7 +71,8 @@ api.interceptors.response.use(
       const isPublicPage =
         path === '/login' ||
         path === '/register' ||
-        path.startsWith('/invite/')
+        path.startsWith('/invite/') ||
+        path.startsWith('/quote/')
 
       if (!isPublicPage) {
         window.location.href = '/login'

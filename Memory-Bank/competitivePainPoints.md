@@ -22,7 +22,7 @@ These recur across competitors and should drive PortalHub design.
 | **Overwhelming complexity** | Tools feel like overkill vs Google Sheets/email | **Asymmetric UX**: rich vendor dashboard, **minimal client surface**; no CRM jargon on client side | ✅ North star |
 | **Slow / buggy UX** | Slow loads, glitches, unreliable automation | Lean client bundle; **minimal client-side automation**; test on real phones | Ongoing |
 | **Multi-email chaos** | Separate emails per contract/document | **One project, one portal** — contract, invoices, deliverables in one place | ✅ Built |
-| **Vendor setup burden** | Hours configuring Dubsado-like systems | Sensible defaults: create project → invite → upload; branding optional; **no mandatory workflow builder** | ✅ Direction; quoting next |
+| **Vendor setup burden** | Hours configuring Dubsado-like systems | Sensible defaults: create project → invite → upload; **quote → accept → project** in minutes; branding optional | ✅ Quoting shipped |
 
 ---
 
@@ -70,7 +70,7 @@ These recur across competitors and should drive PortalHub design.
 
 | Planned work | Pain points addressed |
 |--------------|----------------------|
-| **Quoting** (`/quote/:token`) | Email fragmentation; vendor setup; pre-booking clarity |
+| **Quoting** (`/quote/:token`) | Email fragmentation; vendor setup; pre-booking clarity | ✅ Built (print-to-PDF MVP; downloadable PDF post-MVP) |
 | **Invite flow** (`/invite/:token`) | Email deliverability (link works even if email is missed if vendor texts link) |
 | **Client portal Home + next action** | 30-second findability; clarity |
 | **Single contract + deliverables in portal** | Multi-email chaos |

@@ -214,6 +214,10 @@
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
+  .print-only {
+    @apply hidden;
+  }
+
   /* Hover effects */
   .hover-lift {
     @apply transition-transform hover:-translate-y-1;
@@ -411,11 +415,35 @@
 
 /* Print styles */
 @media print {
+  @page {
+    margin: 0.75in;
+  }
+
+  body {
+    @apply bg-white text-gray-900;
+  }
+
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
+  }
+
+  .quote-print-document {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .quote-print-document table {
+    page-break-inside: auto;
+  }
+
+  .quote-print-document tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
   }
 }

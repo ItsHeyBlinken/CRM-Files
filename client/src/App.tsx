@@ -8,10 +8,13 @@ import HomeRedirect from './components/Auth/HomeRedirect'
 
 import VendorDashboard from './pages/VendorDashboard'
 import VendorProjectDetail from './pages/VendorProjectDetail'
+import VendorQuotes from './pages/VendorQuotes'
+import VendorQuoteDetail from './pages/VendorQuoteDetail'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AcceptInvite from './pages/AcceptInvite'
+import AcceptQuote from './pages/AcceptQuote'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import AdminUsers from './pages/Admin/AdminUsers'
 import AdminSettings from './pages/Admin/AdminSettings'
@@ -25,6 +28,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/invite/:token" element={<AcceptInvite />} />
+          <Route path="/quote/:token" element={<AcceptQuote />} />
 
           <Route path="/" element={<HomeRedirect />} />
 
@@ -41,6 +45,22 @@ function App() {
             element={
               <ProtectedRoute requiredRole="VENDOR">
                 <VendorProjectDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/quotes"
+            element={
+              <ProtectedRoute requiredRole="VENDOR">
+                <VendorQuotes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/quotes/:id"
+            element={
+              <ProtectedRoute requiredRole="VENDOR">
+                <VendorQuoteDetail />
               </ProtectedRoute>
             }
           />

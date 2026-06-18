@@ -5,7 +5,29 @@ export interface VendorContract {
   title: string
   fileName: string
   acknowledgedAt: string | null
+  acknowledgementLegalName?: string | null
   createdAt: string
+}
+
+export interface ContractSigningContext {
+  contractId: number
+  title: string
+  pdfHash: string
+  suggestedLegalName: string
+  accountLegalName: string
+  minViewSeconds: number
+  consentVersion: string
+  consentText: string
+  alreadyAcknowledged: boolean
+}
+
+export interface AcknowledgeContractInput {
+  legalName: string
+  pdfHash: string
+  viewDurationSeconds: number
+  scrolledToEnd: boolean
+  consentAccepted: boolean
+  confirmLegalName?: boolean
 }
 
 export async function fetchProjectContracts(projectId: number): Promise<VendorContract[]> {
@@ -28,6 +50,13 @@ export async function uploadProjectContract(
   return response.data.contract
 }
 
+export async function fetchContractSigningContext(
+  contractId: number
+): Promise<ContractSigningContext> {
+  const response = await api.get(`/portal/contracts/${contractId}/signing-context`)
+  return response.data.context
+}
+
 export async function fetchContractPdfBlob(contractId: number): Promise<Blob> {
   const response = await api.get(`/portal/contracts/${contractId}/file`, {
     responseType: 'blob',
@@ -35,7 +64,10 @@ export async function fetchContractPdfBlob(contractId: number): Promise<Blob> {
   return response.data
 }
 
-export async function acknowledgeContract(contractId: number): Promise<VendorContract> {
-  const response = await api.post(`/portal/contracts/${contractId}/acknowledge`)
+export async function acknowledgeContract(
+  contractId: number,
+  input: AcknowledgeContractInput
+): Promise<VendorContract> {
+  const response = await api.post(`/portal/contracts/${contractId}/acknowledge`, input)
   return response.data.contract
 }

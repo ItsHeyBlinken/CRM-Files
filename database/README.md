@@ -5,19 +5,23 @@
 | File | Purpose |
 |------|---------|
 | **`schema_portalhub.sql`** | Full PortalHub schema — run in pgAdmin to create or reset tables |
+| **`schema_quotes_addition.sql`** | Additive migration — quotes + line items (run after portalhub schema) |
+| **`schema_contract_ack_enhancement.sql`** | Contract e-sign audit fields (legal name, PDF hash, user agent, etc.) |
 | **`seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Wedding sample data |
 
 ### Setup (pgAdmin)
 
 1. Connect to your database
 2. Run **`schema_portalhub.sql`** (warning: drops legacy CRM tables if re-run)
-3. Optionally run **`seed_portalhub_dev.sql`**
+3. Run **`schema_quotes_addition.sql`** for quoting tables (if using quotes)
+4. Run **`schema_contract_ack_enhancement.sql`** for enhanced contract signing audit trail
+5. Optionally run **`seed_portalhub_dev.sql`**
 
 Test logins are documented in `Memory-Bank/techContext.md`.
 
 ### Current tables
 
-`users`, `vendor_profiles`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `user_sessions`
+`users`, `vendor_profiles`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `user_sessions`, `quotes`, `quote_line_items`
 
 ---
 
@@ -35,4 +39,4 @@ See `archive/legacy-crm/README.md` for details.
 
 ## Upcoming
 
-Quoting schema will be added as `schema_quotes.sql` or an additive migration when that feature is built.
+Vendor invoice/milestone editing from project detail; Stripe payments; transactional email provider.

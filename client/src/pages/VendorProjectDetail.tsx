@@ -198,9 +198,14 @@ const VendorProjectDetail: React.FC = () => {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <Link to="/dashboard" className="text-sm text-indigo-600 hover:text-indigo-500">
-              ← All projects
-            </Link>
+            <div className="flex gap-4 text-sm">
+              <Link to="/dashboard" className="text-indigo-600 hover:text-indigo-500">
+                ← Projects
+              </Link>
+              <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
+                Quotes
+              </Link>
+            </div>
             <h1 className="text-xl font-semibold text-gray-900 mt-1">{project.title}</h1>
           </div>
           <div className="flex items-center gap-4">
@@ -334,8 +339,10 @@ const VendorProjectDetail: React.FC = () => {
                 <p className="text-gray-600">{contract.fileName}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   {contract.acknowledgedAt
-                    ? `Acknowledged ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
-                    : 'Waiting for client acknowledgement'}
+                    ? contract.acknowledgementLegalName
+                      ? `Signed electronically as ${contract.acknowledgementLegalName} on ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
+                      : `Signed ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
+                    : 'Waiting for client signature'}
                 </p>
               </div>
             ))

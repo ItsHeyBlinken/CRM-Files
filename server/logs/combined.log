@@ -371,3 +371,112 @@
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-17 21:27:56"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-17 21:27:56"}
 {"level":"info","message":"SIGINT received, shutting down gracefully","service":"crm-platform","timestamp":"2026-06-17 21:50:21"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:41:36"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:42:00"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:42:25"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:43:47"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:44:01"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:44:05"}
+{"code":"22007","file":"datetime.c","length":151,"level":"error","line":"4026","message":"Convert quote error: invalid input syntax for type date: \"Sat Aug 01\"","name":"error","routine":"DateTimeParseError","service":"crm-platform","severity":"ERROR","stack":"error: invalid input syntax for type date: \"Sat Aug 01\"\n    at C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\node_modules\\pg-pool\\index.js:45:11\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Function.create (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Project.ts:258:20)\n    at async Function.convertToProject (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Quote.ts:358:21)\n    at async C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\routes\\vendorQuotes.ts:115:20","timestamp":"2026-06-18 16:54:27","where":"unnamed portal parameter $4 = '...'"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"crm-platform","timestamp":"2026-06-18 16:54:40"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:55:17"}
+{"code":"22007","file":"datetime.c","length":151,"level":"error","line":"4026","message":"Convert quote error: invalid input syntax for type date: \"Sat Aug 01\"","name":"error","routine":"DateTimeParseError","service":"crm-platform","severity":"ERROR","stack":"error: invalid input syntax for type date: \"Sat Aug 01\"\n    at C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\node_modules\\pg-pool\\index.js:45:11\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Function.create (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Project.ts:258:20)\n    at async Function.convertToProject (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Quote.ts:358:21)\n    at async C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\routes\\vendorQuotes.ts:115:20","timestamp":"2026-06-18 16:55:37","where":"unnamed portal parameter $4 = '...'"}
+{"code":"22007","file":"datetime.c","length":151,"level":"error","line":"4026","message":"Convert quote error: invalid input syntax for type date: \"Sat Aug 01\"","name":"error","routine":"DateTimeParseError","service":"crm-platform","severity":"ERROR","stack":"error: invalid input syntax for type date: \"Sat Aug 01\"\n    at C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\node_modules\\pg-pool\\index.js:45:11\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Function.create (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Project.ts:258:20)\n    at async Function.convertToProject (C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\models\\Quote.ts:358:21)\n    at async C:\\Users\\eppsk\\Desktop\\Coding Folders\\Generic Projects\\Full Stack Projects\\In Progress\\Planning CRM Project\\CRM Files\\server\\src\\routes\\vendorQuotes.ts:115:20","timestamp":"2026-06-18 16:56:45","where":"unnamed portal parameter $4 = '...'"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:57:56"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:58:04"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 16:58:09"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:18:53"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:21:32"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:21:47"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:21:52"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"🚀 PortalHub server running on port 3000","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-18 17:38:29"}

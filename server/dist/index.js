@@ -24,6 +24,8 @@ const logger_1 = require("./utils/logger");
 const socketService_1 = require("./services/socketService");
 const auth_1 = __importDefault(require("./routes/auth"));
 const vendorProjects_1 = __importDefault(require("./routes/vendorProjects"));
+const vendorQuotes_1 = __importDefault(require("./routes/vendorQuotes"));
+const quotes_1 = __importDefault(require("./routes/quotes"));
 const portal_1 = __importDefault(require("./routes/portal"));
 dotenv_1.default.config();
 const CODE_VERSION = 'v2.1.0-FIXED';
@@ -162,6 +164,8 @@ function setupMiddleware() {
     });
     app.use('/api/auth', auth_1.default);
     app.use('/api/vendor/projects', vendorProjects_1.default);
+    app.use('/api/vendor/quotes', vendorQuotes_1.default);
+    app.use('/api/quotes', quotes_1.default);
     app.use('/api/portal', portal_1.default);
     app.use('/uploads', express_1.default.static('uploads'));
     (0, socketService_1.socketHandler)(io);

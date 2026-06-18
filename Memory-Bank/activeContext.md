@@ -19,7 +19,7 @@ This is the guiding principle for all future work — not feature parity between
 **Implication for roadmap:** New features (e.g. quoting) are designed **vendor-first**; the client only sees what they need to act on (accept quote, sign contract, pay/view invoice, download files) — never vendor admin complexity.
 
 ## Current Work Focus
-**Legacy CRM cleanup complete.** Next: **quoting workflow** (vendor-first pre-project sales tool), then continue vendor dashboard depth.
+**Quoting workflow implemented (code complete).** User must run `schema_quotes_addition.sql` in pgAdmin before testing. Next: vendor polish (invoices/milestones on project detail), then monetization session.
 
 ## MVP Status
 
@@ -33,41 +33,33 @@ This is the guiding principle for all future work — not feature parity between
 | Contract PDF upload + client acknowledgement | ✅ Done |
 | Deliverable upload + client download | ✅ Done |
 | Legacy CRM cleanup | ✅ Done (June 2026) |
-| Quoting / proposals | 📋 Next up |
+| Quoting / proposals | ✅ Built — run SQL migration, then test |
 | Monetization plan | 📋 Document started — decisions in `monetization.md` |
 
 ## Next Session — Priority Order
 
-1. **Quoting tool** — vendor creates quote → mailto link → client accepts → convert to project → existing portal flow
+1. **Run quoting SQL** — `database/schema_quotes_addition.sql` in pgAdmin, then test full flow
 2. **Vendor polish (optional)** — create/edit invoices and milestones from project detail
 3. **Monetization plan** — dedicated session to fill decisions in `monetization.md` (before launch / before Stripe)
 4. **Automatic invite/quote emails** — post-MVP unless needed for quoting MVP
 
-## Planned: Quoting Workflow (User Decision — June 2026)
-
-**Goal:** Use PortalHub as a **quoting tool for future clients**, not only post-booking project management.
+## Quoting Workflow (Shipped — June 2026)
 
 **Flow:**
 ```
-Inquiry → Vendor creates quote → Email quote to client
-    → Client accepts quote → Vendor creates project in system
-    → Existing flow: invite → portal → contract → invoice → deliverables
+Vendor creates quote → mailto / copy link → Client opens /quote/:token (no login)
+    → Accept or decline → Vendor converts to project → invite → portal → contract → deliverables
 ```
 
-**Open design questions (defaults agreed for MVP — confirm when building):**
-- Inquiry: vendor manually creates quote from dashboard
-- Quote content: line items + total + optional notes
-- Client acceptance: public magic link `/quote/:token` (no login)
-- After accept: vendor clicks **Convert to project** → then invite flow
-- Email: mailto draft with link (like invites today)
+**Pain points addressed:** email deliverability (link works even if email missed), vendor setup speed, pre-booking clarity, communication fragmentation.
 
-**Likely new entities:** `quotes` (or `proposals`), line items, status (`draft` | `sent` | `accepted` | `declined` | `expired`), optional link to `projects` after conversion.
+**Entities:** `quotes`, `quote_line_items` — see `database/schema_quotes_addition.sql`
 
 ## Database Status
 - [x] `schema_portalhub.sql` applied
 - [x] Legacy `client_event_access` dropped
 - [x] Dev seed applied (test logins in `techContext.md`)
-- [ ] Quoting schema — not yet designed
+- [ ] **`schema_quotes_addition.sql`** — user must run in pgAdmin
 
 ## Key Routes (current)
 
@@ -75,8 +67,11 @@ Inquiry → Vendor creates quote → Email quote to client
 |------|------|---------|
 | `/dashboard` | VENDOR | Project list + create |
 | `/dashboard/projects/:id` | VENDOR | Project detail (overview, invite, contract, deliverables, timeline, invoices) |
+| `/dashboard/quotes` | VENDOR | Quote list + create |
+| `/dashboard/quotes/:id` | VENDOR | Quote detail, client link, convert to project |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
+| `/quote/:token` | Public | Client quote review + accept/decline |
 
 ## Confirmed Product Decisions
 | Decision | Choice |
@@ -85,7 +80,7 @@ Inquiry → Vendor creates quote → Email quote to client
 | Login UX | Single login page with role-based redirect |
 | Login timing | At **invite acceptance**, not at contract acknowledgement |
 | Payments (MVP) | Invoice display only |
-| Contracts (MVP) | PDF upload + client acknowledgement |
+| Contracts (MVP) | PDF upload + electronic signature (typed name, consent, review gate, audit trail) |
 | One client per project (MVP) | Enforced in API + UI |
 | One contract per project (MVP) | Enforced on upload |
 

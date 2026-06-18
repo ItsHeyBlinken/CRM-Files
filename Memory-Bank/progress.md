@@ -259,7 +259,7 @@
 - [x] Client portal: project data, milestones, invoices, next-action UX
 - [x] Contract PDF + acknowledgement, deliverables upload + download
 - [x] Remove/archive legacy CRM pages and models
-- [ ] Quoting workflow (next major feature)
+- [x] Quoting workflow — vendor quotes, public `/quote/:token`, convert to project
 - [ ] **Monetization plan finalized** — complete checklist in `monetization.md` before launch
 
 ### Session: Legacy CRM cleanup (June 2026)
@@ -268,7 +268,7 @@
 - [x] Removed unused models: Event, Vendor (supplier), Payment, Activity
 - [x] Updated admin Layout for `/admin` nav only (PortalHub branding)
 - [x] Updated `database/README.md` + `database/archive/legacy-crm/README.md`
-- [x] Active API surface: `/api/auth`, `/api/vendor/projects`, `/api/portal` only
+- [x] Active API surface: `/api/auth`, `/api/vendor/projects`, `/api/vendor/quotes`, `/api/quotes`, `/api/portal`
 
 ### Session: Monetization planning doc (June 2026)
 - [x] Created `monetization.md` — decision checklist, tier hypothesis, build order vs billing
@@ -280,3 +280,11 @@
 - [x] Created `competitivePainPoints.md` — pain point → PortalHub response matrix + roadmap mapping
 - [x] Updated productContext competitive table, projectbrief success criteria, activeContext north star
 - [x] Key takeaway: link-first flows + mobile web portal + 30-second findability + 2-click pay (post-MVP)
+
+### Session: Quoting workflow (June 2026)
+- [x] `database/schema_quotes_addition.sql` — quotes + quote_line_items tables
+- [x] Server: Quote model, `/api/vendor/quotes`, public `/api/quotes/:token`
+- [x] Client: `/dashboard/quotes`, quote detail, `/quote/:token` accept/decline page
+- [x] Flow: create quote → mailto/copy link → client accepts → convert to project → invite flow
+- [x] Save as PDF (MVP): browser print on vendor quote detail + public quote page; server-generated PDF later
+- [ ] User runs SQL in pgAdmin before testing

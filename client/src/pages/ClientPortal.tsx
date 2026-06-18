@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import {
-  acknowledgeContract,
-  fetchContractPdfBlob,
-} from '../services/contractService'
+import ContractSignPanel from '../components/portal/ContractSignPanel'
 import { downloadDeliverableBlob } from '../services/deliverableService'
 import { fetchClientPortal } from '../services/projectService'
 import type { ClientPortalData, PortalTab } from '../types/portal'
@@ -23,10 +20,7 @@ const ClientPortal: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<PortalTab>('home')
-  const [ackChecked, setAckChecked] = useState(false)
-  const [ackSubmitting, setAckSubmitting] = useState(false)
-  const [docError, setDocError] = useState('')
-  const [viewingContractId, setViewingContractId] = useState<number | null>(null)
+  const [signedContractTitle, setSignedContractTitle] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const [filesError, setFilesError] = useState('')
 
@@ -49,42 +43,10 @@ const ClientPortal: React.FC = () => {
     loadPortal()
   }, [loadPortal])
 
-  const handleViewContract = async (contractId: number) => {
-    setDocError('')
-    setViewingContractId(contractId)
-    try {
-      const blob = await fetchContractPdfBlob(contractId)
-      const url = URL.createObjectURL(blob)
-      window.open(url, '_blank', 'noopener,noreferrer')
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Could not open contract'
-      setDocError(message)
-    } finally {
-      setViewingContractId(null)
-    }
-  }
-
-  const handleAcknowledge = async (contractId: number) => {
-    if (!ackChecked) return
-
-    setAckSubmitting(true)
-    setDocError('')
-
-    try {
-      await acknowledgeContract(contractId)
-      setAckChecked(false)
-      await loadPortal()
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Could not acknowledge contract'
-      setDocError(message)
-    } finally {
-      setAckSubmitting(false)
-    }
+  const handleContractSigned = async (contractTitle: string) => {
+    await loadPortal()
+    setSignedContractTitle(contractTitle)
+    setActiveTab('home')
   }
 
   const handleDownload = async (deliverableId: number) => {
@@ -119,6 +81,24 @@ const ClientPortal: React.FC = () => {
 
     return (
       <div className="space-y-5">
+        {signedContractTitle && (
+          <section className="rounded-2xl bg-green-50 border border-green-200 p-5 shadow-sm">
+            <p className="font-medium text-green-900">Contract signed</p>
+            <p className="mt-2 text-sm text-green-800">
+              <strong>{signedContractTitle}</strong> is complete. You&apos;re all set for now — you
+              can sign out or close this page. Come back anytime; your next step will appear on
+              Home when your vendor adds an invoice or files.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSignedContractTitle(null)}
+              className="mt-4 text-sm font-medium text-green-800 underline hover:text-green-900"
+            >
+              Got it
+            </button>
+          </section>
+        )}
+
         <section className="rounded-2xl bg-white p-5 shadow-sm">
           <p className="text-sm font-medium" style={{ color: accent }}>
             {data.vendorBusinessName}
@@ -146,9 +126,10 @@ const ClientPortal: React.FC = () => {
           </button>
         ) : (
           <section className="rounded-2xl bg-white p-5 shadow-sm">
-            <p className="font-medium text-gray-900">You're all caught up</p>
+            <p className="font-medium text-gray-900">You&apos;re all caught up</p>
             <p className="mt-1 text-sm text-gray-600">
-              Nothing needs your attention right now. Check back anytime for updates.
+              Nothing needs your attention right now. You can sign out or close this page — your
+              portal will be here when you return.
             </p>
           </section>
         )}
@@ -195,50 +176,34 @@ const ClientPortal: React.FC = () => {
 
     return (
       <ul className="space-y-3">
-        {docError && (
-          <li className="list-none">
-            <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{docError}</div>
-          </li>
-        )}
         {data.contracts.map((contract) => (
           <li key={contract.id}>
             <div className="rounded-2xl bg-white p-5 shadow-sm">
               <p className="font-medium text-gray-900">{contract.title}</p>
               <p className="mt-1 text-sm text-gray-600">
                 {contract.acknowledgedAt
-                  ? 'Acknowledged — thank you!'
-                  : 'Please review and acknowledge this contract'}
+                  ? 'Signed — thank you!'
+                  : 'Please review and sign this contract electronically'}
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleViewContract(contract.id)}
-                  disabled={viewingContractId === contract.id}
-                  className="text-sm font-medium disabled:opacity-50"
-                  style={{ color: accent }}
-                >
-                  {viewingContractId === contract.id ? 'Opening...' : 'View PDF'}
-                </button>
-              </div>
-              {!contract.acknowledgedAt && (
-                <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
-                  <label className="flex items-start gap-3 text-sm text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={ackChecked}
-                      onChange={(e) => setAckChecked(e.target.checked)}
-                      className="mt-0.5 rounded border-gray-300"
-                    />
-                    <span>I have read this contract and agree to its terms.</span>
-                  </label>
+              {!contract.acknowledgedAt ? (
+                <ContractSignPanel
+                  contractId={contract.id}
+                  contractTitle={contract.title}
+                  accentColor={accent}
+                  onSigned={handleContractSigned}
+                />
+              ) : (
+                <div className="mt-3 space-y-3">
+                  <p className="text-xs text-gray-500">
+                    Signed on {new Date(contract.acknowledgedAt).toLocaleDateString()}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => handleAcknowledge(contract.id)}
-                    disabled={!ackChecked || ackSubmitting}
-                    className="w-full rounded-xl py-3 text-sm font-medium text-white disabled:opacity-50"
-                    style={{ backgroundColor: accent }}
+                    onClick={() => setActiveTab('home')}
+                    className="text-sm font-medium"
+                    style={{ color: accent }}
                   >
-                    {ackSubmitting ? 'Saving...' : 'Acknowledge contract'}
+                    Back to Home
                   </button>
                 </div>
               )}
@@ -415,7 +380,12 @@ const ClientPortal: React.FC = () => {
             <button
               key={tab}
               type="button"
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab)
+                if (tab !== 'home') {
+                  setSignedContractTitle(null)
+                }
+              }}
               className={`flex-1 py-3 text-xs font-medium transition ${
                 activeTab === tab ? 'text-gray-900' : 'text-gray-400'
               }`}
