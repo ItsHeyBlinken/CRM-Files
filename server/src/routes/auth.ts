@@ -152,7 +152,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         phone,
         company,
         jobTitle,
-        role: 'CLIENT' // Default role for new registrations
+        role: 'VENDOR' // Default role for vendor self-registration
       })
       logger.info('User created successfully:', { id: newUser.id, email: newUser.email })
     } catch (createError: any) {

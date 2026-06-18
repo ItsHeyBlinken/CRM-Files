@@ -1,43 +1,71 @@
-# Project Brief: Event Planner CRM
+# Project Brief: PortalHub (placeholder)
+
+> **Product name:** **PortalHub** — generic placeholder; rebrand before launch.
 
 ## Project Overview
-A comprehensive Customer Relationship Management (CRM) system specifically designed for event planning businesses. This full-stack application provides tools for managing clients, events, vendors, payments, tasks, and reporting.
+A two-sided web application for wedding freelancers and vendors (photographers, florists, DJs, etc.). Each vendor gets an admin-style dashboard to manage their business. Each vendor's clients (couples) log in to a branded portal to view only the project they hired that vendor for — status, contracts, invoices, and deliverables — all in one place instead of scattered across email, Google Drive, and separate invoicing tools.
+
+## Product Model
+- **Vendor side**: Freelancer/wedding vendor manages projects, clients, invoices, contracts, deliverables, and portal branding.
+- **Client side**: One login per couple; sees only their assigned project(s) with that vendor.
+- **Single app, two experiences**: Shared login page; role-based redirect after authentication.
 
 ## Core Requirements
 
-### Primary Goals
-- **Client Management**: Store and manage client information, contact details, and communication history
-- **Event Planning**: Create, track, and manage events from initial inquiry to completion
-- **Vendor Management**: Maintain vendor database with contact information and service capabilities
-- **Financial Tracking**: Handle payments, invoices, and financial reporting
-- **Task Management**: Create and track tasks related to events and clients
-- **Real-time Communication**: Socket.io integration for live updates and notifications
-- **Reporting**: Generate reports on events, clients, and business performance
+### Vendor Dashboard
+- Register and manage vendor profile and portal branding (business name, logo, colors)
+- Create and manage projects (weddings/bookings)
+- Invite clients (one login per couple)
+- Manage project status and client-visible milestones
+- Upload contracts (PDF) and track acknowledgement
+- Create and display invoices (payment collection deferred post-MVP)
+- Upload deliverables for client download
+
+### Client Portal
+- Accept invite and register/login (same login page as vendors)
+- View assigned project only — wedding date, status, timeline
+- View and acknowledge contracts (PDF + acknowledgement for MVP)
+- View invoices (display only for MVP)
+- Download deliverables
 
 ### Technical Requirements
-- **Frontend**: React with TypeScript, Vite build tool, Tailwind CSS
+- **Frontend**: React with TypeScript, Vite, Tailwind CSS
 - **Backend**: Node.js with Express.js, TypeScript
 - **Database**: PostgreSQL with connection pooling
-- **Authentication**: JWT-based authentication with session management
-- **File Upload**: Support for image and document uploads
-- **Security**: Rate limiting, CORS, helmet security headers
-- **Real-time**: Socket.io for live updates
+- **Authentication**: JWT + sessions; roles `VENDOR`, `CLIENT`, `ADMIN`
+- **Authorization**: Strict project-scoped access for clients; vendor-scoped tenancy
+- **File Upload**: PDFs (contracts), documents, deliverables
+- **Security**: Rate limiting, CORS, helmet, input validation
 
-### Business Value
-- Streamline event planning workflow
-- Centralize client and vendor information
-- Improve financial tracking and reporting
-- Enhance team collaboration through real-time updates
-- Reduce manual data entry and improve efficiency
+## Confirmed MVP Decisions
+| Decision | Choice |
+|----------|--------|
+| Client accounts | One login per couple |
+| Login UX | Single login page with role-based redirect |
+| Payments (MVP) | Invoice display only (no Stripe yet) |
+| Contracts (MVP) | PDF upload + client acknowledgement |
 
-## Success Criteria
-- All CRUD operations working for core entities (clients, events, vendors, payments, tasks)
-- Real-time updates functioning properly
-- Secure authentication and authorization
-- Responsive and intuitive user interface
-- Comprehensive reporting capabilities
-- Production-ready deployment configuration
+## Approach: First Shippable Loop
+1. Vendor registers → creates project → invites client
+2. Client accepts invite → registers → logs in
+3. Vendor sets branding, adds milestone, uploads contract PDF, creates invoice
+4. Client sees project status, acknowledges contract, views invoice, downloads deliverables
 
-## Project Scope
-This is a full-featured CRM system that will serve as the central hub for event planning businesses to manage their operations, clients, and events efficiently.
+## Approach: Greenfield Product, Reuse Infrastructure
+The previous Event Planner CRM direction is deprecated. Keep auth patterns, build/deploy pipeline, and stack. Replace planner-centric schema, CRM boilerplate pages, and entity models with the vendor/client portal model.
 
+## Success Criteria (MVP)
+- Vendor can create project and invite client
+- Client can only access their assigned project(s)
+- Role redirect works from shared login
+- Contract PDF view + acknowledgement recorded
+- Invoice display for client
+- Vendor branding visible in client portal
+- Deployed and runnable in development
+
+## Out of Scope (MVP)
+- Stripe / online payments
+- E-signature integrations (DocuSign, etc.)
+- Multi-staff vendor accounts
+- Custom subdomains per vendor
+- Platform-wide analytics / reporting

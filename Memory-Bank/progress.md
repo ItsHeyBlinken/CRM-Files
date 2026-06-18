@@ -1,4 +1,6 @@
-# Progress: Event Planner CRM
+# Progress: Wedding Vendor Client Portal
+
+> **Note:** Product pivoted from Event Planner CRM to two-sided wedding vendor client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
 
 ## What Works
 
@@ -161,3 +163,44 @@
 - Advanced search and filtering
 - Email notifications
 - Testing suite (unit and integration tests)
+
+---
+
+## Post-Pivot: Wedding Vendor Client Portal (June 2025)
+
+### Session: Product direction confirmed
+- [x] Decided greenfield product model — reuse infra, replace schema and CRM UI
+- [x] Confirmed two-sided app: vendor dashboard + client portal
+- [x] Confirmed MVP decisions:
+  - One login per couple
+  - Shared login page with role redirect (VENDOR → `/dashboard`, CLIENT → `/portal`)
+  - Invoice display only (no Stripe in MVP)
+  - PDF contract + client acknowledgement (no e-sign in MVP)
+- [x] Updated Memory Bank: `projectbrief.md`, `productContext.md`, `activeContext.md`, `systemPatterns.md`
+- [x] Set placeholder product name: **PortalHub**
+- [x] Created `database/schema_portalhub.sql` (drop legacy + create PortalHub tables)
+- [x] Created optional `database/seed_portalhub_dev.sql` (test vendor + client)
+- [x] Updated User model and register default role to VENDOR
+- [x] Schema applied in pgAdmin; legacy `client_event_access` removed
+- [x] Documented dev test logins in `techContext.md`
+
+### Reusable from pre-pivot work
+- [x] Auth backend + frontend (needs role update PLANNER → VENDOR)
+- [x] PostgreSQL connection, session store, deploy pipeline
+- [x] Express middleware stack, build tooling
+
+### What to build (MVP — not started)
+- [x] New database schema — `database/schema_portalhub.sql` (+ optional `seed_portalhub_dev.sql`)
+- [ ] Run schema in pgAdmin (user action)
+- [ ] Auth updates: client invite registration, login role redirect
+- [ ] Vendor dashboard: layout, projects CRUD, client invite, branding settings
+- [ ] Client portal: layout, project view, contract ack, invoice display, deliverable download
+- [ ] Project-scoped authorization middleware
+- [ ] Remove/archive legacy CRM pages and models
+
+### Post-MVP backlog
+- Stripe invoice payment
+- E-signature integration
+- Email notifications (invites, reminders)
+- Vendor staff accounts
+- Custom subdomain per vendor

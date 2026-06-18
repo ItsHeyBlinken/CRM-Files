@@ -1,67 +1,97 @@
-# Product Context: Event Planner CRM
+# Product Context: PortalHub (placeholder)
+
+> **Platform name:** **PortalHub** — temporary working title for the vendor/client portal product.
 
 ## Why This Project Exists
 
 ### Problem Statement
-Event planning businesses struggle with:
-- **Scattered Information**: Client details, vendor contacts, and event information stored in multiple places
-- **Poor Communication**: Lack of real-time updates between team members
-- **Financial Tracking**: Difficulty tracking payments, invoices, and event profitability
-- **Task Management**: No centralized system for tracking event-related tasks and deadlines
-- **Reporting**: Limited visibility into business performance and client satisfaction
+Wedding vendors and their clients lose time and trust when project work is scattered:
+- **Email threads** for status updates and document sharing
+- **Google Drive / Dropbox** for deliverables with no tie to project status
+- **Separate invoicing tools** disconnected from the client relationship
+- **Contracts** sent as attachments with no clear acknowledgement trail
+- **No single branded hub** where the couple sees everything for their wedding with that vendor
 
 ### Target Users
-- **Event Planners**: Primary users who need to manage events and clients
-- **Event Planning Teams**: Multiple team members collaborating on events
-- **Business Owners**: Need reporting and financial oversight
-- **Clients**: May have limited access to view event progress
+| User | Description |
+|------|-------------|
+| **Vendor** | Freelancer or small wedding business (photographer, florist, DJ, videographer, etc.) |
+| **Client (Couple)** | The hiring party — one shared login per couple |
+| **Platform Admin** | Optional; for platform operator, not MVP focus |
 
 ## How It Should Work
 
-### Core User Flows
-1. **Client Onboarding**
-   - Add new client with contact information
-   - Create initial event inquiry
-   - Set up communication preferences
+### Authentication Flow
+1. User visits shared `/login`
+2. Credentials validated; role read from account
+3. Redirect:
+   - `VENDOR` → `/dashboard`
+   - `CLIENT` → `/portal`
+4. Registration paths differ: vendor self-registers; client registers via vendor invite link
 
-2. **Event Management**
-   - Create event with details (date, location, type, budget)
-   - Assign vendors and track vendor communications
-   - Manage event timeline and milestones
-   - Track event progress and status
+### Vendor User Flows
 
-3. **Vendor Management**
-   - Maintain vendor database with services and contact info
-   - Track vendor performance and ratings
-   - Manage vendor contracts and payments
+**Onboarding**
+- Register as vendor
+- Set business name and basic portal branding
 
-4. **Financial Operations**
-   - Create and track invoices
-   - Record payments and payment methods
-   - Generate financial reports
-   - Track event profitability
+**Project management**
+- Create project (title, wedding date, location, notes)
+- Set project status (e.g. inquiry, booked, in progress, delivered, complete)
+- Add milestones — mark which are visible to client
 
-5. **Task Management**
-   - Create tasks related to events or clients
-   - Assign tasks to team members
-   - Track task completion and deadlines
-   - Set up recurring tasks
+**Client management**
+- Add couple name and email to project
+- Send invite; couple creates one shared account
+
+**Contracts**
+- Upload contract PDF to project
+- Client views and acknowledges; timestamp stored
+
+**Invoices**
+- Create invoice (amount, description, due date, status)
+- Client views in portal (no online payment in MVP)
+
+**Deliverables**
+- Upload files; client downloads from portal
+
+### Client User Flows
+
+**Onboarding**
+- Receive invite email/link from vendor
+- Register (one account per couple)
+- Land in branded portal for their project
+
+**Portal experience**
+- See project overview: wedding date, current status, milestone timeline
+- View and acknowledge contract PDF
+- View invoices and payment status (display only)
+- Download deliverables
+- Portal styled with vendor branding (logo, colors, business name)
 
 ### User Experience Goals
-- **Intuitive Navigation**: Easy to find and access all features
-- **Real-time Updates**: Live notifications and updates across the system
-- **Mobile Responsive**: Works well on all device sizes
-- **Fast Performance**: Quick loading and responsive interactions
-- **Data Security**: Secure handling of sensitive client and financial information
+- **Vendor dashboard**: Admin-style, efficient, business-focused
+- **Client portal**: Simple, calm, branded — couple sees only what matters to them
+- **Trust**: Clear status, no hunting through email
+- **Mobile responsive**: Couples often check on phone
+- **Secure isolation**: Clients never see other projects or vendors
 
 ## Key Features
-- Dashboard with overview of active events and tasks
-- Client management with detailed profiles
-- Event planning with timeline and milestone tracking
-- Vendor database with service categorization
-- Payment tracking and invoicing
-- Task management with assignment and due dates
-- Reporting and analytics
-- Real-time notifications and updates
-- File upload and document management
 
+### MVP
+- Shared login with role redirect
+- Vendor dashboard (projects, clients, settings)
+- Client portal (project view, contracts, invoices, deliverables)
+- Project-scoped authorization
+- Vendor branding on client portal
+- PDF contract acknowledgement
+- Invoice display
+
+### Post-MVP
+- Stripe (or similar) invoice payment
+- E-signature for contracts
+- Email notifications (invite, invoice, deliverable ready)
+- Vendor staff accounts
+- Custom subdomain per vendor (`smithphoto.app.com`)
+- Questionnaires (shot list, timeline)
+- Photo gallery delivery UX

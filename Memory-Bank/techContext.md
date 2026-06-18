@@ -1,4 +1,4 @@
-# Technical Context: Event Planner CRM
+# Technical Context: PortalHub (placeholder)
 
 ## Technologies Used
 
@@ -48,6 +48,19 @@
 - PostgreSQL (v12 or higher)
 - npm or yarn package manager
 
+### Development Test Accounts
+
+Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
+
+| Role | Email | Password | Notes |
+|------|-------|----------|-------|
+| **VENDOR** | `vendor@test.com` | `Password123!` | Sam Photography — has `vendor_profiles` row |
+| **CLIENT** | `client@test.com` | `Password123!` | Linked to **Miller Wedding** project via `project_clients` |
+
+**Seed project:** Miller Wedding (2026-09-12, Sam Photography vendor) — includes sample milestones, invoice `INV-001`, and an accepted invite.
+
+**Re-seed:** Re-run `seed_portalhub_dev.sql` only on a fresh schema (will fail if emails already exist). To reset: run `schema_portalhub.sql` again, then seed.
+
 ### Environment Variables
 ```env
 # Database
@@ -70,6 +83,9 @@ SESSION_SECRET=your_session_secret
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
+
+# Client (when configured)
+VITE_APP_NAME=PortalHub
 ```
 
 ### Installation Commands
@@ -146,6 +162,16 @@ npm run start        # Start production server
 ```
 
 ### Database Setup
+```bash
+# PortalHub schema (pgAdmin: run database/schema_portalhub.sql)
+# Optional dev seed: database/seed_portalhub_dev.sql
+```
+
+**Current tables:** `users`, `vendor_profiles`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`
+
+Legacy `client_event_access` removed — not used by PortalHub.
+
+### Database Setup (legacy)
 ```bash
 # Create database
 createdb event_planner_crm

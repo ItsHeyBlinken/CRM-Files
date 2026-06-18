@@ -6,7 +6,7 @@
  * 
  * Features:
  * - User authentication with email/password
- * - Role-based access control (PLANNER, CLIENT, ADMIN)
+ * - Role-based access control (VENDOR, CLIENT, ADMIN)
  * - Profile management (avatar, bio, preferences)
  * - Event planning specific roles and permissions
  * - Password hashing with bcrypt
@@ -26,7 +26,7 @@ export interface IUser {
   password: string
   firstName: string
   lastName: string
-  role: 'PLANNER' | 'CLIENT' | 'ADMIN'
+  role: 'VENDOR' | 'CLIENT' | 'ADMIN'
   isActive: boolean
   emailVerified: boolean
   avatarUrl?: string
@@ -60,7 +60,7 @@ export interface IUserCreate {
   password: string
   firstName: string
   lastName: string
-  role?: 'PLANNER' | 'CLIENT' | 'ADMIN'
+  role?: 'VENDOR' | 'CLIENT' | 'ADMIN'
   phone?: string
   bio?: string
   company?: string
@@ -277,7 +277,7 @@ export class UserModel {
       password: row.password || row.password_hash, // Handle both column names
       firstName: firstName || '',
       lastName: lastName || '',
-      role: (row.role?.toUpperCase() || 'CLIENT') as 'PLANNER' | 'CLIENT' | 'ADMIN',
+      role: (row.role?.toUpperCase() || 'CLIENT') as 'VENDOR' | 'CLIENT' | 'ADMIN',
       isActive: row.is_active !== undefined ? row.is_active : true,
       emailVerified: row.email_verified || false,
       preferences: (typeof row.preferences === 'string' 

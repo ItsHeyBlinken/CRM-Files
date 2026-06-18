@@ -1,73 +1,82 @@
-# Active Context: Event Planner CRM
+# Active Context: PortalHub (placeholder)
+
+## Product Name
+**PortalHub** — generic placeholder for the platform. Vendor-facing branding (logo, colors) is per-vendor inside the app; this name is only for the product itself until a final name is chosen.
 
 ## Current Work Focus
-**Application is deployed and running. Authentication is fully implemented. Next: Test auth flow and implement first entity CRUD (Events or Clients).**
+**Schema applied in pgAdmin.** Database has 9 PortalHub tables. Dev test logins documented in `techContext.md`. Next: auth updates (role redirect, client invite flow), then dashboard/portal shells.
 
-### Recent Changes
-- **Authentication Complete**: Full login, register, logout, and /me endpoints implemented
-- **Frontend Integration**: AuthContext, Login, Register pages connected to API
-- **Deployment Fixed**: Build process, TypeScript compilation, and Nixpacks configuration working
-- **Session Store**: PostgreSQL session store configured (warning may be false positive)
-- **Code Versioning**: Added version tracking to verify deployments
-- **Server Initialization**: Refactored to async pattern ensuring DB connection before middleware
+## Database Status
+- [x] `schema_portalhub.sql` applied
+- [x] Legacy `client_event_access` dropped
+- [ ] Confirm `seed_portalhub_dev.sql` run (test logins — see **Development Test Accounts** in `techContext.md`)
 
-### Current Status
-- ✅ **Deployment**: Application successfully deployed and running on production
-- ✅ **Build Process**: All build scripts working correctly
-- ✅ **Authentication**: Backend and frontend fully implemented
-- ✅ **Database**: PostgreSQL connected and working
-- ⚠️ **MemoryStore Warning**: Appears in logs but PostgreSQL store is initialized (needs verification)
+## Pivot Summary (Session Decision)
+- **From**: Event Planner CRM (planner manages clients, events, supplier vendors)
+- **To**: Wedding vendor client portal (vendor manages projects; couple logs into branded portal)
+- **Strategy**: Start over on product/schema/UI; keep infra (React, Express, PostgreSQL, auth, deploy)
 
-### Current Issues
-1. **MemoryStore Warning**: Warning appears despite PostgreSQL store being initialized
-   - Store is correctly set before middleware configuration
-   - May be a false positive from express-session
-   - Needs verification that sessions are actually using PostgreSQL store
+## Confirmed Product Decisions
+| Decision | Choice |
+|----------|--------|
+| Client accounts | One login per couple |
+| Login UX | Single login page with role-based redirect |
+| Payments (MVP) | Invoice display only |
+| Contracts (MVP) | PDF upload + client acknowledgement |
 
-### Next Steps (Priority Order)
-1. **Test Authentication Flow**: 
-   - Register new user → Login → Access protected route → Logout
-   - Verify JWT tokens work correctly
-   - Test error scenarios
+## Target Architecture
 
-2. **Fix MemoryStore Warning** (if it's a real issue):
-   - Verify sessions are actually stored in PostgreSQL
-   - Investigate express-session initialization timing if needed
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Single Application                    │
+├────────────────────────┬────────────────────────────────┤
+│   Vendor Dashboard     │       Client Portal            │
+│   /dashboard/*         │       /portal/*                │
+│   Role: VENDOR         │       Role: CLIENT             │
+├────────────────────────┴────────────────────────────────┤
+│              Express API + PostgreSQL                    │
+│   Tenancy: vendor-scoped │ Access: project-scoped       │
+└─────────────────────────────────────────────────────────┘
+```
 
-3. **Implement First Entity CRUD**:
-   - Choose Events or Clients
-   - Implement full CRUD (GET all, GET one, POST, PUT, DELETE)
-   - Connect frontend to new endpoints
-   - Test complete workflow
+## Planned Domain Model
+- `users` — role: VENDOR | CLIENT | ADMIN
+- `vendor_profiles` — branding, business info (1:1 with vendor user)
+- `projects` — the wedding/booking the vendor was hired for
+- `project_clients` — links client user to project (one couple per project for MVP)
+- `milestones` — timeline items (client_visible flag)
+- `contracts` — PDF path + acknowledgement timestamp
+- `invoices` — amount, due date, status (display only MVP)
+- `deliverables` — file uploads for client download
 
-4. **Continue Pattern**:
-   - Apply same pattern to remaining entities (Vendors, Payments, Tasks)
+## What to Keep (Infrastructure)
+- React + Vite + TypeScript + Tailwind client setup
+- Express + PostgreSQL + JWT/session auth patterns
+- Build and deployment pipeline (Nixpacks/Coolify)
+- Middleware stack (CORS, helmet, rate limit, logging)
 
-## Active Decisions and Considerations
+## What to Replace / Remove
+- Planner-centric `database/schema.sql` entities (supplier vendors, planner events model)
+- CRM boilerplate client pages: Leads, Deals, Contacts, Activities, Reports
+- Legacy models: Lead, Deal, Contact, supplier Vendor
+- `PLANNER` role → `VENDOR`
+- Memory Bank and README event-planner framing
 
-### Technical Decisions
-- Using TypeScript for both client and server
-- PostgreSQL for database with connection pooling
-- JWT authentication with session management (implemented)
-- Socket.io for real-time communication (configured, needs integration)
-- Express.js with comprehensive middleware stack
-- **Deployment**: Nixpacks for Docker builds, Coolify for VPS hosting
-- **Session Storage**: PostgreSQL session store (connect-pg-simple) for production
+## Next Steps (Priority Order)
+1. ~~**Design & write new schema**~~ — applied in pgAdmin ✅
+2. **Run dev seed** (if not yet) — `database/seed_portalhub_dev.sql`
+3. **Update auth** — VENDOR/CLIENT roles, invite-based client registration, role redirect on login
+4. **Vendor dashboard shell** — layout, routes, project list/create
+5. **Client portal shell** — layout, routes, project-scoped data fetch
+6. **MVP features** — invite flow, milestones, contract PDF + ack, invoice display, deliverables upload
+7. **Remove/archive** legacy CRM pages and unused models
 
-### Current Status
-- **Database**: ✅ Schema created, connected, and working
-- **Server**: ✅ Basic structure complete, auth routes implemented
-- **Client**: ✅ React setup complete, auth pages implemented
-- **Authentication**: ✅ Fully implemented (backend + frontend)
-- **Deployment**: ✅ Application deployed and running
-- **Real-time**: Socket service created, needs integration
+## Active Technical Decisions
+- Same monorepo structure (`client/`, `server/`, `database/`)
+- REST API with project-scoped middleware for client routes
+- File storage: local/uploads for MVP (existing multer pattern)
+- No Stripe, no e-sign in MVP
 
-### Immediate Priorities
-1. ✅ ~~Fix server compilation errors~~ (Done)
-2. ✅ ~~Implement authentication flow~~ (Done)
-3. ✅ ~~Test database connectivity~~ (Done)
-4. ✅ ~~Set up basic client-server communication~~ (Done for auth)
-5. **Test complete authentication flow end-to-end**
-6. **Implement first entity CRUD (Events or Clients)**
-7. **Continue with remaining entities using established patterns**
-
+## Open Questions (Deferred)
+- Email delivery provider for client invites (post-MVP or MVP?)
+- Whether to archive old schema SQL files vs delete

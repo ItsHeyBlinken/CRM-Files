@@ -1,102 +1,125 @@
-# System Patterns: Event Planner CRM
+# System Patterns: PortalHub (placeholder)
 
 ## System Architecture
 
 ### Overall Structure
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React Client  │    │  Express Server │    │   PostgreSQL    │
-│   (TypeScript)  │◄──►│   (TypeScript)  │◄──►│    Database     │
-│   Port: 5173    │    │   Port: 3000    │    │   Port: 5432    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │
-         │                       │
-         └───────────────────────┘
-              Socket.io
-            (Real-time)
+┌──────────────────────────────────────────────────────────┐
+│                     React Client                          │
+│  ┌─────────────────────┐  ┌─────────────────────────────┐ │
+│  │ Vendor Dashboard    │  │ Client Portal               │ │
+│  │ /dashboard/*        │  │ /portal/*                   │ │
+│  └──────────┬──────────┘  └──────────────┬──────────────┘ │
+└─────────────┼────────────────────────────┼────────────────┘
+              │         REST + JWT         │
+┌─────────────▼────────────────────────────▼────────────────┐
+│                  Express Server (TypeScript)               │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐  │
+│  │ Auth + Roles │  │ Vendor API   │  │ Client API      │  │
+│  │              │  │ (vendor_id)  │  │ (project scope) │  │
+│  └──────────────┘  └──────────────┘  └─────────────────┘  │
+└────────────────────────────┬──────────────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   PostgreSQL    │
+                    └─────────────────┘
 ```
 
-### Key Technical Decisions
+### Two-Sided Access Model
 
-#### Database Design
-- **Connection Pooling**: Using pg-pool for efficient database connections
-- **Entity Relationships**: Well-defined foreign key relationships between entities
-- **Audit Trail**: Created_at and updated_at timestamps on all entities
-- **Soft Deletes**: Using deleted_at for data retention
+**Vendor tenancy**
+- Every project, invoice, contract, deliverable belongs to one vendor (`vendor_id` or via vendor's user id)
+- Vendor API routes filter by authenticated vendor — never expose another vendor's data
 
-#### Authentication & Security
-- **JWT Tokens**: For stateless authentication
-- **Session Management**: Express-session for additional security
-- **Rate Limiting**: Express-rate-limit to prevent abuse
-- **CORS**: Configured for cross-origin requests
-- **Helmet**: Security headers and CSP
+**Client project scope**
+- Client user linked to project(s) via `project_clients`
+- Client API routes require membership on the requested project
+- Client sees vendor branding from `vendor_profiles` for that project
 
-#### Real-time Communication
-- **Socket.io**: For live updates and notifications
-- **Event-driven**: Socket events for data changes
-- **Room Management**: Separate rooms for different event contexts
+**Shared login**
+- Single `/login` endpoint and page
+- JWT/session payload includes `role`
+- Frontend redirects: VENDOR → `/dashboard`, CLIENT → `/portal`
+
+## Key Technical Decisions
+
+### Database Design
+- **Vendor as tenant**: Projects and related entities scoped to vendor account
+- **Project as hub**: Contracts, invoices, milestones, deliverables attach to project
+- **One couple per project (MVP)**: Single client user (or couple account) per project
+- **Audit fields**: `created_at`, `updated_at` on all entities
+- **Soft deletes**: Optional `deleted_at` for data retention
+
+### Authentication & Authorization
+- **Roles**: `VENDOR`, `CLIENT`, `ADMIN`
+- **Vendor registration**: Self-serve signup
+- **Client registration**: Invite token from vendor; completes signup linked to project
+- **Middleware chain**:
+  - `protect` — valid JWT/session
+  - `requireRole('VENDOR')` — dashboard routes
+  - `requireRole('CLIENT')` — portal routes
+  - `requireProjectAccess` — client routes verify project_clients membership
+
+### File Handling
+- **Contracts**: PDF upload, stored path on `contracts` row
+- **Deliverables**: Multer upload, client download via authenticated route
+- **MVP storage**: Local filesystem or existing static serve pattern
 
 ## Design Patterns in Use
 
 ### Backend Patterns
-1. **MVC Architecture**: Models, routes, and middleware separation
-2. **Middleware Chain**: Request processing through middleware stack
-3. **Error Handling**: Centralized error handling with custom middleware
-4. **Service Layer**: Business logic separated into services
-5. **Repository Pattern**: Database access through models
+1. **MVC + services**: Routes → services → models
+2. **Authorization at route layer**: Never rely on client-side hiding alone
+3. **Centralized error handling**: Consistent API error shape
+4. **Invite tokens**: Signed/expiring tokens for client onboarding
 
 ### Frontend Patterns
-1. **Component Architecture**: Reusable React components
-2. **Context API**: State management for global state
-3. **Custom Hooks**: Reusable logic and state management
-4. **Service Layer**: API calls abstracted into services
+1. **Route groups by role**: Separate layouts for dashboard vs portal
+2. **AuthContext**: User, role, login/logout, post-login redirect
+3. **Protected routes**: Role guard + project scope where needed
+4. **Vendor branding context**: Portal reads vendor profile for theme/logo
 
-### Database Patterns
-1. **Normalized Design**: Proper database normalization
-2. **Foreign Key Constraints**: Data integrity enforcement
-3. **Indexing**: Performance optimization on key fields
-4. **Audit Fields**: Tracking data changes
+## Core Entities (New Model)
 
-## Component Relationships
+| Entity | Purpose |
+|--------|---------|
+| **User** | Auth; role VENDOR or CLIENT |
+| **VendorProfile** | Business name, logo, brand colors |
+| **Project** | Wedding/booking; status, date, location |
+| **ProjectClient** | Links client user to project |
+| **Milestone** | Timeline step; `client_visible` flag |
+| **Contract** | PDF file + acknowledgement fields |
+| **Invoice** | Amount, due date, status (display MVP) |
+| **Deliverable** | File metadata + download path |
 
-### Core Entities
-- **User**: Central entity for authentication and user management
-- **Client**: Customer information and contact details
-- **Event**: Central entity linking clients, vendors, and tasks
-- **Vendor**: Service providers and suppliers
-- **Task**: Action items related to events or clients
-- **Payment**: Financial transactions and invoices
-- **Lead**: Potential clients and prospects
-- **Contact**: Communication history and interactions
-- **Activity**: System activity logs and audit trail
-- **Deal**: Business opportunities and contracts
-
-### Key Relationships
-- User → Events (one-to-many)
-- Client → Events (one-to-many)
-- Event → Tasks (one-to-many)
-- Event → Payments (one-to-many)
-- Event → Vendors (many-to-many through event_vendors)
-- User → Tasks (one-to-many for assignments)
+### Deprecated (Legacy CRM — Remove)
+- Supplier `vendors` table (planner's vendor directory)
+- Leads, Deals, Contacts as primary entities
+- Event-vendor many-to-many for multi-vendor coordination
+- `PLANNER` role
 
 ## API Design Patterns
 
-### RESTful Endpoints
-- **GET /api/entities**: List all entities
-- **GET /api/entities/:id**: Get specific entity
-- **POST /api/entities**: Create new entity
-- **PUT /api/entities/:id**: Update entity
-- **DELETE /api/entities/:id**: Delete entity
+### Vendor Routes (prefix `/api/vendor/`)
+- `GET/POST /projects`
+- `GET/PUT /projects/:id`
+- `POST /projects/:id/invite`
+- `POST/GET /projects/:id/contracts`
+- `POST/GET /projects/:id/invoices`
+- `POST/GET /projects/:id/deliverables`
+- `GET/PUT /profile` (vendor branding)
+
+### Client Routes (prefix `/api/portal/`)
+- `GET /project` — client's current project (or list if multiple later)
+- `GET /project/milestones`
+- `GET /project/contracts`, `POST .../acknowledge`
+- `GET /project/invoices`
+- `GET /project/deliverables`, `GET .../:id/download`
 
 ### Error Handling
-- **Consistent Error Format**: Standardized error response structure
-- **HTTP Status Codes**: Proper use of status codes
-- **Validation Errors**: Detailed validation error messages
-- **Logging**: Comprehensive error logging with Winston
+- 401 unauthenticated, 403 wrong role or no project access, 404 not found
+- Consistent JSON error body
 
-### Real-time Events
-- **Entity Updates**: Broadcast changes to relevant clients
-- **Task Assignments**: Notify assigned users
-- **Payment Updates**: Alert relevant stakeholders
-- **Event Status Changes**: Update all event participants
-
+## Real-time (Post-MVP)
+- Socket.io for vendor notifications (client acknowledged contract, etc.)
+- Not required for MVP loop
