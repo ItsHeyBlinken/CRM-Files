@@ -1,5 +1,5 @@
 -- PortalHub: vendor onboarding completion flag
--- Run in pgAdmin AFTER schema_payments_addition.sql
+-- Migration 005 — run AFTER 004_schema_payments_addition.sql
 
 BEGIN;
 

@@ -1,7 +1,7 @@
 -- =====================================================
 -- PortalHub: Enhanced contract acknowledgement audit trail
 -- =====================================================
--- Run in pgAdmin AFTER schema_portalhub.sql is applied.
+-- Migration 003 — run AFTER 001_schema_portalhub.sql.
 -- Safe to run once; uses IF NOT EXISTS on columns.
 -- =====================================================
 

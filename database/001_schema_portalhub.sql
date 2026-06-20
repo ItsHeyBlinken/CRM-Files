@@ -7,6 +7,7 @@
 -- 1. Connect to your database (e.g. planner-crm)
 -- 2. Open Query Tool
 -- 3. Paste and execute this entire file
+-- 4. Then run 002–007 in order (see database/README.md)
 --
 -- WARNING: Drops all legacy CRM tables and users.
 --          Preserves user_sessions (express-session store).

@@ -50,6 +50,13 @@
 - **Audit fields**: `created_at`, `updated_at` on all entities
 - **Soft deletes**: Optional `deleted_at` for data retention
 
+### Database migrations (manual, pgAdmin)
+- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `007_*` (next: **`008`**)
+- **Format:** `NNN_short_descriptive_name.sql` — zero-padded 3-digit prefix + snake_case suffix
+- **Order:** Run in numeric order; each file header states prerequisite migration(s)
+- **Reset/seed:** Unnumbered scripts in `database/reset/` (data only, not schema)
+- **User applies** all SQL in pgAdmin; agent writes scripts + updates `database/README.md`
+
 ### Authentication & Authorization
 - **Roles**: `VENDOR`, `CLIENT`, `ADMIN`
 - **Vendor registration**: Self-serve signup

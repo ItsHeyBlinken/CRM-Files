@@ -1,7 +1,7 @@
 -- =====================================================
 -- PortalHub: Quotes (additive migration)
 -- =====================================================
--- Run in pgAdmin AFTER schema_portalhub.sql is applied.
+-- Migration 002 — run AFTER 001_schema_portalhub.sql.
 -- Safe to run once; will error if tables already exist.
 -- =====================================================
 

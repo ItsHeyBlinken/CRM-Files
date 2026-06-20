@@ -1,7 +1,7 @@
 -- =====================================================
 -- PortalHub Dev Seed Data (optional)
 -- =====================================================
--- Run AFTER schema_portalhub.sql
+-- Run AFTER migrations 001–007 (see database/README.md)
 --
 -- Test credentials — password for both: Password123!
 --   vendor@test.com  (VENDOR)

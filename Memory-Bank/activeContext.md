@@ -54,12 +54,13 @@
 
 ## Next Session — Priority Order
 
-1. **Run pending SQL in pgAdmin** (in order):
-   - `schema_vendor_onboarding.sql` (if not yet run)
-   - `schema_quotes_addition.sql` (confirm)
-   - `schema_quote_contract_addition.sql`
-   - `schema_quote_contract_signing.sql`
-   - `schema_contract_ack_enhancement.sql` (if using portal e-sign audit fields)
+1. **Run pending SQL in pgAdmin** (numeric order — see `database/README.md`):
+   - `002_schema_quotes_addition.sql` (confirm)
+   - `003_schema_contract_ack_enhancement.sql`
+   - `005_schema_vendor_onboarding.sql`
+   - `006_schema_quote_contract_addition.sql`
+   - `007_schema_quote_contract_signing.sql`
+   - **Full rebuild:** `001` → `007`, then `reset/seed_portalhub_dev.sql`
 2. **E2E test — full vendor path:**
    - Register → onboarding → create quote **with contract** → client accepts → client signs contract on quote link → convert to project → invite → portal contract/deposit/invoice
 3. **E2E test — payments path:** onboarding → project → invoice → client P2P + optional Stripe card pay
@@ -102,14 +103,16 @@
 
 | Migration | Purpose | User applied? |
 |-----------|---------|---------------|
-| `schema_portalhub.sql` | Base schema | ✅ |
-| `schema_payments_addition.sql` | Payment settings + invoice fields | ✅ |
-| `schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
-| `schema_quotes_addition.sql` | Quotes + line items | ⬜ Confirm |
-| `schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
-| `schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
-| `schema_contract_ack_enhancement.sql` | Portal contract audit fields | ⬜ Confirm |
-| `seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
+| `001_schema_portalhub.sql` | Base schema | ✅ |
+| `002_schema_quotes_addition.sql` | Quotes + line items | ⬜ Confirm |
+| `003_schema_contract_ack_enhancement.sql` | Portal contract audit fields | ⬜ Confirm |
+| `004_schema_payments_addition.sql` | Payment settings + invoice fields | ✅ |
+| `005_schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
+| `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
+| `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
+| `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
+| `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
+| `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
 
 ## Key Routes (current)
 
@@ -149,7 +152,7 @@
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `008`)
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?

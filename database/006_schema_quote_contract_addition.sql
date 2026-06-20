@@ -1,7 +1,7 @@
 -- =====================================================
 -- PortalHub: Quote contract attachment (additive)
 -- =====================================================
--- Run in pgAdmin AFTER schema_quotes_addition.sql.
+-- Migration 006 — run AFTER 002_schema_quotes_addition.sql.
 -- Optional PDF contract attached when vendor creates a quote.
 -- =====================================================
 

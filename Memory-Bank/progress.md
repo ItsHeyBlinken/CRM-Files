@@ -358,10 +358,10 @@
 - Vendor project detail: Edit overview (client contact, event date, etc.)
 
 ### User actions before next session
-- [ ] Run `schema_vendor_onboarding.sql`
-- [ ] Run `schema_quote_contract_addition.sql`
-- [ ] Run `schema_quote_contract_signing.sql`
-- [ ] Confirm `schema_quotes_addition.sql` + `schema_contract_ack_enhancement.sql` applied
+- [ ] Run `005_schema_vendor_onboarding.sql`
+- [ ] Run `006_schema_quote_contract_addition.sql`
+- [ ] Run `007_schema_quote_contract_signing.sql`
+- [ ] Confirm `002_schema_quotes_addition.sql` + `003_schema_contract_ack_enhancement.sql` applied
 
 ### Next session priorities
 1. Run pending SQL → E2E quote+contract+project path
@@ -369,3 +369,11 @@
 3. Stripe Connect OAuth (“link existing account”) — discussed, not built
 4. Onboarding polish (pre-fill business name from register)
 5. Phase 3e vendor subscription billing
+
+---
+
+## June 17, 2026 (continued)
+
+- [x] Moved dev reset/seed SQL into `database/reset/` with local README
+- [x] Renumbered schema migrations `001`–`007` in `database/` for ordered pgAdmin runs
+- [x] Documented migration naming convention (`NNN_*.sql`, next `008`) in `database/README.md` + Memory Bank

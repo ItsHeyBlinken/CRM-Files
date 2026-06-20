@@ -50,7 +50,7 @@
 
 ### Development Test Accounts
 
-Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
+Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations).
 
 | Role | Email | Password | Notes |
 |------|-------|----------|-------|
@@ -59,7 +59,7 @@ Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
 
 **Seed project:** Miller Celebration (2026-09-12, Sam Photography vendor) — includes sample milestones, invoice `INV-001`, and an accepted invite.
 
-**Re-seed:** Re-run `seed_portalhub_dev.sql` only on a fresh schema (will fail if emails already exist). To reset: run `schema_portalhub.sql` again, then seed.
+**Re-seed / reset:** See `database/reset/README.md` — use `reset_keep_seed.sql` to clear clutter, or `wipe_and_reseed_dev.sql` for a full fresh seed.
 
 **After login — role redirect:**
 | Role | Route |
@@ -74,7 +74,7 @@ Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
 
 | Area | Paths |
 |------|-------|
-| Schema / seed | `database/schema_portalhub.sql`, `database/seed_portalhub_dev.sql` |
+| Schema / seed | `database/001_schema_portalhub.sql` … `007_*`, `database/reset/` |
 | Auth | `server/src/routes/auth.ts`, `client/src/pages/AcceptInvite.tsx` |
 | Vendor API | `server/src/routes/vendorProjects.ts`, `server/src/models/Project.ts` |
 | Contracts | `server/src/models/Contract.ts`, `client/src/services/contractService.ts` |
@@ -205,11 +205,11 @@ npm run start        # Start production server
 
 ### Database Setup
 
-**Migrations are manual.** The user runs all SQL in pgAdmin. The agent provides scripts (e.g. `database/schema_portalhub.sql`) and step-by-step instructions — never executes migrations against the database.
+**Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` starting at `008`. The agent provides scripts and instructions — never executes migrations against the database.
 
 ```bash
-# PortalHub schema (pgAdmin: run database/schema_portalhub.sql)
-# Optional dev seed: database/seed_portalhub_dev.sql
+# PortalHub schema (pgAdmin: run database/001_schema_portalhub.sql, then 002–007)
+# Optional dev seed: database/reset/seed_portalhub_dev.sql
 ```
 
 **Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `quotes`, `quote_line_items`

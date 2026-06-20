@@ -1,7 +1,7 @@
 -- =====================================================
 -- PortalHub: Quote contract e-sign (additive)
 -- =====================================================
--- Run in pgAdmin AFTER schema_quote_contract_addition.sql.
+-- Migration 007 — run AFTER 006_schema_quote_contract_addition.sql.
 -- Enables signing on the public quote link after quote acceptance.
 -- =====================================================
 

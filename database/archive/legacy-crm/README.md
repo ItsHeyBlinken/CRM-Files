@@ -4,8 +4,8 @@ These files belonged to the pre-pivot **Event Planner CRM** (planner manages cli
 
 PortalHub replaced that product with a **vendor/client portal** model. The active schema is:
 
-- `../schema_portalhub.sql`
-- `../seed_portalhub_dev.sql`
+- `../001_schema_portalhub.sql`
+- `../reset/seed_portalhub_dev.sql`
 
 ## Files in this archive (reference only)
 
@@ -16,6 +16,6 @@ PortalHub replaced that product with a **vendor/client portal** model. The activ
 | `useful_queries.sql` | Dashboard queries for old CRM |
 | Other `*.sql` in parent folder | One-off fixes and migrations for old schema |
 
-**Do not run** legacy schema files on a database that already has PortalHub data unless you intend a full reset via `schema_portalhub.sql`.
+**Do not run** legacy schema files on a database that already has PortalHub data unless you intend a full reset via `001_schema_portalhub.sql`.
 
 Git history preserves deleted application code (legacy CRM pages, routes, models removed June 2026).

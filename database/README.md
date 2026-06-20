@@ -1,29 +1,56 @@
 # PortalHub Database
 
-## Active schema (use these)
+## Active schema (run in order)
+
+Run these **in numeric order** in pgAdmin. If starting over, run `001` through `007`, then optionally seed.
+
+### Naming convention (new migrations)
+
+All **schema migrations** use a **3-digit prefix** and live in `database/` (not `reset/`):
+
+```
+NNN_short_descriptive_name.sql
+```
+
+| Rule | Detail |
+|------|--------|
+| **Next number** | `008` (then `009`, `010`, …) |
+| **Prefix** | Zero-padded: `008`, not `8` |
+| **Suffix** | Short snake_case description of what the migration does |
+| **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
+| **README** | Add the new file to the table below in numeric order |
+| **Additive** | Prefer `IF NOT EXISTS` / idempotent patterns; safe to run once |
+| **Not numbered** | Dev reset/seed scripts stay in `database/reset/` |
+
+Example for the next migration: `008_schema_vendor_subscriptions.sql`
+
+| # | File | Purpose |
+|---|------|---------|
+| 001 | **`001_schema_portalhub.sql`** | Full PortalHub schema — creates or resets tables |
+| 002 | **`002_schema_quotes_addition.sql`** | Quotes + line items |
+| 003 | **`003_schema_contract_ack_enhancement.sql`** | Contract e-sign audit fields (legal name, PDF hash, etc.) |
+| 004 | **`004_schema_payments_addition.sql`** | Vendor payment settings + invoice payment tracking |
+| 005 | **`005_schema_vendor_onboarding.sql`** | `payment_setup_complete` flag for onboarding gate |
+| 006 | **`006_schema_quote_contract_addition.sql`** | Optional contract PDF attached to quotes |
+| 007 | **`007_schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance |
+
+### Dev reset & seed (`reset/`)
 
 | File | Purpose |
 |------|---------|
-| **`schema_portalhub.sql`** | Full PortalHub schema — run in pgAdmin to create or reset tables |
-| **`schema_quotes_addition.sql`** | Additive migration — quotes + line items (run after portalhub schema) |
-| **`schema_contract_ack_enhancement.sql`** | Contract e-sign audit fields (legal name, PDF hash, user agent, etc.) |
-| **`schema_payments_addition.sql`** | Vendor payment settings + invoice payment tracking |
-| **`schema_vendor_onboarding.sql`** | `payment_setup_complete` flag for onboarding gate |
-| **`schema_quote_contract_addition.sql`** | Optional contract PDF attached to quotes at creation |
-| **`schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance (view-only until then) |
-| **`seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Celebration sample data |
+| **`reset/check_dev_seed.sql`** | Diagnose whether seed accounts and project exist |
+| **`reset/seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Celebration |
+| **`reset/reset_keep_seed.sql`** | Delete test clutter; keep seed accounts + Miller Celebration |
+| **`reset/wipe_and_reseed_dev.sql`** | Delete everything and restore fresh seed accounts |
 
-### Setup (pgAdmin)
+See **`reset/README.md`** for when to use each script.
 
-1. Connect to your database
-2. Run **`schema_portalhub.sql`** (warning: drops legacy CRM tables if re-run)
-3. Run **`schema_quotes_addition.sql`** for quoting tables (if using quotes)
-4. Run **`schema_contract_ack_enhancement.sql`** for enhanced contract signing audit trail
-5. Run **`schema_payments_addition.sql`** for vendor payment settings and invoice payment fields
-6. Run **`schema_vendor_onboarding.sql`** for vendor onboarding completion flag
-7. Run **`schema_quote_contract_addition.sql`** for optional contract attachment on quotes
-8. Run **`schema_quote_contract_signing.sql`** for post-acceptance contract signing on quote links
-9. Optionally run **`seed_portalhub_dev.sql`**
+**Fresh start from scratch (pgAdmin):**
+
+1. Connect to your database and open Query Tool
+2. Run **`001_schema_portalhub.sql`** through **`007_schema_quote_contract_signing.sql`** in order  
+   (`001` drops legacy CRM tables — all app data is removed)
+3. Optionally run **`reset/seed_portalhub_dev.sql`**
 
 Test logins are documented in `Memory-Bank/techContext.md`.
 

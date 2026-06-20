@@ -1,5 +1,5 @@
 -- PortalHub: payments (vendor settings + invoice payment tracking)
--- Run in pgAdmin AFTER schema_portalhub.sql (and other additive migrations).
+-- Migration 004 — run AFTER 001_schema_portalhub.sql (and 002–003 if applying all).
 
 BEGIN;
 
