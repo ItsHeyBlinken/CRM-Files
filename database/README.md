@@ -11,7 +11,7 @@
 | **`schema_vendor_onboarding.sql`** | `payment_setup_complete` flag for onboarding gate |
 | **`schema_quote_contract_addition.sql`** | Optional contract PDF attached to quotes at creation |
 | **`schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance (view-only until then) |
-| **`seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Wedding sample data |
+| **`seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Celebration sample data |
 
 ### Setup (pgAdmin)
 

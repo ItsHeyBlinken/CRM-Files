@@ -30,7 +30,7 @@ export interface IQuote {
   title: string
   clientEmail: string
   clientName: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   notes: string | null
   currency: string
@@ -50,7 +50,7 @@ export interface IQuotePublicView {
   title: string
   clientEmail: string
   clientName: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   notes: string | null
   currency: string
@@ -66,7 +66,7 @@ export interface IQuoteCreateInput {
   title: string
   clientEmail: string
   clientName?: string
-  weddingDate?: string
+  eventDate?: string
   location?: string
   notes?: string
   currency?: string
@@ -153,7 +153,7 @@ function mapQuoteRow(
     title: row.title,
     clientEmail: row.client_email,
     clientName: row.client_name,
-    weddingDate: formatDateOnly(row.wedding_date),
+    eventDate: formatDateOnly(row.wedding_date),
     location: row.location,
     notes: row.notes,
     currency: row.currency,
@@ -253,7 +253,7 @@ export class QuoteModel {
       title: row.title,
       clientEmail: row.client_email,
       clientName: row.client_name,
-      weddingDate: formatDateOnly(row.wedding_date),
+      eventDate: formatDateOnly(row.wedding_date),
       location: row.location,
       notes: row.notes,
       currency: row.currency,
@@ -292,7 +292,7 @@ export class QuoteModel {
           input.title.trim(),
           input.clientEmail.toLowerCase().trim(),
           input.clientName?.trim() || null,
-          input.weddingDate ? formatDateOnly(input.weddingDate) : null,
+          input.eventDate ? formatDateOnly(input.eventDate) : null,
           input.location?.trim() || null,
           input.notes?.trim() || null,
           input.currency ?? 'USD',
@@ -373,12 +373,12 @@ export class QuoteModel {
       throw new Error('QUOTE_ALREADY_CONVERTED')
     }
 
-    const weddingDate = formatDateOnly(quote.weddingDate)
+    const eventDate = formatDateOnly(quote.eventDate)
 
     const project = await Project.create(vendorId, {
       title: quote.title,
-      ...(quote.clientName ? { coupleDisplayName: quote.clientName } : {}),
-      ...(weddingDate ? { weddingDate } : {}),
+      ...(quote.clientName ? { clientDisplayName: quote.clientName } : {}),
+      ...(eventDate ? { eventDate } : {}),
       ...(quote.location ? { location: quote.location } : {}),
       clientEmail: quote.clientEmail,
       status: 'inquiry',

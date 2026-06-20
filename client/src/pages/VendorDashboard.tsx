@@ -18,8 +18,8 @@ const VendorDashboard: React.FC = () => {
 
   const [createForm, setCreateForm] = useState({
     title: '',
-    coupleDisplayName: '',
-    weddingDate: '',
+    clientDisplayName: '',
+    eventDate: '',
     location: '',
     clientEmail: '',
   })
@@ -55,16 +55,16 @@ const VendorDashboard: React.FC = () => {
     try {
       const project = await createProject({
         title: createForm.title.trim(),
-        coupleDisplayName: createForm.coupleDisplayName || undefined,
-        weddingDate: createForm.weddingDate || undefined,
+        clientDisplayName: createForm.clientDisplayName || undefined,
+        eventDate: createForm.eventDate || undefined,
         location: createForm.location || undefined,
         clientEmail: createForm.clientEmail || undefined,
         status: 'booked',
       })
       setCreateForm({
         title: '',
-        coupleDisplayName: '',
-        weddingDate: '',
+        clientDisplayName: '',
+        eventDate: '',
         location: '',
         clientEmail: '',
       })
@@ -165,23 +165,29 @@ const VendorDashboard: React.FC = () => {
             <div className="grid gap-4 sm:grid-cols-2">
               <input
                 required
-                placeholder="Project title (e.g. Miller Wedding)"
+                placeholder="Project title (e.g. Miller Anniversary Gala)"
                 value={createForm.title}
                 onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-md sm:col-span-2"
               />
               <input
-                placeholder="Couple name (optional)"
-                value={createForm.coupleDisplayName}
-                onChange={(e) => setCreateForm({ ...createForm, coupleDisplayName: e.target.value })}
+                placeholder="Client name (optional)"
+                value={createForm.clientDisplayName}
+                onChange={(e) => setCreateForm({ ...createForm, clientDisplayName: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               />
-              <input
-                type="date"
-                value={createForm.weddingDate}
-                onChange={(e) => setCreateForm({ ...createForm, weddingDate: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md"
-              />
+              <div>
+                <label htmlFor="create-event-date" className="block text-xs font-medium text-gray-700 mb-1">
+                  Event date (optional)
+                </label>
+                <input
+                  id="create-event-date"
+                  type="date"
+                  value={createForm.eventDate}
+                  onChange={(e) => setCreateForm({ ...createForm, eventDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
               <input
                 placeholder="Location (optional)"
                 value={createForm.location}
@@ -224,7 +230,7 @@ const VendorDashboard: React.FC = () => {
             <p className="p-6 text-sm text-gray-500">Loading projects...</p>
           ) : projects.length === 0 ? (
             <p className="p-6 text-sm text-gray-500">
-              No projects yet. Create your first wedding project to get started.
+              No projects yet. Create your first event project to get started.
             </p>
           ) : (
             <ul className="divide-y divide-gray-200">
@@ -238,8 +244,8 @@ const VendorDashboard: React.FC = () => {
                       <div>
                         <p className="font-medium text-gray-900">{project.title}</p>
                         <p className="text-sm text-gray-500">
-                          {project.coupleDisplayName || 'No couple name yet'}
-                          {project.weddingDate ? ` · ${project.weddingDate}` : ''}
+                          {project.clientDisplayName || 'No client name yet'}
+                          {project.eventDate ? ` · ${project.eventDate}` : ''}
                         </p>
                       </div>
                       <span className="text-xs capitalize text-indigo-600 font-medium self-start sm:self-center">

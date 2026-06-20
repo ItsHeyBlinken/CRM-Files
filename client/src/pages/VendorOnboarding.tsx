@@ -173,7 +173,7 @@ const VendorOnboarding: React.FC = () => {
           <section className="bg-white rounded-lg shadow p-6 space-y-4">
             <h2 className="font-medium text-gray-900">How clients pay you</h2>
             <p className="text-sm text-gray-600">
-              Add at least one method so couples can pay invoices in their portal. You can always
+              Add at least one method so clients can pay invoices in their portal. You can always
               change these later.
             </p>
 

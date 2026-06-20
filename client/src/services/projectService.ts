@@ -15,9 +15,9 @@ export interface UpdateProjectInput {
   status?: ProjectStatus
   title?: string
   description?: string | null
-  weddingDate?: string | null
+  eventDate?: string | null
   location?: string | null
-  coupleDisplayName?: string | null
+  clientDisplayName?: string | null
   clientEmail?: string | null
   internalNotes?: string | null
 }
@@ -33,9 +33,9 @@ export async function updateVendorProject(
 export interface CreateProjectInput {
   title: string
   description?: string
-  weddingDate?: string
+  eventDate?: string
   location?: string
-  coupleDisplayName?: string
+  clientDisplayName?: string
   clientEmail?: string
   status?: string
 }

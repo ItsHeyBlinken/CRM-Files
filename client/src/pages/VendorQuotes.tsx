@@ -37,7 +37,7 @@ const VendorQuotes: React.FC = () => {
     title: '',
     clientEmail: '',
     clientName: '',
-    weddingDate: '',
+    eventDate: '',
     location: '',
     notes: '',
     attachContract: false,
@@ -97,7 +97,7 @@ const VendorQuotes: React.FC = () => {
         title: createForm.title.trim(),
         clientEmail: createForm.clientEmail.trim(),
         clientName: createForm.clientName || undefined,
-        weddingDate: createForm.weddingDate || undefined,
+        eventDate: createForm.eventDate || undefined,
         location: createForm.location || undefined,
         notes: createForm.notes || undefined,
         lineItems: createForm.lineItems.map((item) => ({
@@ -176,7 +176,7 @@ const VendorQuotes: React.FC = () => {
             <div className="grid gap-4 sm:grid-cols-2">
               <input
                 required
-                placeholder="Quote title (e.g. Miller Wedding — Photography)"
+                placeholder="Quote title (e.g. Miller Gala — Photography)"
                 value={createForm.title}
                 onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-md sm:col-span-2"
@@ -195,12 +195,18 @@ const VendorQuotes: React.FC = () => {
                 onChange={(e) => setCreateForm({ ...createForm, clientName: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               />
-              <input
-                type="date"
-                value={createForm.weddingDate}
-                onChange={(e) => setCreateForm({ ...createForm, weddingDate: e.target.value })}
-                className="px-3 py-2 border border-gray-300 rounded-md"
-              />
+              <div>
+                <label htmlFor="quote-event-date" className="block text-xs font-medium text-gray-700 mb-1">
+                  Event date (optional)
+                </label>
+                <input
+                  id="quote-event-date"
+                  type="date"
+                  value={createForm.eventDate}
+                  onChange={(e) => setCreateForm({ ...createForm, eventDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
               <input
                 placeholder="Location (optional)"
                 value={createForm.location}
@@ -242,7 +248,7 @@ const VendorQuotes: React.FC = () => {
                     <input
                       id={`line-item-desc-${index}`}
                       required
-                      placeholder="e.g. 8-hour wedding coverage"
+                      placeholder="e.g. 8-hour event coverage"
                       value={item.description}
                       onChange={(e) => updateLineItem(index, 'description', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -411,7 +417,7 @@ const VendorQuotes: React.FC = () => {
                         <p className="font-medium text-gray-900">{quote.title}</p>
                         <p className="text-sm text-gray-500">
                           {quote.clientName || quote.clientEmail}
-                          {quote.weddingDate ? ` · ${quote.weddingDate}` : ''}
+                          {quote.eventDate ? ` · ${quote.eventDate}` : ''}
                         </p>
                       </div>
                       <div className="text-right">

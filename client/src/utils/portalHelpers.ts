@@ -7,7 +7,7 @@ export function getStatusLabel(status: ProjectStatus): string {
     case 'booked':
       return "You're booked!"
     case 'in_progress':
-      return 'Your wedding is in progress'
+      return 'Your event is in progress'
     case 'delivered':
       return 'Deliverables are ready'
     case 'complete':
@@ -19,7 +19,7 @@ export function getStatusLabel(status: ProjectStatus): string {
   }
 }
 
-export function formatWeddingDate(date: string | null): string {
+export function formatEventDate(date: string | null): string {
   if (!date) return 'Date to be confirmed'
   return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
     weekday: 'long',

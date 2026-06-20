@@ -46,7 +46,7 @@
 ### Database Design
 - **Vendor as tenant**: Projects and related entities scoped to vendor account
 - **Project as hub**: Contracts, invoices, milestones, deliverables attach to project
-- **One couple per project (MVP)**: Single client user (or couple account) per project
+- **One client per project (MVP)**: Single client user per project
 - **Audit fields**: `created_at`, `updated_at` on all entities
 - **Soft deletes**: Optional `deleted_at` for data retention
 
@@ -86,13 +86,14 @@
 | **User** | Auth; role VENDOR or CLIENT |
 | **VendorProfile** | Business name, logo, brand colors |
 | **VendorPaymentSettings** | Stripe Connect account, P2P handles (venmo, zelle, cashapp, paypal) |
-| **Project** | Wedding/booking; status, date, location |
+| **Project** | Event/booking; status, date, location |
 | **ProjectClient** | Links client user to project |
 | **Milestone** | Timeline step; `client_visible` flag |
 | **Contract** | PDF file + acknowledgement fields |
 | **Invoice** | Amount, due date, status; payment_method, paid_at, Stripe session IDs, client claim fields |
 | **Deliverable** | File metadata + download path |
-| **Quote** *(planned)* | Pre-project proposal; line items; accept → convert to Project |
+| **Quote** | Pre-project proposal; line items; optional `quote_contracts`; accept → convert to Project |
+| **QuoteContract** | PDF on quote; view-only until accepted; public e-sign via quote token |
 
 ### Deprecated (Legacy CRM — Remove)
 - Supplier `vendors` table (planner's vendor directory)
@@ -104,7 +105,7 @@
 
 ### Vendor Routes (prefix `/api/vendor/`)
 - `GET/POST /projects`
-- `GET/PUT/DELETE /projects/:id` — GET returns full detail (linked client, contracts, milestones, invoices, deliverables)
+- `GET/PUT /projects/:id` — GET detail; PUT updates overview (title, clientDisplayName, clientEmail, eventDate, location, description, internalNotes, status)
 - `POST /projects/:id/invite`
 - `GET/POST /projects/:id/contracts` — PDF upload; one contract per project (MVP)
 - `GET/POST /projects/:id/deliverables` — multi-file upload
@@ -124,12 +125,16 @@
 ### Webhooks
 - `POST /api/webhooks/stripe` — `checkout.session.completed` marks invoice paid
 
-### Quote Routes *(planned — Phase 2)*
-- `GET/POST /api/vendor/quotes`
-- `POST /api/vendor/quotes/:id/send`
-- `GET /api/quotes/:token` — public quote view
-- `POST /api/quotes/:token/accept`
+### Quote Routes *(built)*
+- `GET/POST /api/vendor/quotes` — create with optional contract multipart upload
+- `GET /api/vendor/quotes/:id` — vendor quote detail
+- `GET /api/vendor/quotes/:id/contract` — vendor PDF download
 - `POST /api/vendor/quotes/:id/convert-to-project`
+- `GET /api/quotes/:token` — public quote view
+- `POST /api/quotes/:token/accept` | `/decline`
+- `GET /api/quotes/:token/contract` — public PDF
+- `GET /api/quotes/:token/contract/signing-context`
+- `POST /api/quotes/:token/contract/acknowledge` — public e-sign after quote accepted
 
 ### Error Handling
 - 401 unauthenticated, 403 wrong role or no project access, 404 not found

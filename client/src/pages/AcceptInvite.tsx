@@ -7,7 +7,7 @@ import { getHomePathForRole } from '../utils/roleRedirect'
 interface InviteDetails {
   email: string
   projectTitle: string
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   vendorBusinessName: string
   expiresAt: string
   projectHasClient?: boolean
@@ -219,7 +219,7 @@ const AcceptInvite: React.FC = () => {
           <p className="text-sm text-gray-600">
             {isSameEmail
               ? 'This project already has an account for your email. Sign in to view your portal.'
-              : 'This project already has a client linked. Only one couple per project in MVP — ask your vendor for help.'}
+              : 'This project already has a client linked. Only one client per project in MVP — ask your vendor for help.'}
           </p>
           <Link to="/login" className="inline-block text-indigo-600 hover:text-indigo-500 font-medium">
             Go to sign in

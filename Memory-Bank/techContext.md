@@ -55,9 +55,9 @@ Seeded via `database/seed_portalhub_dev.sql` (run after `schema_portalhub.sql`).
 | Role | Email | Password | Notes |
 |------|-------|----------|-------|
 | **VENDOR** | `vendor@test.com` | `Password123!` | Sam Photography — has `vendor_profiles` row |
-| **CLIENT** | `client@test.com` | `Password123!` | Linked to **Miller Wedding** project via `project_clients` |
+| **CLIENT** | `client@test.com` | `Password123!` | Linked to **Miller Celebration** project via `project_clients` |
 
-**Seed project:** Miller Wedding (2026-09-12, Sam Photography vendor) — includes sample milestones, invoice `INV-001`, and an accepted invite.
+**Seed project:** Miller Celebration (2026-09-12, Sam Photography vendor) — includes sample milestones, invoice `INV-001`, and an accepted invite.
 
 **Re-seed:** Re-run `seed_portalhub_dev.sql` only on a fresh schema (will fail if emails already exist). To reset: run `schema_portalhub.sql` again, then seed.
 

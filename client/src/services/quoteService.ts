@@ -22,7 +22,7 @@ export async function createQuote(input: CreateQuoteInput): Promise<QuoteDetailR
     formData.append('title', input.title)
     formData.append('clientEmail', input.clientEmail)
     if (input.clientName) formData.append('clientName', input.clientName)
-    if (input.weddingDate) formData.append('weddingDate', input.weddingDate)
+    if (input.eventDate) formData.append('eventDate', input.eventDate)
     if (input.location) formData.append('location', input.location)
     if (input.notes) formData.append('notes', input.notes)
     if (input.currency) formData.append('currency', input.currency)

@@ -17,10 +17,10 @@ export interface IProject {
   vendorId: number
   title: string
   description: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   status: ProjectStatus
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   clientEmail: string | null
   internalNotes: string | null
   createdAt: Date
@@ -30,10 +30,10 @@ export interface IProject {
 export interface IProjectCreate {
   title: string
   description?: string
-  weddingDate?: string
+  eventDate?: string
   location?: string
   status?: ProjectStatus
-  coupleDisplayName?: string
+  clientDisplayName?: string
   clientEmail?: string
   internalNotes?: string
 }
@@ -41,10 +41,10 @@ export interface IProjectCreate {
 export interface IProjectUpdate {
   title?: string
   description?: string
-  weddingDate?: string | null
+  eventDate?: string | null
   location?: string | null
   status?: ProjectStatus
-  coupleDisplayName?: string | null
+  clientDisplayName?: string | null
   clientEmail?: string | null
   internalNotes?: string | null
 }
@@ -116,7 +116,7 @@ export interface IClientPortalProject {
 
 export interface ILinkedClient {
   email: string
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   linkedAt: Date
 }
 
@@ -148,10 +148,10 @@ function mapProjectRow(row: any): IProject {
     vendorId: row.vendor_id,
     title: row.title,
     description: row.description ?? null,
-    weddingDate: formatDateOnly(row.wedding_date),
+    eventDate: formatDateOnly(row.wedding_date),
     location: row.location ?? null,
     status: row.status,
-    coupleDisplayName: row.couple_display_name ?? null,
+    clientDisplayName: row.couple_display_name ?? null,
     clientEmail: row.client_email ?? null,
     internalNotes: row.internal_notes ?? null,
     createdAt: row.created_at,
@@ -267,7 +267,7 @@ export class ProjectModel {
     const linkedClient = linkedRow
       ? {
           email: linkedRow.email as string,
-          coupleDisplayName: (linkedRow.couple_display_name as string | null) ?? null,
+          clientDisplayName: (linkedRow.couple_display_name as string | null) ?? null,
           linkedAt: linkedRow.linked_at as Date,
         }
       : null
@@ -306,10 +306,10 @@ export class ProjectModel {
         vendorId,
         data.title,
         data.description ?? null,
-        formatDateOnly(data.weddingDate),
+        formatDateOnly(data.eventDate),
         data.location ?? null,
         data.status ?? 'inquiry',
-        data.coupleDisplayName ?? null,
+        data.clientDisplayName ?? null,
         data.clientEmail ?? null,
         data.internalNotes ?? null,
       ]
@@ -333,11 +333,11 @@ export class ProjectModel {
 
     if (data.title !== undefined) setField('title', data.title)
     if (data.description !== undefined) setField('description', data.description)
-    if (data.weddingDate !== undefined) setField('wedding_date', formatDateOnly(data.weddingDate))
+    if (data.eventDate !== undefined) setField('wedding_date', formatDateOnly(data.eventDate))
     if (data.location !== undefined) setField('location', data.location)
     if (data.status !== undefined) setField('status', data.status)
-    if (data.coupleDisplayName !== undefined) {
-      setField('couple_display_name', data.coupleDisplayName)
+    if (data.clientDisplayName !== undefined) {
+      setField('couple_display_name', data.clientDisplayName)
     }
     if (data.clientEmail !== undefined) setField('client_email', data.clientEmail)
     if (data.internalNotes !== undefined) setField('internal_notes', data.internalNotes)

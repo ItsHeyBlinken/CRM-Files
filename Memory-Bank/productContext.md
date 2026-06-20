@@ -7,25 +7,25 @@
 **Streamline vendor business processes while keeping the client experience simple and easy to use.**
 
 - **Vendor dashboard** = where the product earns its keep: quotes, projects, clients, money, files, status — wired together so vendors spend less time in email, spreadsheets, and disconnected tools.
-- **Client portal** = thin, branded window into *their* wedding with that vendor — never a second CRM.
+- **Client portal** = thin, branded window into *their* project with that vendor — never a second CRM.
 
 When trade-offs arise, **default to vendor workflow efficiency** on the dashboard and **ruthless simplicity** on the portal.
 
 ## Why This Project Exists
 
 ### Problem Statement
-Wedding vendors and their clients lose time and trust when project work is scattered:
+Event vendors and their clients lose time and trust when project work is scattered:
 - **Email threads** for status updates and document sharing
 - **Google Drive / Dropbox** for deliverables with no tie to project status
 - **Separate invoicing tools** disconnected from the client relationship
 - **Contracts** sent as attachments with no clear acknowledgement trail
-- **No single branded hub** where the couple sees everything for their wedding with that vendor
+- **No single branded hub** where the client sees everything for their event with that vendor
 
 ### Target Users
 | User | Description |
 |------|-------------|
-| **Vendor** | Freelancer or small wedding business (photographer, florist, DJ, videographer, etc.) |
-| **Client (Couple)** | The hiring party — one shared login per couple |
+| **Vendor** | Freelancer or small event business (photographer, florist, DJ, planner, videographer, etc.) |
+| **Client** | The hiring party — one shared login per client account |
 | **Platform Admin** | Optional; for platform operator, not MVP focus |
 
 ## How It Should Work
@@ -40,21 +40,26 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 ### Vendor User Flows
 
-**Onboarding** *(current vs planned)*
-- **Today:** Register as vendor (name, email, password, optional business name) → `/dashboard`
-- **Payment setup:** Separate page `/dashboard/payments` — not part of signup yet
-- **Planned (next session):** Signup/onboarding includes **how the vendor gets paid**
-  - P2P handles (Venmo, Zelle, Cash App, PayPal) — minimum viable path
-  - Optional **Stripe Connect** in same flow for card payments in client portal
-  - Vendor is the main customer; clients must never see setup complexity — only pay buttons and clear status
+**Onboarding** *(shipped)*
+- Register as vendor → `/dashboard/onboarding` (business name → P2P payments → optional Stripe Connect)
+- `VendorOnboardingGate` blocks dashboard until `payment_setup_complete`
+- `/dashboard/payments` remains available for later edits
 
 **Project management**
-- Create project (title, wedding date, location, notes)
+- Create project (title, event date, location, notes) — title is vendor-defined
+- **Edit overview** on project detail: client name, email, event date, location, description, internal notes
 - Set project status (e.g. inquiry, booked, in progress, delivered, complete)
 - Add milestones — mark which are visible to client
 
+**Quotes** *(built — industry practice)*
+- Create quote with line items; optional contract PDF attached at create
+- Client opens `/quote/:token` — not a booked client until quote + contract + deposit complete (notices on page)
+- Contract **view-only** until quote accepted; then e-sign on same link
+- After sign: deposit pending notice; vendor sends invoice separately
+- Vendor converts accepted quote → project (contract + signature copied)
+
 **Client management**
-- Add couple name and email to project
+- Add client name and email to project
 - Send invite link — client has no account yet; the link is their sign-up (not `/register` or `/login` first)
 - Client opens `/invite/{token}` → sets password → linked to project → future visits use `/login`
 
@@ -79,11 +84,11 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 **Onboarding**
 - Receive invite email/link from vendor
-- Register (one account per couple)
+- Register (one account per client)
 - Land in branded portal for their project
 
 **Portal experience**
-- See project overview: wedding date, current status, milestone timeline
+- See project overview: event date, current status, milestone timeline
 - View and sign contract (e-sign with audit trail)
 - **Pay invoices** — full-width Pay with card + P2P options; redirect to Home after pay/report
 - Download deliverables
@@ -91,7 +96,7 @@ Wedding vendors and their clients lose time and trust when project work is scatt
 
 ### User Experience Goals
 - **Vendor dashboard**: **Primary product focus** — streamline business processes (inquiry → quote → project → contract → invoice → delivery); efficient, connected workflows; density acceptable if it saves steps
-- **Client portal**: **Non-negotiable simplicity** — dead simple, calm, obvious; couples should never feel lost
+- **Client portal**: **Non-negotiable simplicity** — dead simple, calm, obvious; clients should never feel lost
 - **Asymmetric investment**: Build depth for vendors; expose only client-facing outcomes on the portal
 - **Trust**: Clear status, no hunting through email
 - **Mobile responsive**: Client portal mobile-first; vendor dashboard desktop-friendly with mobile usable
@@ -108,7 +113,7 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle P
 - **Payment friction** — too many clicks to pay; complex login walls
 - **Communication fragmentation** — clients revert to text/email when the portal disappoints
 - **Vendor setup overload** — steep learning curves (Dubsado) hurt client experience indirectly
-- **Overkill complexity** — enterprise-feeling tools for solo vendors and simple weddings
+- **Overkill complexity** — enterprise-feeling tools for solo vendors and simple events
 
 **Research source:** `competitivePainPoints.md` (synthesis) and repo-root pain points report.
 
@@ -126,17 +131,17 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle P
 | Clients fall back to email/text | Portal must be faster than inbox for contract, invoice, files |
 | Clunky mobile / app required | Mobile-first **web** — no download |
 | Dubsado-style setup hell | Opinionated defaults; project + invite in minutes |
-| Generic, corporate feel | Vendor-branded, warm, wedding-appropriate tone |
-| Jargon ("workflows", "pipelines") | Plain language: "Your wedding", "What's next", "Review contract" |
+| Generic, corporate feel | Vendor-branded, warm, event-appropriate tone |
+| Jargon ("workflows", "pipelines") | Plain language: "Your event", "What's next", "Review contract" |
 
 ### Client portal UX principles (design north star)
-1. **One glance clarity** — Within 3 seconds, the couple knows: wedding date, current status, and the single most important next step
+1. **One glance clarity** — Within 3 seconds, the client knows: event date, current status, and the single most important next step
 2. **Progressive disclosure** — Show summary first; details on tap/click — never dump everything on one page
 3. **Obvious next action** — One primary CTA per visit (e.g. "Review contract", "View invoice") — not a wall of equal buttons
-4. **Plain language** — No CRM jargon on the client side; write for stressed couples, not event planners
+4. **Plain language** — No CRM jargon on the client side; write for busy clients, not back-office planners
 5. **Mobile first** — Design client portal for phone, then scale up to desktop
 6. **Calm visual hierarchy** — Generous whitespace, limited color palette (vendor accent + neutrals), large readable type
-7. **Zero training** — If a couple needs instructions to use the portal, the design failed
+7. **Zero training** — If a client needs instructions to use the portal, the design failed
 8. **Vendor dashboard can be denser** — Vendors tolerate complexity; clients do not. Asymmetric UX investment favors the portal
 
 ### Client portal information architecture (target)
@@ -150,7 +155,7 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle P
 No sidebar with 12 items. No settings the client doesn't need. Optional vendor message/notes on home only.
 
 ### What we intentionally avoid (client side)
-- Multi-project dashboards for couples (MVP: one project — even simpler)
+- Multi-project dashboards for clients (MVP: one project — even simpler)
 - Feature parity with vendor dashboard exposed to clients
 - Nested menus, hamburger-with-everything navigation
 - Empty states without guidance ("No data" → "Sam will upload your contract soon")
@@ -184,7 +189,7 @@ No sidebar with 12 items. No settings the client doesn't need. Optional vendor m
 Extends PortalHub **upstream** of the current project lifecycle so vendors can win new business in the same tool.
 
 ### Intended flow
-1. **Inquiry** — couple asks about services (captured in-app or vendor enters manually)
+1. **Inquiry** — client asks about services (captured in-app or vendor enters manually)
 2. **Quote** — vendor builds quote (services, line items, total, optional notes/PDF)
 3. **Send** — vendor emails quote link to client (mailto MVP or integrated email later)
 4. **Accept** — client opens link, reviews quote, accepts (or declines)

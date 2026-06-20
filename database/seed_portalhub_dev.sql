@@ -5,7 +5,7 @@
 --
 -- Test credentials — password for both: Password123!
 --   vendor@test.com  (VENDOR)
---   client@test.com  (CLIENT — linked to Miller Wedding project)
+--   client@test.com  (CLIENT — linked to Miller Celebration project)
 -- =====================================================
 
 BEGIN;
@@ -52,8 +52,8 @@ INSERT INTO projects (
     couple_display_name, client_email
 ) VALUES (
     (SELECT id FROM users WHERE email = 'vendor@test.com'),
-    'Miller Wedding',
-    'Full-day wedding photography coverage.',
+    'Miller Celebration',
+    'Full-day event photography coverage.',
     '2026-09-12',
     'The Garden Estate, Austin TX',
     'booked',
@@ -64,24 +64,24 @@ INSERT INTO projects (
 INSERT INTO project_clients (
     project_id, client_user_id, couple_display_name
 ) VALUES (
-    (SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
+    (SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
     (SELECT id FROM users WHERE email = 'client@test.com'),
     'Alex & Jordan Miller'
 );
 
 INSERT INTO milestones (project_id, title, description, due_date, status, client_visible, sort_order)
 VALUES
-    ((SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
-     'Contract signed', 'Couple reviews and acknowledges contract.', CURRENT_DATE - 30, 'complete', true, 1),
-    ((SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
-     'Engagement session', 'Mini session before the wedding.', CURRENT_DATE + 14, 'pending', true, 2),
-    ((SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
-     'Wedding day', 'Full coverage on wedding date.', '2026-09-12', 'pending', true, 3);
+    ((SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
+     'Contract signed', 'Client reviews and acknowledges contract.', CURRENT_DATE - 30, 'complete', true, 1),
+    ((SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
+     'Engagement session', 'Mini session before the main event.', CURRENT_DATE + 14, 'pending', true, 2),
+    ((SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
+     'Event day', 'Full coverage on event date.', '2026-09-12', 'pending', true, 3);
 
 INSERT INTO invoices (
     project_id, invoice_number, title, description, amount, due_date, status, created_by
 ) VALUES (
-    (SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
+    (SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
     'INV-001',
     'Retainer',
     '50% retainer due at booking.',
@@ -94,7 +94,7 @@ INSERT INTO invoices (
 INSERT INTO project_invites (
     project_id, email, expires_at, accepted_at, created_by
 ) VALUES (
-    (SELECT id FROM projects WHERE title = 'Miller Wedding' LIMIT 1),
+    (SELECT id FROM projects WHERE title = 'Miller Celebration' LIMIT 1),
     'client@test.com',
     CURRENT_TIMESTAMP + INTERVAL '14 days',
     CURRENT_TIMESTAMP,

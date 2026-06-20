@@ -8,7 +8,7 @@ export interface IProjectInviteDetails {
   acceptedAt: Date | null
   projectId: number
   projectTitle: string
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   vendorBusinessName: string
 }
 
@@ -17,7 +17,7 @@ export interface IProjectClientLink {
   projectId: number
   clientUserId: number
   clientEmail: string
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
 }
 
 export class ProjectInviteModel {
@@ -57,7 +57,7 @@ export class ProjectInviteModel {
       acceptedAt: row.accepted_at,
       projectId: row.project_id,
       projectTitle: row.project_title,
-      coupleDisplayName: row.couple_display_name,
+      clientDisplayName: row.couple_display_name,
       vendorBusinessName: row.vendor_business_name,
     }
   }
@@ -85,7 +85,7 @@ export class ProjectInviteModel {
       projectId: row.project_id,
       clientUserId: row.client_user_id,
       clientEmail: row.client_email,
-      coupleDisplayName: row.couple_display_name,
+      clientDisplayName: row.couple_display_name,
     }
   }
 
@@ -100,7 +100,7 @@ export class ProjectInviteModel {
     inviteId: number,
     projectId: number,
     clientUserId: number,
-    coupleDisplayName: string | null
+    clientDisplayName: string | null
   ): Promise<void> {
     const pool = getPool()
     const client = await pool.connect()
@@ -130,7 +130,7 @@ export class ProjectInviteModel {
         INSERT INTO project_clients (project_id, client_user_id, couple_display_name)
         VALUES ($1, $2, $3)
         `,
-        [projectId, clientUserId, coupleDisplayName]
+        [projectId, clientUserId, clientDisplayName]
       )
 
       await client.query(

@@ -253,7 +253,7 @@ router.get('/invite/:token', async (req: Request, res: Response): Promise<void> 
     res.json({
       email: invite.email,
       projectTitle: invite.projectTitle,
-      coupleDisplayName: invite.coupleDisplayName,
+      clientDisplayName: invite.clientDisplayName,
       vendorBusinessName: invite.vendorBusinessName,
       expiresAt: invite.expiresAt,
       projectHasClient: !!link,
@@ -318,7 +318,7 @@ router.post('/register/client', async (req: Request, res: Response): Promise<voi
       } else {
         res.status(409).json({
           error:
-            'This project already has a client linked. MVP supports one couple per project — ask your vendor to create a new project or use the existing client email.',
+            'This project already has a client linked. MVP supports one client per project — ask your vendor to create a new project or use the existing client email.',
         })
       }
       return
@@ -341,14 +341,14 @@ router.post('/register/client', async (req: Request, res: Response): Promise<voi
       role: 'CLIENT',
     })
 
-    const coupleDisplayName =
-      invite.coupleDisplayName || `${firstName} ${lastName}`.trim()
+    const clientDisplayName =
+      invite.clientDisplayName || `${firstName} ${lastName}`.trim()
 
     await ProjectInvite.acceptInvite(
       invite.id,
       invite.projectId,
       Number(newUser.id),
-      coupleDisplayName
+      clientDisplayName
     )
 
     const authToken = generateToken(newUser.id, newUser.role)

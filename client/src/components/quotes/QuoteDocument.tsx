@@ -7,7 +7,7 @@ export interface QuoteDocumentData {
   vendorBusinessName?: string | null
   clientName: string | null
   clientEmail?: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   notes: string | null
   currency: string
@@ -40,7 +40,7 @@ const QuoteDocument: React.FC<QuoteDocumentProps> = ({ quote }) => {
         <div className="mt-3 text-sm text-gray-600 space-y-1">
           {quote.clientName && <p>Prepared for: {quote.clientName}</p>}
           {quote.clientEmail && <p>Email: {quote.clientEmail}</p>}
-          {quote.weddingDate && <p>Wedding date: {quote.weddingDate}</p>}
+          {quote.eventDate && <p>Event date: {quote.eventDate}</p>}
           {quote.location && <p>Location: {quote.location}</p>}
           {quote.statusLabel && <p>Status: {quote.statusLabel}</p>}
           {quote.expiresAt && (

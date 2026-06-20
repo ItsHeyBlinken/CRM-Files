@@ -3,7 +3,7 @@
 > **Product name:** **PortalHub** — generic placeholder; rebrand before launch.
 
 ## Project Overview
-A two-sided web application for wedding freelancers and vendors (photographers, florists, DJs, etc.). Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.
+A two-sided web application for event freelancers and vendors (photographers, florists, DJs, planners, etc.). Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.
 
 ## End Goal
 **Vendor side:** Main product focus — efficient workflows, fewer manual steps, one place to run the business.
@@ -13,7 +13,7 @@ A two-sided web application for wedding freelancers and vendors (photographers, 
 Asymmetric by design: depth and capability on the vendor dashboard; clarity and calm on the client portal.
 
 ## Product Model
-- **Vendor side**: Freelancer/wedding vendor manages projects, clients, invoices, contracts, deliverables, and portal branding.
+- **Vendor side**: Freelancer/event vendor manages projects, clients, invoices, contracts, deliverables, and portal branding.
 - **Client side**: One login per couple; sees only their assigned project(s) with that vendor.
 - **Single app, two experiences**: Shared login page; role-based redirect after authentication.
 
@@ -21,7 +21,7 @@ Asymmetric by design: depth and capability on the vendor dashboard; clarity and 
 
 ### Vendor Dashboard
 - Register and manage vendor profile and portal branding (business name, logo, colors)
-- Create and manage projects (weddings/bookings)
+- Create and manage projects (events and bookings)
 - Invite clients (one login per couple)
 - Manage project status and client-visible milestones
 - Upload contracts (PDF) and track acknowledgement
@@ -30,7 +30,7 @@ Asymmetric by design: depth and capability on the vendor dashboard; clarity and 
 
 ### Client Portal
 - Accept invite and register/login (same login page as vendors)
-- View assigned project only — wedding date, status, timeline
+- View assigned project only — event date, status, timeline
 - View and acknowledge contracts (PDF + acknowledgement for MVP)
 - View invoices (display only for MVP)
 - Download deliverables
@@ -89,7 +89,7 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 
 ## Business & Monetization
 
-**Paying customer:** Wedding vendor (freelancer / small business) — not the couple.
+**Paying customer:** Event vendor (freelancer / small business) — not the end client.
 
 **Status:** Monetization plan **not finalized**. Before launch, complete the decision checklist in **`monetization.md`** (pricing model, tiers, trial, what features are gated).
 

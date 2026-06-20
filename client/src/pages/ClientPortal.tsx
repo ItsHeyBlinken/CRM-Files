@@ -17,7 +17,7 @@ import {
 import {
   formatCurrency,
   formatFileSize,
-  formatWeddingDate,
+  formatEventDate,
   getInvoiceStatusLabel,
   getNextAction,
   getStatusLabel,
@@ -262,7 +262,7 @@ const ClientPortal: React.FC = () => {
           <h2 className="mt-1 text-2xl font-semibold text-gray-900">{data.project.title}</h2>
           <p className="mt-2 text-gray-600">{getStatusLabel(data.project.status)}</p>
           <p className="mt-3 text-sm text-gray-500">
-            {formatWeddingDate(data.project.weddingDate)}
+            {formatEventDate(data.project.eventDate)}
           </p>
           {data.project.location && (
             <p className="text-sm text-gray-500">{data.project.location}</p>
@@ -658,7 +658,7 @@ const ClientPortal: React.FC = () => {
               {data.vendorBusinessName}
             </p>
             <h1 className="text-lg font-semibold text-gray-900 truncate">
-              {data.project.coupleDisplayName || user?.firstName || 'Your portal'}
+              {data.project.clientDisplayName || user?.firstName || 'Your portal'}
             </h1>
           </div>
           <button

@@ -9,7 +9,7 @@
 
 **Market entry angle:** Address documented competitor pain points — unreliable email, clunky mobile portals, hard-to-find info, payment friction, communication fragmentation. See `competitivePainPoints.md`.
 
-This is the guiding principle for all future work — not feature parity between sides.
+**Positioning:** Event vendors (weddings, corporate, private parties, etc.) — vendors name projects whatever they want; **system copy** uses neutral “event” / “client” language, not wedding-specific defaults.
 
 | Side | Focus | UX bar |
 |------|--------|--------|
@@ -20,11 +20,11 @@ This is the guiding principle for all future work — not feature parity between
 
 ## Current Work Focus
 
-**Vendor onboarding wizard shipped (code complete).** New vendors: register → 3-step onboarding (business name → P2P payments → optional Stripe) → dashboard with checklist.
+**Session stopped (June 17, 2026).** Major quote + contract + language work shipped in code. **No git commit** this session (user runs commits manually).
 
-**User action:** Run `database/schema_vendor_onboarding.sql` in pgAdmin (grandfathers existing vendors).
+**Industry feedback integrated (wedding planner):** Client relationship = three parts (accept quote, sign contract/T&C, pay deposit). Quotes can optionally include contract PDF; contract is view-only until quote accepted, then e-sign on quote link; deposit still required after sign.
 
-**Next:** E2E test full vendor path; optional Stripe dev keys; Phase 3e subscription billing.
+**User action before next dev session:** Run pending SQL in pgAdmin (see Database Status below).
 
 ## MVP Status
 
@@ -32,29 +32,41 @@ This is the guiding principle for all future work — not feature parity between
 |------|--------|
 | Auth + role redirect | ✅ Done |
 | Vendor project list + create | ✅ Done |
-| Vendor project detail (`/dashboard/projects/:id`) | ✅ Done |
+| Vendor project detail + **edit overview** | ✅ Done |
 | Client invite flow + duplicate-client guards | ✅ Done |
 | Client portal (Home / Documents / Payments / Files) | ✅ Done |
 | Contract PDF upload + enhanced e-sign audit trail | ✅ Done |
 | Deliverable upload + client download | ✅ Done |
 | Legacy CRM cleanup | ✅ Done (June 2026) |
 | Quoting / proposals | ✅ Built |
-| Vendor invoice CRUD (3a) | ✅ Built — project detail |
-| Vendor payment settings (3b) | ✅ Built — `/dashboard/payments` (separate from signup today) |
-| Client card pay + P2P (3c) | ✅ Built — Stripe Checkout + P2P links + claim flow |
-| Client payment UX polish | ✅ Done — prominent buttons, Home redirect, paid polling |
-| Vendor payment at signup | ✅ Built — `/dashboard/onboarding` wizard + gate |
-| Dashboard vendor checklist | ✅ Built — Get started on `/dashboard` |
-| Invoice send guard | ✅ Built — blocks send without payment methods |
-| Monetization plan (vendor → PortalHub subscription) | 📋 Phase 3e — see `monetization.md` |
+| Quote + optional contract attachment | ✅ Built |
+| Quote contract view-only → sign after accept | ✅ Built |
+| Client-agreement notices (quote → client status) | ✅ Built |
+| Vendor invoice CRUD (3a) | ✅ Built |
+| Vendor payment settings (3b) | ✅ Built |
+| Client card pay + P2P (3c) | ✅ Built |
+| Vendor onboarding wizard + gate | ✅ Built |
+| Dashboard vendor checklist | ✅ Built |
+| Invoice send guard | ✅ Built |
+| Event-neutral UI copy (`eventDate`, `clientDisplayName`) | ✅ Done |
+| Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
+| Monetization (vendor → PortalHub subscription) | 📋 Phase 3e — see `monetization.md` |
 
 ## Next Session — Priority Order
 
-1. **Run onboarding SQL** — `database/schema_vendor_onboarding.sql` in pgAdmin
-2. **E2E test** — new vendor register → onboarding → project → invoice → client pay
-3. **Stripe dev config** (optional) — test card pay path
-4. **Polish** — pre-fill business name from register `company` field in onboarding step 1
-5. **Monetization plan** — Phase 3e vendor subscription billing before launch
+1. **Run pending SQL in pgAdmin** (in order):
+   - `schema_vendor_onboarding.sql` (if not yet run)
+   - `schema_quotes_addition.sql` (confirm)
+   - `schema_quote_contract_addition.sql`
+   - `schema_quote_contract_signing.sql`
+   - `schema_contract_ack_enhancement.sql` (if using portal e-sign audit fields)
+2. **E2E test — full vendor path:**
+   - Register → onboarding → create quote **with contract** → client accepts → client signs contract on quote link → convert to project → invite → portal contract/deposit/invoice
+3. **E2E test — payments path:** onboarding → project → invoice → client P2P + optional Stripe card pay
+4. **Stripe dev config** (optional): test keys + webhook for card pay
+5. **Stripe Connect UX:** “Link existing Stripe account” (OAuth Standard) as primary; Express onboarding as fallback for vendors without Stripe
+6. **Polish:** Pre-fill business name from register `company` in onboarding step 1
+7. **Phase 3e:** PortalHub vendor subscription billing (pre-launch)
 
 ## Payment Architecture (Agreed)
 
@@ -62,68 +74,86 @@ This is the guiding principle for all future work — not feature parity between
 
 | Flow | Who pays whom | Mechanism | Status |
 |------|---------------|-----------|--------|
-| **Client → Vendor** | Couple pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built |
+| **Client → Vendor** | Client pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built (Express Connect today) |
 | **Vendor → PortalHub** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
 
 **Client invoice payments (built):**
-- Vendor configures handles + Stripe at `/dashboard/payments` *(today — moving to onboarding)*
+- Vendor configures handles + Stripe at onboarding and `/dashboard/payments`
 - Vendor creates/sends invoices on project detail
-- Client pays via card (Checkout) or P2P (clickable Venmo/Cash App/PayPal links + Zelle copy)
-- Client “I've sent payment” → vendor marks paid; client auto-redirects to Home with banners
-- Poll on Payments tab detects vendor “mark paid” → client Home success banner
+- Client pays via card (Checkout) or P2P; “I've sent payment” → vendor marks paid; Home redirect + polling
 
-**Key files:** `server/src/models/Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `client/src/pages/VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `client/src/utils/p2pPaymentLinks.ts`
+**Key files:** `Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `VendorOnboarding.tsx`, `VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `p2pPaymentLinks.ts`
+
+## Quote → Client Agreement Flow (Built)
+
+| Step | Where | Status |
+|------|--------|--------|
+| Vendor sends quote (+ optional contract) | `/dashboard/quotes` | ✅ |
+| Client views quote + contract (view-only) | `/quote/:token` | ✅ |
+| Client accepts quote | `/quote/:token` | ✅ |
+| Client signs contract (unlocks after accept) | `/quote/:token` | ✅ |
+| Deposit notice (not booked until paid) | `/quote/:token` | ✅ Informational |
+| Vendor converts to project | `/dashboard/quotes/:id` | ✅ Copies contract + signature |
+| Client portal: contract / deposit / invoice | `/portal` | ✅ Existing project flow |
+
+**Key files:** `QuoteContract.ts`, `Quote.ts`, `quotes.ts` (public routes), `VendorQuotes.tsx`, `AcceptQuote.tsx`, `QuoteContractSignPanel.tsx`, `QuoteClientAgreementNotice.tsx`
 
 ## Database Status
-- [x] `schema_portalhub.sql` applied
-- [x] `schema_payments_addition.sql` applied (user confirmed `vendor_payment_settings`)
-- [ ] **`schema_vendor_onboarding.sql`** — run in pgAdmin (grandfathers existing vendors)
-- [ ] **`schema_quote_contract_addition.sql`** — quote-level contract attachment (run after quotes schema)
-- [ ] **`schema_quote_contract_signing.sql`** — e-sign fields on quote contracts
-- [x] Dev seed applied (test logins in `techContext.md`)
-- [ ] **`schema_quotes_addition.sql`** — confirm applied if using quotes
-- [ ] **`schema_contract_ack_enhancement.sql`** — confirm applied if using enhanced e-sign
+
+| Migration | Purpose | User applied? |
+|-----------|---------|---------------|
+| `schema_portalhub.sql` | Base schema | ✅ |
+| `schema_payments_addition.sql` | Payment settings + invoice fields | ✅ |
+| `schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
+| `schema_quotes_addition.sql` | Quotes + line items | ⬜ Confirm |
+| `schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
+| `schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
+| `schema_contract_ack_enhancement.sql` | Portal contract audit fields | ⬜ Confirm |
+| `seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 
 ## Key Routes (current)
 
 | Path | Role | Purpose |
 |------|------|---------|
-| `/register` | Public | Vendor signup → redirects to onboarding |
-| `/dashboard/onboarding` | VENDOR | 3-step setup: business → P2P → Stripe (optional) |
-| `/dashboard` | VENDOR | Project list + create |
-| `/dashboard/projects/:id` | VENDOR | Project detail (invite, contract, deliverables, invoices) |
-| `/dashboard/quotes` | VENDOR | Quote list + create |
+| `/register` | Public | Vendor signup → onboarding |
+| `/dashboard/onboarding` | VENDOR | Business → P2P → optional Stripe |
+| `/dashboard` | VENDOR | Projects + checklist |
+| `/dashboard/projects/:id` | VENDOR | Project detail + **edit overview** |
+| `/dashboard/quotes` | VENDOR | Quote list + create (optional contract) |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, convert to project |
 | `/dashboard/payments` | VENDOR | Stripe Connect + P2P handles |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
-| `/quote/:token` | Public | Client quote review + accept/decline |
+| `/quote/:token` | Public | Quote review, accept, view/sign contract |
+
+**Public quote API:** `GET/POST /api/quotes/:token/...`, `GET .../contract`, `POST .../contract/acknowledge`
 
 ## Confirmed Product Decisions
 
 | Decision | Choice |
 |----------|--------|
-| Client accounts | One login per couple |
-| Login UX | Single login page with role-based redirect |
-| Login timing | At **invite acceptance**, not at contract acknowledgement |
-| **Vendor onboarding (next)** | **Payment setup during signup** — P2P required path; Stripe Connect optional same flow |
-| **Client relationship (quotes)** | **Not a client until all three:** accept quote + sign contract/T&C + pay deposit |
-| **Quote + contract** | Optional contract PDF attached at quote creation; view-only until quote accepted, then e-sign on quote link |
-| Payments (MVP) | Stripe Connect card pay + P2P; vendor marks P2P paid; 0% platform fee at launch |
-| Contracts (MVP) | PDF upload + electronic signature (audit trail) |
+| Target market | Event vendors (weddings + other events); vendor-chosen project titles |
+| System language | Neutral “event” / “client” — no wedding-default copy in platform UI |
+| API fields | `eventDate`, `clientDisplayName` (DB: `wedding_date`, `couple_display_name`) |
+| Client accounts | One login per client account |
+| **Client relationship** | Not a booked client until: **accept quote + sign contract/T&C + pay deposit** |
+| **Quote + contract** | Optional attachment at quote create; view-only until accept; then e-sign on quote link |
+| After contract sign on quote | Informational deposit notice; vendor follows up with invoice |
+| Vendor onboarding | Payment setup at signup (P2P required path; Stripe optional) |
+| Payments (MVP) | Stripe Connect Express + P2P; 0% platform fee at launch |
 | One client per project (MVP) | Enforced in API + UI |
-| One contract per project (MVP) | Enforced on upload |
 
 ## Active Technical Decisions
 - Monorepo: `client/`, `server/`, `database/`
 - File storage: `uploads/contracts/{projectId}/`, `uploads/deliverables/{projectId}/`, `uploads/quote-contracts/{quoteId}/`
-- Auth-scoped file download for clients (not public static URLs)
-- Stripe webhook uses raw body at `/api/webhooks/stripe` (before JSON parser)
-- **Git commits:** user only
+- Auth-scoped file download for portal contracts; quote contracts public via token URL
+- Stripe webhook: raw body at `/api/webhooks/stripe`
+- **Git commits / push:** user only
 - **Database migrations:** user applies SQL in pgAdmin
 
 ## Open Questions (Deferred)
-- Exact signup wizard steps (single page vs multi-step vs post-register redirect)
-- Whether business name becomes required at signup
-- Email delivery provider for invites and quotes
-- **Monetization** — pricing model, tiers, free trial, Stripe Billing timeline (see `monetization.md`)
+- **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?
+- Pre-fill business name from register `company` in onboarding
+- Transactional email provider for invites and quotes (vs mailto MVP)
+- Enforce “booked client” status in DB vs informational UX only
+- Monetization tiers and Stripe Billing timeline (`monetization.md`)

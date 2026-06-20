@@ -11,17 +11,17 @@ export interface Project {
   vendorId: number
   title: string
   description: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   status: ProjectStatus
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   clientEmail: string | null
   internalNotes?: string | null
 }
 
 export interface LinkedClient {
   email: string
-  coupleDisplayName: string | null
+  clientDisplayName: string | null
   linkedAt: string
 }
 

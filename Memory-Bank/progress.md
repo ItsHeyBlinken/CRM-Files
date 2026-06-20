@@ -1,6 +1,6 @@
-# Progress: Wedding Vendor Client Portal
+# Progress: PortalHub (Event Vendor Client Portal)
 
-> **Note:** Product pivoted from Event Planner CRM to two-sided wedding vendor client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
+> **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
 
 ## What Works
 
@@ -166,7 +166,7 @@
 
 ---
 
-## Post-Pivot: Wedding Vendor Client Portal (June 2025)
+## Post-Pivot: Event Vendor Client Portal (June 2025)
 
 ### Session: Product direction confirmed
 - [x] Decided greenfield product model — reuse infra, replace schema and CRM UI
@@ -238,7 +238,7 @@
 
 ### Session: Invite registration fix (June 2026)
 - [x] Guard invite + register when project already has linked client
-- [x] Block duplicate invites on seeded Miller Wedding project
+- [x] Block duplicate invites on seeded Miller Celebration project
 - [x] AcceptInvite page shows "Portal already set up" when appropriate
 
 ### Session: Contracts + vendor project detail + deliverables (June 2026)
@@ -331,3 +331,41 @@
 - [x] Quote → project conversion copies contract signature to project contract
 - [x] SQL `schema_quote_contract_signing.sql`
 - [ ] User runs signing SQL in pgAdmin
+
+### Session: Event-first language + project overview edit (June 2026)
+- [x] Replaced user-facing "wedding" copy with "event" across portal UI, quotes, invites, login/register
+- [x] API field renamed `weddingDate` → `eventDate` (DB column `wedding_date` unchanged — no migration)
+- [x] Vendor project detail — **Edit overview** for client name, email, event date, location, description, internal notes
+- [x] Dev seed updated (Miller Celebration sample project)
+
+### Session: Neutral event language sweep (June 2026)
+- [x] Removed remaining default "wedding" / "couple" copy from app UI and API field names
+- [x] `coupleDisplayName` → `clientDisplayName` in API (DB `couple_display_name` unchanged)
+- [x] Project titles remain vendor-defined — system copy uses generic "event" / "client" language
+
+---
+
+## End of session — June 17, 2026
+
+**Stopped here.** Code complete for quote/contract industry flow + event-neutral language + project overview edit. User to run SQL before testing new quote-contract features.
+
+### Shipped today (code)
+- Quote client-agreement notices (3-part client relationship)
+- Optional contract PDF on quote create
+- Quote contract: view-only → sign after accept → deposit pending notice
+- Quote → project: contract + signature copy
+- Event-neutral UI; API `eventDate` + `clientDisplayName`
+- Vendor project detail: Edit overview (client contact, event date, etc.)
+
+### User actions before next session
+- [ ] Run `schema_vendor_onboarding.sql`
+- [ ] Run `schema_quote_contract_addition.sql`
+- [ ] Run `schema_quote_contract_signing.sql`
+- [ ] Confirm `schema_quotes_addition.sql` + `schema_contract_ack_enhancement.sql` applied
+
+### Next session priorities
+1. Run pending SQL → E2E quote+contract+project path
+2. E2E payments path (optional Stripe dev keys)
+3. Stripe Connect OAuth (“link existing account”) — discussed, not built
+4. Onboarding polish (pre-fill business name from register)
+5. Phase 3e vendor subscription billing

@@ -122,7 +122,7 @@ const AcceptQuote: React.FC = () => {
             title: quote.title,
             vendorBusinessName: quote.vendorBusinessName,
             clientName: quote.clientName,
-            weddingDate: quote.weddingDate,
+            eventDate: quote.eventDate,
             location: quote.location,
             notes: quote.notes,
             currency: quote.currency,

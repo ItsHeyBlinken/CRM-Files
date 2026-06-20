@@ -60,6 +60,16 @@ const VendorProjectDetail: React.FC = () => {
   const [invoiceDueDate, setInvoiceDueDate] = useState('')
   const [invoiceDescription, setInvoiceDescription] = useState('')
   const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
+  const [editingOverview, setEditingOverview] = useState(false)
+  const [overviewForm, setOverviewForm] = useState({
+    title: '',
+    clientDisplayName: '',
+    clientEmail: '',
+    eventDate: '',
+    location: '',
+    description: '',
+    internalNotes: '',
+  })
 
   const loadDetail = useCallback(async () => {
     if (!projectId || Number.isNaN(projectId)) {
@@ -100,6 +110,47 @@ const VendorProjectDetail: React.FC = () => {
       await loadDetail()
     } catch (err: unknown) {
       setError(getApiError(err, 'Failed to update status'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const startEditingOverview = () => {
+    if (!detail) return
+    const { project } = detail
+    setOverviewForm({
+      title: project.title,
+      clientDisplayName: project.clientDisplayName ?? '',
+      clientEmail: project.clientEmail ?? '',
+      eventDate: project.eventDate ?? '',
+      location: project.location ?? '',
+      description: project.description ?? '',
+      internalNotes: project.internalNotes ?? '',
+    })
+    setEditingOverview(true)
+  }
+
+  const handleOverviewSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!detail) return
+
+    setSubmitting(true)
+    setError('')
+
+    try {
+      await updateVendorProject(projectId, {
+        title: overviewForm.title.trim(),
+        clientDisplayName: overviewForm.clientDisplayName.trim() || null,
+        clientEmail: overviewForm.clientEmail.trim() || null,
+        eventDate: overviewForm.eventDate || null,
+        location: overviewForm.location.trim() || null,
+        description: overviewForm.description.trim() || null,
+        internalNotes: overviewForm.internalNotes.trim() || null,
+      })
+      setEditingOverview(false)
+      await loadDetail()
+    } catch (err: unknown) {
+      setError(getApiError(err, 'Failed to update project overview'))
     } finally {
       setSubmitting(false)
     }
@@ -258,12 +309,12 @@ const VendorProjectDetail: React.FC = () => {
   const openInviteEmailDraft = () => {
     if (!inviteLink || !detail) return
     const fullUrl = getInviteFullUrl(inviteLink.invitePath)
-    const subject = encodeURIComponent(`Your wedding portal — ${detail.project.title}`)
+    const subject = encodeURIComponent(`Your client portal — ${detail.project.title}`)
     const body = encodeURIComponent(
       `Hi,\n\n` +
         `I've set up your client portal. You don't have an account yet — this link will let you create one and view your project:\n\n` +
         `${fullUrl}\n\n` +
-        `Open the link, choose a password, and you'll be taken straight to your wedding portal.\n\n` +
+        `Open the link, choose a password, and you'll be taken straight to your portal.\n\n` +
         `After that, you can sign in anytime at ${window.location.origin}/login\n`
     )
     window.location.href = `mailto:${inviteLink.email}?subject=${subject}&body=${body}`
@@ -331,22 +382,163 @@ const VendorProjectDetail: React.FC = () => {
 
         <section className="bg-white rounded-lg shadow p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <h2 className="font-medium text-gray-900">Overview</h2>
-              <p className="mt-2 text-sm text-gray-600">
-                {project.coupleDisplayName || 'No couple name set'}
-              </p>
-              {project.weddingDate && (
-                <p className="text-sm text-gray-600">
-                  Wedding date:{' '}
-                  {new Date(`${project.weddingDate}T12:00:00`).toLocaleDateString()}
-                </p>
-              )}
-              {project.location && (
-                <p className="text-sm text-gray-600">Location: {project.location}</p>
-              )}
-              {project.description && (
-                <p className="mt-2 text-sm text-gray-600">{project.description}</p>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-medium text-gray-900">Overview</h2>
+                {!editingOverview && (
+                  <button
+                    type="button"
+                    onClick={startEditingOverview}
+                    className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+                  >
+                    Edit overview
+                  </button>
+                )}
+              </div>
+
+              {editingOverview ? (
+                <form onSubmit={handleOverviewSave} className="mt-4 space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label htmlFor="overview-title" className="block text-xs font-medium text-gray-700 mb-1">
+                        Project title
+                      </label>
+                      <input
+                        id="overview-title"
+                        required
+                        value={overviewForm.title}
+                        onChange={(e) => setOverviewForm({ ...overviewForm, title: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="overview-client-name" className="block text-xs font-medium text-gray-700 mb-1">
+                        Client name
+                      </label>
+                      <input
+                        id="overview-client-name"
+                        value={overviewForm.clientDisplayName}
+                        onChange={(e) =>
+                          setOverviewForm({ ...overviewForm, clientDisplayName: e.target.value })
+                        }
+                        placeholder="e.g. Alex & Jordan Miller"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="overview-client-email" className="block text-xs font-medium text-gray-700 mb-1">
+                        Client email
+                      </label>
+                      <input
+                        id="overview-client-email"
+                        type="email"
+                        value={overviewForm.clientEmail}
+                        onChange={(e) =>
+                          setOverviewForm({ ...overviewForm, clientEmail: e.target.value })
+                        }
+                        placeholder="For invites and records"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="overview-event-date" className="block text-xs font-medium text-gray-700 mb-1">
+                        Event date
+                      </label>
+                      <input
+                        id="overview-event-date"
+                        type="date"
+                        value={overviewForm.eventDate}
+                        onChange={(e) => setOverviewForm({ ...overviewForm, eventDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="overview-location" className="block text-xs font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
+                      <input
+                        id="overview-location"
+                        value={overviewForm.location}
+                        onChange={(e) => setOverviewForm({ ...overviewForm, location: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label htmlFor="overview-description" className="block text-xs font-medium text-gray-700 mb-1">
+                        Description (optional)
+                      </label>
+                      <textarea
+                        id="overview-description"
+                        rows={3}
+                        value={overviewForm.description}
+                        onChange={(e) =>
+                          setOverviewForm({ ...overviewForm, description: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label htmlFor="overview-internal-notes" className="block text-xs font-medium text-gray-700 mb-1">
+                        Internal notes (vendor only)
+                      </label>
+                      <textarea
+                        id="overview-internal-notes"
+                        rows={2}
+                        value={overviewForm.internalNotes}
+                        onChange={(e) =>
+                          setOverviewForm({ ...overviewForm, internalNotes: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      {submitting ? 'Saving...' : 'Save overview'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingOverview(false)}
+                      className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="mt-2 space-y-1 text-sm text-gray-600">
+                  <p>
+                    <span className="font-medium text-gray-700">Client:</span>{' '}
+                    {project.clientDisplayName || 'Not set'}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-700">Email:</span>{' '}
+                    {project.clientEmail || linkedClient?.email || 'Not set'}
+                  </p>
+                  {project.eventDate && (
+                    <p>
+                      <span className="font-medium text-gray-700">Event date:</span>{' '}
+                      {new Date(`${project.eventDate}T12:00:00`).toLocaleDateString()}
+                    </p>
+                  )}
+                  {project.location && (
+                    <p>
+                      <span className="font-medium text-gray-700">Location:</span> {project.location}
+                    </p>
+                  )}
+                  {project.description && (
+                    <p className="pt-1 whitespace-pre-wrap">{project.description}</p>
+                  )}
+                  {project.internalNotes && (
+                    <p className="pt-2 text-xs text-gray-500">
+                      <span className="font-medium">Internal notes:</span> {project.internalNotes}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
             <div className="shrink-0">

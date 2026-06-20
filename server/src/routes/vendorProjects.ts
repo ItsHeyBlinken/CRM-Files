@@ -39,7 +39,7 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
 // POST /api/vendor/projects
 router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { title, description, weddingDate, location, status, coupleDisplayName, clientEmail, internalNotes } =
+    const { title, description, eventDate, location, status, clientDisplayName, clientEmail, internalNotes } =
       req.body
 
     if (!title?.trim()) {
@@ -55,10 +55,10 @@ router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
     const project = await Project.create(Number(req.user.id), {
       title: title.trim(),
       description,
-      weddingDate,
+      eventDate,
       location,
       status,
-      coupleDisplayName,
+      clientDisplayName,
       clientEmail,
       internalNotes,
     })
@@ -484,7 +484,7 @@ router.post('/:id/invite', async (req: AuthRequest, res: Response): Promise<void
     if (error instanceof Error && error.message === 'PROJECT_ALREADY_HAS_CLIENT') {
       res.status(409).json({
         error:
-          'This project already has a client on the portal. MVP supports one couple per project — create a new project to invite someone else.',
+          'This project already has a client on the portal. MVP supports one client per project — create a new project to invite someone else.',
       })
       return
     }

@@ -149,7 +149,7 @@ const VendorQuoteDetail: React.FC = () => {
             title: quote.title,
             clientName: quote.clientName,
             clientEmail: quote.clientEmail,
-            weddingDate: quote.weddingDate,
+            eventDate: quote.eventDate,
             location: quote.location,
             notes: quote.notes,
             currency: quote.currency,

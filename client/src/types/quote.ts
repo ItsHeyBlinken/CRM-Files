@@ -40,7 +40,7 @@ export interface Quote {
   title: string
   clientEmail: string
   clientName: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   notes: string | null
   currency: string
@@ -60,7 +60,7 @@ export interface PublicQuote {
   title: string
   clientEmail: string
   clientName: string | null
-  weddingDate: string | null
+  eventDate: string | null
   location: string | null
   notes: string | null
   currency: string
@@ -76,7 +76,7 @@ export interface CreateQuoteInput {
   title: string
   clientEmail: string
   clientName?: string
-  weddingDate?: string
+  eventDate?: string
   location?: string
   notes?: string
   currency?: string
