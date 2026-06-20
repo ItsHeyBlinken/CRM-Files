@@ -1,6 +1,7 @@
 import React from 'react'
 import type { QuoteLineItem } from '../../types/quote'
 import { formatQuoteMoney } from '../../utils/formatQuoteMoney'
+import { formatUsDateKey } from '../../utils/calendarHelpers'
 
 export interface QuoteDocumentData {
   title: string
@@ -43,7 +44,7 @@ const QuoteDocument: React.FC<QuoteDocumentProps> = ({ quote }) => {
         <div className="mt-3 text-sm text-gray-600 space-y-1">
           {quote.clientName && <p>Prepared for: {quote.clientName}</p>}
           {quote.clientEmail && <p className="break-all">Email: {quote.clientEmail}</p>}
-          {quote.eventDate && <p>Event date: {quote.eventDate}</p>}
+          {quote.eventDate && <p>Event date: {formatUsDateKey(quote.eventDate)}</p>}
           {quote.location && <p>Location: {quote.location}</p>}
           {quote.statusLabel && <p>Status: {quote.statusLabel}</p>}
           {quote.expiresAt && (

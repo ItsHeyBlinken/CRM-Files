@@ -242,6 +242,11 @@
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `010` |
 
+## Session Log (June 20, 2026 — quote date format)
+- [x] Quote event dates displayed as **MM-DD-YYYY** (US) instead of raw ISO `YYYY-MM-DD`
+- [x] Added `formatUsDateKey()` in `client/src/utils/calendarHelpers.ts`
+- [x] Applied in `QuoteDocument.tsx` (client-facing quote PDF/view) and `VendorQuotes.tsx` list
+
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?
 - Pre-fill business name from register `company` in onboarding

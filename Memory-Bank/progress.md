@@ -422,6 +422,11 @@
 - [x] User committed rebrand + polish work
 - [ ] User: register domain, favicon/logo
 
+### Session: Quote US date format (June 20, 2026)
+- [x] `formatUsDateKey()` — converts `YYYY-MM-DD` → `MM-DD-YYYY`
+- [x] `QuoteDocument.tsx` event date display
+- [x] `VendorQuotes.tsx` list snippet
+
 ### Session: Product name — Gigly rejected (June 2026)
 - [x] Considered **Gigly** — rejected because gigly.com is taken
 - [x] Reverted UI/Memory Bank to **PortalHub** placeholder; `client/src/constants/branding.ts` is the single swap point for the next name
