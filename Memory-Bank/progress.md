@@ -307,7 +307,27 @@
 - [x] Product decision: vendor payment setup should move into **signup onboarding** (P2P + optional Stripe)
 
 ### Next up: Vendor onboarding + payment at signup
-- [ ] Post-register or multi-step signup: business name + P2P handles + optional Stripe Connect
-- [ ] Dashboard checklist / guard when sending invoice without payment methods
-- [ ] Keep client portal dead simple while vendor setup gets richer
+- [x] Post-register wizard `/dashboard/onboarding` — business name + P2P + optional Stripe
+- [x] `VendorOnboardingGate` — redirects incomplete vendors to onboarding
+- [x] Dashboard checklist (payments → project → invite → invoice)
+- [x] Invoice send guard (API + UI) when no payment methods
+- [x] SQL `schema_vendor_onboarding.sql` — `payment_setup_complete` flag
+- [ ] User runs onboarding SQL in pgAdmin
+- [ ] E2E test new vendor registration flow
 - [ ] Phase 3e: PortalHub vendor subscription (Stripe Billing) — separate from client→vendor pay
+
+### Session: Quote client-agreement UX + contract attachment (June 2026)
+- [x] Industry-practice notice on vendor quotes list/detail + public quote page — not a client until: accept quote, sign contract/T&C, pay deposit
+- [x] Optional contract PDF attachment when creating a quote (checkbox + title + file)
+- [x] Public quote link shows **View contract PDF** when attached
+- [x] Convert quote → project copies attached contract into project `contracts` table
+- [x] SQL `schema_quote_contract_addition.sql` — `quote_contracts` table
+- [ ] User runs quote contract SQL in pgAdmin
+
+### Session: Quote contract view-only → sign after accept (June 2026)
+- [x] Contract view-only on public quote link until quote accepted
+- [x] After accept: e-sign unlocks on same quote link (no portal login required)
+- [x] After sign: deposit pending notice — not a client until deposit paid; vendor sends invoice
+- [x] Quote → project conversion copies contract signature to project contract
+- [x] SQL `schema_quote_contract_signing.sql`
+- [ ] User runs signing SQL in pgAdmin

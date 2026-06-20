@@ -1,11 +1,28 @@
 import { Router, Response } from 'express'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
+import { quoteContractPdfUpload } from '../middleware/quoteUpload'
 import { Quote } from '../models/Quote'
+import { QuoteContract } from '../models/QuoteContract'
 import { logger } from '../utils/logger'
 
 const router = Router()
 
 router.use(protect, authorize('VENDOR'))
+
+function parseLineItems(raw: unknown): Array<{ description: string; quantity: number; unitPrice: number }> {
+  if (typeof raw === 'string') {
+    return JSON.parse(raw) as Array<{ description: string; quantity: number; unitPrice: number }>
+  }
+  return raw as Array<{ description: string; quantity: number; unitPrice: number }>
+}
+
+function parseOptionalNumber(raw: unknown): number | undefined {
+  if (raw === undefined || raw === null || raw === '') {
+    return undefined
+  }
+  const value = typeof raw === 'string' ? Number(raw) : Number(raw)
+  return Number.isFinite(value) ? value : undefined
+}
 
 // GET /api/vendor/quotes
 router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
@@ -19,72 +36,134 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
 })
 
 // POST /api/vendor/quotes
-router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { title, clientEmail, clientName, weddingDate, location, notes, currency, expiresInDays, lineItems } =
-      req.body
-
-    if (!title?.trim()) {
-      res.status(400).json({ error: 'Quote title is required' })
-      return
-    }
-
-    if (!clientEmail?.trim()) {
-      res.status(400).json({ error: 'Client email is required' })
-      return
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(clientEmail.trim())) {
-      res.status(400).json({ error: 'Invalid client email format' })
-      return
-    }
-
-    if (!Array.isArray(lineItems) || lineItems.length === 0) {
-      res.status(400).json({ error: 'At least one line item is required' })
-      return
-    }
-
-    for (const item of lineItems) {
-      if (!item.description?.trim()) {
-        res.status(400).json({ error: 'Each line item needs a description' })
+router.post(
+  '/',
+  (req, res, next) => {
+    quoteContractPdfUpload.single('contractFile')(req, res, (err: unknown) => {
+      if (err) {
+        const message = err instanceof Error ? err.message : 'File upload failed'
+        res.status(400).json({ error: message })
         return
       }
-      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
-        res.status(400).json({ error: 'Line item quantity must be greater than zero' })
-        return
-      }
-      if (typeof item.unitPrice !== 'number' || item.unitPrice < 0) {
-        res.status(400).json({ error: 'Line item price cannot be negative' })
-        return
-      }
-    }
-
-    const quote = await Quote.create(Number(req.user.id), {
-      title: title.trim(),
-      clientEmail: clientEmail.trim(),
-      clientName,
-      weddingDate,
-      location,
-      notes,
-      currency,
-      expiresInDays,
-      lineItems,
+      next()
     })
+  },
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const {
+        title,
+        clientEmail,
+        clientName,
+        weddingDate,
+        location,
+        notes,
+        currency,
+        expiresInDays,
+        lineItems: lineItemsRaw,
+        contractTitle,
+        attachContract,
+      } = req.body
 
-    res.status(201).json({
-      quote,
-      quotePath: `/quote/${quote.token}`,
-    })
-  } catch (error) {
-    logger.error('Create quote error:', error)
-    if (error instanceof Error && error.message === 'LINE_ITEMS_REQUIRED') {
-      res.status(400).json({ error: 'At least one line item is required' })
-      return
+      if (!title?.trim()) {
+        res.status(400).json({ error: 'Quote title is required' })
+        return
+      }
+
+      if (!clientEmail?.trim()) {
+        res.status(400).json({ error: 'Client email is required' })
+        return
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(clientEmail.trim())) {
+        res.status(400).json({ error: 'Invalid client email format' })
+        return
+      }
+
+      let lineItems: Array<{ description: string; quantity: number; unitPrice: number }>
+      try {
+        lineItems = parseLineItems(lineItemsRaw)
+      } catch {
+        res.status(400).json({ error: 'Invalid line items format' })
+        return
+      }
+
+      if (!Array.isArray(lineItems) || lineItems.length === 0) {
+        res.status(400).json({ error: 'At least one line item is required' })
+        return
+      }
+
+      for (const item of lineItems) {
+        if (!item.description?.trim()) {
+          res.status(400).json({ error: 'Each line item needs a description' })
+          return
+        }
+        if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+          res.status(400).json({ error: 'Line item quantity must be greater than zero' })
+          return
+        }
+        if (typeof item.unitPrice !== 'number' || item.unitPrice < 0) {
+          res.status(400).json({ error: 'Line item price cannot be negative' })
+          return
+        }
+      }
+
+      const wantsContract =
+        attachContract === true ||
+        attachContract === 'true' ||
+        attachContract === 'on' ||
+        !!req.file
+
+      if (wantsContract && !req.file) {
+        res.status(400).json({ error: 'Choose a PDF contract file to attach, or turn off contract attachment' })
+        return
+      }
+
+      if (req.file && !contractTitle?.trim()) {
+        res.status(400).json({ error: 'Contract title is required when attaching a contract' })
+        return
+      }
+
+      const parsedExpiresInDays = parseOptionalNumber(expiresInDays)
+
+      const quote = await Quote.create(Number(req.user.id), {
+        title: title.trim(),
+        clientEmail: clientEmail.trim(),
+        clientName,
+        weddingDate,
+        location,
+        notes,
+        currency,
+        ...(parsedExpiresInDays !== undefined ? { expiresInDays: parsedExpiresInDays } : {}),
+        lineItems,
+      })
+
+      if (req.file) {
+        await QuoteContract.attach(quote.id, Number(req.user.id), {
+          title: contractTitle.trim(),
+          buffer: req.file.buffer,
+          originalFileName: req.file.originalname,
+          fileSizeBytes: req.file.size,
+          mimeType: req.file.mimetype,
+        })
+      }
+
+      const fullQuote = await Quote.findByIdForVendor(quote.id, Number(req.user.id))
+
+      res.status(201).json({
+        quote: fullQuote ?? quote,
+        quotePath: `/quote/${quote.token}`,
+      })
+    } catch (error) {
+      logger.error('Create quote error:', error)
+      if (error instanceof Error && error.message === 'LINE_ITEMS_REQUIRED') {
+        res.status(400).json({ error: 'At least one line item is required' })
+        return
+      }
+      res.status(500).json({ error: 'Failed to create quote' })
     }
-    res.status(500).json({ error: 'Failed to create quote' })
   }
-})
+)
 
 // GET /api/vendor/quotes/:id
 router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
@@ -104,6 +183,34 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   } catch (error) {
     logger.error('Get quote error:', error)
     res.status(500).json({ error: 'Failed to load quote' })
+  }
+})
+
+// GET /api/vendor/quotes/:id/contract
+router.get('/:id/contract', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const quoteId = Number(req.params['id'])
+    const contract = await QuoteContract.findByQuoteIdForVendor(quoteId, Number(req.user.id))
+
+    if (!contract) {
+      res.status(404).json({ error: 'No contract attached to this quote' })
+      return
+    }
+
+    const absolutePath = QuoteContract.getAbsolutePath(contract.filePath)
+    res.setHeader('Content-Type', contract.mimeType)
+    res.setHeader('Content-Disposition', `inline; filename="${contract.fileName}"`)
+    res.sendFile(absolutePath, (err) => {
+      if (err) {
+        logger.error('Quote contract file send error:', err)
+        if (!res.headersSent) {
+          res.status(404).json({ error: 'Contract file not found on server' })
+        }
+      }
+    })
+  } catch (error) {
+    logger.error('Vendor quote contract file error:', error)
+    res.status(500).json({ error: 'Failed to load contract' })
   }
 })
 
@@ -131,6 +238,9 @@ router.post('/:id/convert-to-project', async (req: AuthRequest, res: Response): 
           return
         case 'QUOTE_ALREADY_CONVERTED':
           res.status(409).json({ error: 'This quote has already been converted to a project' })
+          return
+        case 'QUOTE_CONTRACT_FILE_MISSING':
+          res.status(500).json({ error: 'Attached contract file is missing. Re-upload the contract and try again.' })
           return
       }
     }

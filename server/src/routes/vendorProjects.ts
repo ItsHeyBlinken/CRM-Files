@@ -6,6 +6,10 @@ import { Project, ProjectStatus } from '../models/Project'
 import { Contract } from '../models/Contract'
 import { Deliverable } from '../models/Deliverable'
 import { Invoice } from '../models/Invoice'
+import {
+  hasAnyClientPaymentMethod,
+  VendorPaymentSettings,
+} from '../models/VendorPaymentSettings'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -315,6 +319,15 @@ router.post(
     try {
       const projectId = Number(req.params['id'])
       const invoiceId = Number(req.params['invoiceId'])
+
+      const paymentSettings = await VendorPaymentSettings.findByVendorId(Number(req.user.id))
+      if (!hasAnyClientPaymentMethod(paymentSettings)) {
+        res.status(409).json({
+          error:
+            'Set up how clients pay you before sending an invoice. Go to Payments in your dashboard.',
+        })
+        return
+      }
 
       const invoice = await Invoice.sendToClient(invoiceId, projectId, Number(req.user.id))
 

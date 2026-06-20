@@ -6,6 +6,21 @@ export type QuoteStatus =
   | 'expired'
   | 'converted'
 
+export interface QuoteLineItemInput {
+  description: string
+  quantity: number
+  unitPrice: number
+}
+
+export interface QuoteContractSummary {
+  title: string
+  fileName: string
+  viewOnly: boolean
+  canSign: boolean
+  acknowledgedAt: string | null
+  acknowledgementLegalName: string | null
+}
+
 export interface QuoteLineItem {
   id: number
   quoteId: number
@@ -36,6 +51,7 @@ export interface Quote {
   createdAt: string
   updatedAt: string
   lineItems: QuoteLineItem[]
+  contract: QuoteContractSummary | null
 }
 
 export interface PublicQuote {
@@ -53,12 +69,7 @@ export interface PublicQuote {
   vendorBusinessName: string
   lineItems: QuoteLineItem[]
   canRespond: boolean
-}
-
-export interface QuoteLineItemInput {
-  description: string
-  quantity: number
-  unitPrice: number
+  contract: QuoteContractSummary | null
 }
 
 export interface CreateQuoteInput {
@@ -71,4 +82,7 @@ export interface CreateQuoteInput {
   currency?: string
   expiresInDays?: number
   lineItems: QuoteLineItemInput[]
+  attachContract?: boolean
+  contractTitle?: string
+  contractFile?: File
 }

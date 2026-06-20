@@ -15,6 +15,7 @@ import {
   updateVendorProject,
   type InviteResult,
 } from '../services/projectService'
+import { fetchVendorOnboarding } from '../services/onboardingService'
 import type { ProjectStatus, VendorProjectDetail } from '../types/portal'
 import { formatCurrency, formatFileSize, getInvoiceStatusLabel } from '../utils/portalHelpers'
 
@@ -58,6 +59,7 @@ const VendorProjectDetail: React.FC = () => {
   const [invoiceAmount, setInvoiceAmount] = useState('')
   const [invoiceDueDate, setInvoiceDueDate] = useState('')
   const [invoiceDescription, setInvoiceDescription] = useState('')
+  const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
 
   const loadDetail = useCallback(async () => {
     if (!projectId || Number.isNaN(projectId)) {
@@ -68,8 +70,12 @@ const VendorProjectDetail: React.FC = () => {
 
     try {
       setError('')
-      const data = await fetchVendorProject(projectId)
+      const [data, onboarding] = await Promise.all([
+        fetchVendorProject(projectId),
+        fetchVendorOnboarding(),
+      ])
       setDetail(data)
+      setHasPaymentMethod(onboarding.status.hasPaymentMethod)
       setInviteEmail(data.linkedClient?.email ?? data.project.clientEmail ?? '')
     } catch (err: unknown) {
       setError(getApiError(err, 'Failed to load project'))
@@ -195,6 +201,13 @@ const VendorProjectDetail: React.FC = () => {
   }
 
   const handleSendInvoice = async (invoiceId: number) => {
+    if (!hasPaymentMethod) {
+      setError(
+        'Set up how clients pay you before sending an invoice. Go to Payments in your dashboard.'
+      )
+      return
+    }
+
     setSubmitting(true)
     setError('')
     try {

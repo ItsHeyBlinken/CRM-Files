@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
 import QuoteDocument from '../components/quotes/QuoteDocument'
 import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
-import { convertQuoteToProject, fetchVendorQuote } from '../services/quoteService'
+import { convertQuoteToProject, fetchVendorQuote, openVendorQuoteContract } from '../services/quoteService'
 import type { Quote } from '../types/quote'
 import { formatQuoteMoney } from '../utils/formatQuoteMoney'
 
@@ -61,6 +62,9 @@ const VendorQuoteDetail: React.FC = () => {
       `Hi${quote.clientName ? ` ${quote.clientName}` : ''},\n\n` +
         `Here's your quote from us. Open the link below to review and accept or decline — no account needed:\n\n` +
         `${fullUrl}\n\n` +
+        (quote.contract
+          ? `We've included our contract with this quote — you can review it from the same link before accepting.\n\n`
+          : '') +
         `Total: ${formatQuoteMoney(quote.totalAmount, quote.currency)}\n\n` +
         `Let us know if you have any questions!\n`
     )
@@ -136,6 +140,10 @@ const VendorQuoteDetail: React.FC = () => {
           <div className="no-print rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
 
+        <div className="no-print">
+          <QuoteClientAgreementNotice variant="vendor" />
+        </div>
+
         <QuoteDocument
           quote={{
             title: quote.title,
@@ -151,6 +159,38 @@ const VendorQuoteDetail: React.FC = () => {
             statusLabel: statusLabel[quote.status],
           }}
         />
+
+        {quote.contract && (
+          <section className="no-print bg-white rounded-lg shadow p-6 space-y-3">
+            <h2 className="font-medium text-gray-900">Attached contract</h2>
+            <p className="text-sm text-gray-600">
+              {quote.contract.title} · {quote.contract.fileName}
+            </p>
+            {quote.contract.acknowledgedAt ? (
+              <p className="text-sm text-green-800">
+                Signed by {quote.contract.acknowledgementLegalName ?? 'client'} on{' '}
+                {new Date(quote.contract.acknowledgedAt).toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+                . Client still needs to pay deposit to become a booked client.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500">
+                View-only for your client until they accept the quote, then signing unlocks on the
+                quote link.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => openVendorQuoteContract(quote.id)}
+              className="px-4 py-2 text-sm text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
+            >
+              View contract PDF
+            </button>
+          </section>
+        )}
 
         {quote.status !== 'converted' && (
           <section className="no-print bg-white rounded-lg shadow p-6 space-y-4">
@@ -189,9 +229,10 @@ const VendorQuoteDetail: React.FC = () => {
 
         {quote.status === 'accepted' && !quote.projectId && (
           <section className="no-print bg-green-50 rounded-lg border border-green-200 p-6 space-y-3">
-            <h2 className="font-medium text-green-900">Client accepted — next step</h2>
+            <h2 className="font-medium text-green-900">Client accepted the quote — next steps</h2>
             <p className="text-sm text-green-800">
-              Convert this quote to a project, then send your client portal invite.
+              Accepting the quote is only one part of the agreement. Convert to a project to collect
+              contract signature and deposit, then send your client portal invite.
             </p>
             <button
               type="button"

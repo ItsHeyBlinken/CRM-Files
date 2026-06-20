@@ -1,14 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import DepositPendingNotice from '../components/quotes/DepositPendingNotice'
+import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
+import QuoteContractSignPanel from '../components/quotes/QuoteContractSignPanel'
+import QuoteContractViewPanel from '../components/quotes/QuoteContractViewPanel'
 import QuoteDocument from '../components/quotes/QuoteDocument'
 import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
+import { QUOTE_CONTRACT_VIEW_ONLY_NOTE } from '../constants/clientAgreement'
 import { acceptQuote, declineQuote, fetchPublicQuote } from '../services/quoteService'
 import type { PublicQuote } from '../types/quote'
 
 const statusMessage: Record<PublicQuote['status'], string> = {
   draft: 'This quote is not ready yet.',
   sent: '',
-  accepted: 'You accepted this quote. Your vendor will follow up with next steps.',
+  accepted:
+    'You accepted this quote. Review and sign the contract below when you are ready.',
   declined: 'You declined this quote.',
   expired: 'This quote has expired.',
   converted: 'This quote was accepted and your vendor has started your project.',
@@ -30,30 +36,30 @@ const AcceptQuote: React.FC = () => {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
+  const loadQuote = useCallback(async () => {
     if (!token) {
       setError('Invalid quote link')
       setLoading(false)
       return
     }
 
-    const loadQuote = async () => {
-      try {
-        const data = await fetchPublicQuote(token)
-        setQuote(data)
-      } catch (err: unknown) {
-        const message =
-          err && typeof err === 'object' && 'response' in err
-            ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-            : undefined
-        setError(message || 'This quote link is invalid or expired')
-      } finally {
-        setLoading(false)
-      }
+    try {
+      const data = await fetchPublicQuote(token)
+      setQuote(data)
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : undefined
+      setError(message || 'This quote link is invalid or expired')
+    } finally {
+      setLoading(false)
     }
-
-    loadQuote()
   }, [token])
+
+  useEffect(() => {
+    loadQuote()
+  }, [loadQuote])
 
   const handleDecision = async (decision: 'accept' | 'decline') => {
     if (!token) return
@@ -94,6 +100,12 @@ const AcceptQuote: React.FC = () => {
   }
 
   const showActions = quote.canRespond
+  const contract = quote.contract
+  const contractSigned = !!contract?.acknowledgedAt
+  const showContractSign =
+    !!contract && contract.canSign && (quote.status === 'accepted' || quote.status === 'converted')
+  const showDepositNotice =
+    !!contract && contractSigned && (quote.status === 'accepted' || quote.status === 'converted')
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -121,6 +133,55 @@ const AcceptQuote: React.FC = () => {
           }}
         />
 
+        {contract && (
+          <section className="no-print bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+            <div>
+              <h2 className="font-medium text-gray-900">Contract</h2>
+              <p className="text-sm text-gray-600 mt-1">{contract.title}</p>
+            </div>
+
+            {contract.viewOnly && (
+              <>
+                <QuoteContractViewPanel token={quote.token} contractTitle={contract.title} />
+                <p className="text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
+                  {QUOTE_CONTRACT_VIEW_ONLY_NOTE}
+                </p>
+              </>
+            )}
+
+            {showContractSign && token && (
+              <QuoteContractSignPanel
+                token={token}
+                contractTitle={contract.title}
+                onSigned={loadQuote}
+              />
+            )}
+
+            {contractSigned && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
+                <p className="font-medium">Contract signed</p>
+                <p className="mt-1">
+                  Signed by {contract.acknowledgementLegalName ?? 'you'}
+                  {contract.acknowledgedAt
+                    ? ` on ${new Date(contract.acknowledgedAt).toLocaleDateString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}`
+                    : ''}
+                  .
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {showDepositNotice && <DepositPendingNotice />}
+
+        <div className="no-print">
+          <QuoteClientAgreementNotice variant="client" />
+        </div>
+
         {error && (
           <div className="no-print rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
@@ -128,7 +189,9 @@ const AcceptQuote: React.FC = () => {
         {showActions ? (
           <div className="no-print space-y-3">
             <p className="text-center text-sm text-gray-600">
-              Review the quote above, then let your vendor know your decision.
+              Review the quote{contract ? ' and contract' : ''} above, then let your vendor know
+              your decision. Accepting the quote unlocks contract signing — it does not make you a
+              booked client until your deposit is paid.
             </p>
             <button
               type="button"
@@ -148,8 +211,17 @@ const AcceptQuote: React.FC = () => {
             </button>
           </div>
         ) : (
+          !showContractSign &&
+          !showDepositNotice && (
+            <div className="no-print rounded-lg bg-indigo-50 border border-indigo-100 p-4 text-center text-sm text-indigo-900">
+              {statusMessage[quote.status]}
+            </div>
+          )
+        )}
+
+        {quote.status === 'accepted' && !contract && (
           <div className="no-print rounded-lg bg-indigo-50 border border-indigo-100 p-4 text-center text-sm text-indigo-900">
-            {statusMessage[quote.status]}
+            {statusMessage.accepted} Your vendor will follow up about your deposit invoice.
           </div>
         )}
 

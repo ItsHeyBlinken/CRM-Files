@@ -2,12 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { createProject, fetchVendorProjects } from '../services/projectService'
+import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
 import type { Project } from '../types/portal'
 
 const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [projects, setProjects] = useState<Project[]>([])
+  const [checklist, setChecklist] = useState<VendorChecklist | null>(null)
+  const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showCreate, setShowCreate] = useState(false)
@@ -24,8 +27,13 @@ const VendorDashboard: React.FC = () => {
   const loadProjects = useCallback(async () => {
     try {
       setError('')
-      const data = await fetchVendorProjects()
+      const [data, onboarding] = await Promise.all([
+        fetchVendorProjects(),
+        fetchVendorOnboarding(),
+      ])
       setProjects(data)
+      setChecklist(onboarding.checklist)
+      setHasPaymentMethod(onboarding.status.hasPaymentMethod)
     } catch {
       setError('Failed to load projects')
     } finally {
@@ -119,6 +127,36 @@ const VendorDashboard: React.FC = () => {
 
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
+        )}
+
+        {checklist && (!checklist.hasProject || !hasPaymentMethod || !checklist.hasLinkedClient) && (
+          <section className="bg-white rounded-lg shadow p-6">
+            <h2 className="font-medium text-gray-900">Get started</h2>
+            <ul className="mt-4 space-y-3">
+              <ChecklistItem
+                done={hasPaymentMethod}
+                label="Set up how clients pay you"
+                actionLabel="Payments"
+                to="/dashboard/payments"
+              />
+              <ChecklistItem
+                done={checklist.hasProject}
+                label="Create your first project"
+                actionLabel="New project"
+                onClick={() => setShowCreate(true)}
+              />
+              <ChecklistItem
+                done={checklist.hasLinkedClient}
+                label="Invite a client to their portal"
+                hint="Open a project and send an invite link"
+              />
+              <ChecklistItem
+                done={checklist.hasSentInvoice}
+                label="Send an invoice"
+                hint="Add an invoice on a project and send it to your client"
+              />
+            </ul>
+          </section>
         )}
 
         {showCreate && (
@@ -221,5 +259,40 @@ const VendorDashboard: React.FC = () => {
     </div>
   )
 }
+
+const ChecklistItem: React.FC<{
+  done: boolean
+  label: string
+  hint?: string
+  actionLabel?: string
+  to?: string
+  onClick?: () => void
+}> = ({ done, label, hint, actionLabel, to, onClick }) => (
+  <li className="flex items-start justify-between gap-3 text-sm">
+    <div className="flex gap-3">
+      <span
+        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+          done ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {done ? '✓' : '○'}
+      </span>
+      <div>
+        <p className={done ? 'text-gray-500 line-through' : 'text-gray-900'}>{label}</p>
+        {hint && !done && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
+      </div>
+    </div>
+    {!done && actionLabel && to && (
+      <Link to={to} className="text-indigo-600 font-medium shrink-0">
+        {actionLabel}
+      </Link>
+    )}
+    {!done && actionLabel && onClick && (
+      <button type="button" onClick={onClick} className="text-indigo-600 font-medium shrink-0">
+        {actionLabel}
+      </button>
+    )}
+  </li>
+)
 
 export default VendorDashboard

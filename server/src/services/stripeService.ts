@@ -50,7 +50,10 @@ export async function createConnectAccount(vendorId: number): Promise<string> {
   return account.id
 }
 
-export async function createConnectOnboardingLink(vendorId: number): Promise<string> {
+export async function createConnectOnboardingLink(
+  vendorId: number,
+  returnPath = '/dashboard/payments'
+): Promise<string> {
   const stripe = getStripe()
   if (!stripe) {
     throw new Error('STRIPE_NOT_CONFIGURED')
@@ -58,11 +61,12 @@ export async function createConnectOnboardingLink(vendorId: number): Promise<str
 
   const accountId = await createConnectAccount(vendorId)
   const frontendUrl = getFrontendUrl()
+  const safePath = returnPath.startsWith('/') ? returnPath : '/dashboard/payments'
 
   const accountLink = await stripe.accountLinks.create({
     account: accountId,
-    refresh_url: `${frontendUrl}/dashboard/payments?stripe=refresh`,
-    return_url: `${frontendUrl}/dashboard/payments?stripe=return`,
+    refresh_url: `${frontendUrl}${safePath}?stripe=refresh`,
+    return_url: `${frontendUrl}${safePath}?stripe=return`,
     type: 'account_onboarding',
   })
 

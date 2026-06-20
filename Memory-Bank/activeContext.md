@@ -20,9 +20,11 @@ This is the guiding principle for all future work — not feature parity between
 
 ## Current Work Focus
 
-**Payments Phase 3a–3c shipped and tested in dev.** User applied `schema_payments_addition.sql` (`vendor_payment_settings` confirmed in DB).
+**Vendor onboarding wizard shipped (code complete).** New vendors: register → 3-step onboarding (business name → P2P payments → optional Stripe) → dashboard with checklist.
 
-**Next major product push:** **Vendor onboarding flow** — vendor is the paying customer; signup/onboarding must include **how they get paid** (P2P handles and/or Stripe Connect), without sacrificing client portal simplicity.
+**User action:** Run `database/schema_vendor_onboarding.sql` in pgAdmin (grandfathers existing vendors).
+
+**Next:** E2E test full vendor path; optional Stripe dev keys; Phase 3e subscription billing.
 
 ## MVP Status
 
@@ -41,18 +43,17 @@ This is the guiding principle for all future work — not feature parity between
 | Vendor payment settings (3b) | ✅ Built — `/dashboard/payments` (separate from signup today) |
 | Client card pay + P2P (3c) | ✅ Built — Stripe Checkout + P2P links + claim flow |
 | Client payment UX polish | ✅ Done — prominent buttons, Home redirect, paid polling |
-| Vendor payment at signup | 📋 **Next** — integrate P2P + optional Stripe into onboarding |
+| Vendor payment at signup | ✅ Built — `/dashboard/onboarding` wizard + gate |
+| Dashboard vendor checklist | ✅ Built — Get started on `/dashboard` |
+| Invoice send guard | ✅ Built — blocks send without payment methods |
 | Monetization plan (vendor → PortalHub subscription) | 📋 Phase 3e — see `monetization.md` |
 
 ## Next Session — Priority Order
 
-1. **Vendor onboarding wizard** — after register (or as signup steps): business name + **payment setup**
-   - **Tier A:** P2P handles (Venmo, Zelle, Cash App, PayPal) — quick, no Stripe required
-   - **Tier B:** Same + **Stripe Connect** for card pay in client portal
-   - Allow “skip Stripe for now” but require at least one P2P method OR explicit “I’ll set up later” with dashboard reminder
-2. **Vendor flow polish** — checklist on dashboard (project → payments → invite → invoice); guard/warn when sending invoice without payment methods
-3. **End-to-end test** — full vendor path: register → pay setup → project → invoice → client pays → vendor marks paid
-4. **Stripe dev config** (optional) — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, webhook `/api/webhooks/stripe`
+1. **Run onboarding SQL** — `database/schema_vendor_onboarding.sql` in pgAdmin
+2. **E2E test** — new vendor register → onboarding → project → invoice → client pay
+3. **Stripe dev config** (optional) — test card pay path
+4. **Polish** — pre-fill business name from register `company` field in onboarding step 1
 5. **Monetization plan** — Phase 3e vendor subscription billing before launch
 
 ## Payment Architecture (Agreed)
@@ -76,6 +77,9 @@ This is the guiding principle for all future work — not feature parity between
 ## Database Status
 - [x] `schema_portalhub.sql` applied
 - [x] `schema_payments_addition.sql` applied (user confirmed `vendor_payment_settings`)
+- [ ] **`schema_vendor_onboarding.sql`** — run in pgAdmin (grandfathers existing vendors)
+- [ ] **`schema_quote_contract_addition.sql`** — quote-level contract attachment (run after quotes schema)
+- [ ] **`schema_quote_contract_signing.sql`** — e-sign fields on quote contracts
 - [x] Dev seed applied (test logins in `techContext.md`)
 - [ ] **`schema_quotes_addition.sql`** — confirm applied if using quotes
 - [ ] **`schema_contract_ack_enhancement.sql`** — confirm applied if using enhanced e-sign
@@ -84,7 +88,8 @@ This is the guiding principle for all future work — not feature parity between
 
 | Path | Role | Purpose |
 |------|------|---------|
-| `/register` | Public | Vendor self-signup (account only today — no payment setup yet) |
+| `/register` | Public | Vendor signup → redirects to onboarding |
+| `/dashboard/onboarding` | VENDOR | 3-step setup: business → P2P → Stripe (optional) |
 | `/dashboard` | VENDOR | Project list + create |
 | `/dashboard/projects/:id` | VENDOR | Project detail (invite, contract, deliverables, invoices) |
 | `/dashboard/quotes` | VENDOR | Quote list + create |
@@ -102,6 +107,8 @@ This is the guiding principle for all future work — not feature parity between
 | Login UX | Single login page with role-based redirect |
 | Login timing | At **invite acceptance**, not at contract acknowledgement |
 | **Vendor onboarding (next)** | **Payment setup during signup** — P2P required path; Stripe Connect optional same flow |
+| **Client relationship (quotes)** | **Not a client until all three:** accept quote + sign contract/T&C + pay deposit |
+| **Quote + contract** | Optional contract PDF attached at quote creation; view-only until quote accepted, then e-sign on quote link |
 | Payments (MVP) | Stripe Connect card pay + P2P; vendor marks P2P paid; 0% platform fee at launch |
 | Contracts (MVP) | PDF upload + electronic signature (audit trail) |
 | One client per project (MVP) | Enforced in API + UI |
@@ -109,7 +116,7 @@ This is the guiding principle for all future work — not feature parity between
 
 ## Active Technical Decisions
 - Monorepo: `client/`, `server/`, `database/`
-- File storage: `uploads/contracts/{projectId}/`, `uploads/deliverables/{projectId}/`
+- File storage: `uploads/contracts/{projectId}/`, `uploads/deliverables/{projectId}/`, `uploads/quote-contracts/{quoteId}/`
 - Auth-scoped file download for clients (not public static URLs)
 - Stripe webhook uses raw body at `/api/webhooks/stripe` (before JSON parser)
 - **Git commits:** user only

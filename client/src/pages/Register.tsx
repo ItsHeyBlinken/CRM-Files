@@ -62,7 +62,7 @@ const Register: React.FC = () => {
     setLoading(true)
 
     try {
-      const registeredUser = await register(
+      await register(
         formData.email,
         formData.password,
         formData.firstName,
@@ -71,7 +71,7 @@ const Register: React.FC = () => {
         formData.company || undefined,
         formData.jobTitle || undefined
       )
-      navigate(getHomePathForRole(registeredUser.role))
+      navigate('/dashboard/onboarding')
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.')
     } finally {

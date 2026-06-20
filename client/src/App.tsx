@@ -5,8 +5,10 @@ import { SocketProvider } from './contexts/SocketContext'
 import Layout from './components/Layout/Layout'
 import ProtectedRoute from './components/Auth/ProtectedRoute'
 import HomeRedirect from './components/Auth/HomeRedirect'
+import VendorOnboardingGate from './components/vendor/VendorOnboardingGate'
 
 import VendorDashboard from './pages/VendorDashboard'
+import VendorOnboarding from './pages/VendorOnboarding'
 import VendorProjectDetail from './pages/VendorProjectDetail'
 import VendorQuotes from './pages/VendorQuotes'
 import VendorQuoteDetail from './pages/VendorQuoteDetail'
@@ -37,43 +39,17 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute requiredRole="VENDOR">
-                <VendorDashboard />
+                <VendorOnboardingGate />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/dashboard/projects/:id"
-            element={
-              <ProtectedRoute requiredRole="VENDOR">
-                <VendorProjectDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/quotes"
-            element={
-              <ProtectedRoute requiredRole="VENDOR">
-                <VendorQuotes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard/quotes/:id"
-            element={
-              <ProtectedRoute requiredRole="VENDOR">
-                <VendorQuoteDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dashboard/payments"
-            element={
-              <ProtectedRoute requiredRole="VENDOR">
-                <VendorPaymentSettings />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route path="onboarding" element={<VendorOnboarding />} />
+            <Route index element={<VendorDashboard />} />
+            <Route path="projects/:id" element={<VendorProjectDetail />} />
+            <Route path="quotes" element={<VendorQuotes />} />
+            <Route path="quotes/:id" element={<VendorQuoteDetail />} />
+            <Route path="payments" element={<VendorPaymentSettings />} />
+          </Route>
 
           <Route
             path="/portal"

@@ -10,6 +10,7 @@ export interface VendorPaymentSettings {
   cashappHandle: string | null
   paypalHandle: string | null
   paymentInstructions: string | null
+  paymentSetupComplete: boolean
 }
 
 export interface PaymentSettingsResponse {
@@ -37,8 +38,8 @@ export async function updatePaymentSettings(
   return response.data.settings
 }
 
-export async function startStripeConnect(): Promise<string> {
-  const response = await api.post('/vendor/payment-settings/stripe/connect')
+export async function startStripeConnect(returnPath?: string): Promise<string> {
+  const response = await api.post('/vendor/payment-settings/stripe/connect', { returnPath })
   return response.data.url
 }
 

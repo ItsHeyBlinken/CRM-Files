@@ -56,7 +56,10 @@ router.post('/stripe/connect', async (req: AuthRequest, res: Response): Promise<
       return
     }
 
-    const url = await createConnectOnboardingLink(Number(req.user.id))
+    const returnPath =
+      typeof req.body.returnPath === 'string' ? req.body.returnPath : '/dashboard/payments'
+
+    const url = await createConnectOnboardingLink(Number(req.user.id), returnPath)
     res.json({ url })
   } catch (error) {
     logger.error('Stripe connect error:', error)

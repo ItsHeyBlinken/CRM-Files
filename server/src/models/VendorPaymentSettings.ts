@@ -10,6 +10,7 @@ export interface IVendorPaymentSettings {
   cashappHandle: string | null
   paypalHandle: string | null
   paymentInstructions: string | null
+  paymentSetupComplete: boolean
 }
 
 export interface IVendorPaymentSettingsUpdate {
@@ -39,6 +40,7 @@ function mapRow(row: {
   cashapp_handle: string | null
   paypal_handle: string | null
   payment_instructions: string | null
+  payment_setup_complete?: boolean
 }): IVendorPaymentSettings {
   return {
     vendorId: row.vendor_id,
@@ -50,7 +52,18 @@ function mapRow(row: {
     cashappHandle: row.cashapp_handle,
     paypalHandle: row.paypal_handle,
     paymentInstructions: row.payment_instructions,
+    paymentSetupComplete: Boolean(row.payment_setup_complete),
   }
+}
+
+export function hasAnyClientPaymentMethod(settings: IVendorPaymentSettings): boolean {
+  return Boolean(
+    settings.stripeChargesEnabled ||
+      settings.venmoHandle ||
+      settings.zelleHandle ||
+      settings.cashappHandle ||
+      settings.paypalHandle
+  )
 }
 
 function normalizeHandle(value: string | null | undefined): string | null {
@@ -204,6 +217,31 @@ export class VendorPaymentSettingsModel {
       [vendorId, chargesEnabled, onboardingComplete]
     )
     return mapRow(result.rows[0])
+  }
+
+  static async isPaymentSetupComplete(vendorId: number): Promise<boolean> {
+    const pool = getPool()
+    const result = await pool.query(
+      `SELECT payment_setup_complete FROM vendor_payment_settings WHERE vendor_id = $1`,
+      [vendorId]
+    )
+    if (result.rows.length === 0) {
+      return false
+    }
+    return Boolean(result.rows[0].payment_setup_complete)
+  }
+
+  static async markPaymentSetupComplete(vendorId: number): Promise<void> {
+    await this.findByVendorId(vendorId)
+    const pool = getPool()
+    await pool.query(
+      `
+      UPDATE vendor_payment_settings
+      SET payment_setup_complete = true, updated_at = NOW()
+      WHERE vendor_id = $1
+      `,
+      [vendorId]
+    )
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
 import { createQuote, fetchVendorQuotes } from '../services/quoteService'
 import type { Quote, QuoteLineItemInput } from '../types/quote'
 
@@ -39,6 +40,9 @@ const VendorQuotes: React.FC = () => {
     weddingDate: '',
     location: '',
     notes: '',
+    attachContract: false,
+    contractTitle: 'Service agreement',
+    contractFile: null as File | null,
     lineItems: [emptyLineItem()],
   })
 
@@ -80,6 +84,10 @@ const VendorQuotes: React.FC = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!createForm.title.trim() || !createForm.clientEmail.trim()) return
+    if (createForm.attachContract && !createForm.contractFile) {
+      setError('Choose a PDF contract file, or turn off contract attachment')
+      return
+    }
 
     setSubmitting(true)
     setError('')
@@ -97,6 +105,9 @@ const VendorQuotes: React.FC = () => {
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
         })),
+        attachContract: createForm.attachContract,
+        contractTitle: createForm.contractTitle.trim() || 'Service agreement',
+        contractFile: createForm.contractFile ?? undefined,
       })
       navigate(`/dashboard/quotes/${result.quote.id}`)
     } catch (err: unknown) {
@@ -156,6 +167,8 @@ const VendorQuotes: React.FC = () => {
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
+
+        <QuoteClientAgreementNotice variant="vendor" />
 
         {showCreate && (
           <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 space-y-4">
@@ -284,6 +297,75 @@ const VendorQuotes: React.FC = () => {
                   )}
                 </div>
               ))}
+            </div>
+
+            <div className="rounded-lg border border-gray-200 p-4 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={createForm.attachContract}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      attachContract: e.target.checked,
+                      contractFile: e.target.checked ? createForm.contractFile : null,
+                    })
+                  }
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-900">
+                    Attach contract with this quote (optional)
+                  </span>
+                  <span className="block text-sm text-gray-600 mt-1">
+                    Standard practice: send the quote and contract together so clients can review
+                    both before accepting.
+                  </span>
+                </span>
+              </label>
+
+              {createForm.attachContract && (
+                <div className="grid gap-3 sm:grid-cols-2 pl-7">
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="quote-contract-title"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Contract title
+                    </label>
+                    <input
+                      id="quote-contract-title"
+                      required
+                      value={createForm.contractTitle}
+                      onChange={(e) =>
+                        setCreateForm({ ...createForm, contractTitle: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="quote-contract-file"
+                      className="block text-xs font-medium text-gray-700 mb-1"
+                    >
+                      Contract PDF
+                    </label>
+                    <input
+                      id="quote-contract-file"
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      required
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          contractFile: e.target.files?.[0] ?? null,
+                        })
+                      }
+                      className="w-full text-sm text-gray-700"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">

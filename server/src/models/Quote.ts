@@ -1,5 +1,6 @@
 import { getPool } from '../config/database'
 import { Project } from './Project'
+import { QuoteContract, type IQuoteContractSummary } from './QuoteContract'
 import { formatDateOnly } from '../utils/dateOnly'
 
 export type QuoteStatus =
@@ -40,6 +41,7 @@ export interface IQuote {
   createdAt: Date
   updatedAt: Date
   lineItems: IQuoteLineItem[]
+  contract: IQuoteContractSummary | null
 }
 
 export interface IQuotePublicView {
@@ -57,6 +59,7 @@ export interface IQuotePublicView {
   vendorBusinessName: string
   lineItems: IQuoteLineItem[]
   canRespond: boolean
+  contract: IQuoteContractSummary | null
 }
 
 export interface IQuoteCreateInput {
@@ -110,6 +113,14 @@ async function loadLineItems(quoteId: number): Promise<IQuoteLineItem[]> {
   return result.rows.map(mapLineItemRow)
 }
 
+async function loadContractSummary(
+  quoteId: number,
+  quoteStatus: QuoteStatus
+): Promise<IQuoteContractSummary | null> {
+  const contract = await QuoteContract.findByQuoteId(quoteId)
+  return QuoteContract.toSummary(contract, quoteStatus)
+}
+
 function mapQuoteRow(
   row: {
     id: number
@@ -130,7 +141,8 @@ function mapQuoteRow(
     created_at: Date
     updated_at: Date
   },
-  lineItems: IQuoteLineItem[]
+  lineItems: IQuoteLineItem[],
+  contract: IQuoteContractSummary | null
 ): IQuote {
   return {
     id: row.id,
@@ -152,6 +164,7 @@ function mapQuoteRow(
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     lineItems,
+    contract,
   }
 }
 
@@ -184,7 +197,8 @@ export class QuoteModel {
     const quotes: IQuote[] = []
     for (const row of result.rows) {
       const lineItems = await loadLineItems(row.id)
-      quotes.push(mapQuoteRow(row, lineItems))
+      const contract = await loadContractSummary(row.id, row.status)
+      quotes.push(mapQuoteRow(row, lineItems, contract))
     }
     return quotes
   }
@@ -199,7 +213,8 @@ export class QuoteModel {
       return null
     }
     const lineItems = await loadLineItems(id)
-    return mapQuoteRow(result.rows[0], lineItems)
+    const contract = await loadContractSummary(id, result.rows[0].status)
+    return mapQuoteRow(result.rows[0], lineItems, contract)
   }
 
   static async findByToken(token: string): Promise<IQuotePublicView | null> {
@@ -224,6 +239,7 @@ export class QuoteModel {
     const row = result.rows[0]
     const lineItems = await loadLineItems(row.id)
     const status = this.isExpired(row) && row.status === 'sent' ? 'expired' : row.status
+    const contract = await loadContractSummary(row.id, status)
 
     if (status === 'expired' && row.status === 'sent') {
       await pool.query(`UPDATE quotes SET status = 'expired', updated_at = NOW() WHERE id = $1`, [
@@ -246,6 +262,7 @@ export class QuoteModel {
       vendorBusinessName: row.vendor_business_name,
       lineItems,
       canRespond: status === 'sent' && !this.isExpired(row),
+      contract,
     }
   }
 
@@ -381,6 +398,8 @@ export class QuoteModel {
       `,
       [project.id, quoteId]
     )
+
+    await QuoteContract.copyToProject(quoteId, project.id, vendorId)
 
     const updated = await this.findByIdForVendor(quoteId, vendorId)
     if (!updated) {
