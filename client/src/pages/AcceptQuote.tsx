@@ -103,7 +103,10 @@ const AcceptQuote: React.FC = () => {
   const contract = quote.contract
   const contractSigned = !!contract?.acknowledgedAt
   const showContractSign =
-    !!contract && contract.canSign && (quote.status === 'accepted' || quote.status === 'converted')
+    !!contract &&
+    contract.fileAvailable &&
+    contract.canSign &&
+    (quote.status === 'accepted' || quote.status === 'converted')
   const showDepositNotice =
     !!contract && contractSigned && (quote.status === 'accepted' || quote.status === 'converted')
 
@@ -140,13 +143,20 @@ const AcceptQuote: React.FC = () => {
               <p className="text-sm text-gray-600 mt-1">{contract.title}</p>
             </div>
 
-            {contract.viewOnly && (
+            {contract.viewOnly && contract.fileAvailable && (
               <>
                 <QuoteContractViewPanel token={quote.token} contractTitle={contract.title} />
                 <p className="text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
                   {QUOTE_CONTRACT_VIEW_ONLY_NOTE}
                 </p>
               </>
+            )}
+
+            {contract.viewOnly && !contract.fileAvailable && (
+              <p className="text-sm text-red-800 bg-red-50 rounded-lg px-3 py-2">
+                The contract file is not available right now. Please contact your vendor and ask
+                them to re-upload the contract PDF from their quote dashboard.
+              </p>
             )}
 
             {showContractSign && token && (

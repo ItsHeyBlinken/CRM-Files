@@ -1,4 +1,5 @@
 import api from './api'
+import axios from 'axios'
 import type { CreateQuoteInput, PublicQuote, Quote } from '../types/quote'
 
 export async function fetchVendorQuotes(): Promise<Quote[]> {
@@ -82,8 +83,34 @@ export async function fetchQuoteContractSigningContext(
 }
 
 export async function fetchQuoteContractPdfBlob(token: string): Promise<Blob> {
-  const response = await api.get(`/quotes/${token}/contract`, { responseType: 'blob' })
-  return response.data
+  try {
+    const response = await api.get(`/quotes/${token}/contract`, { responseType: 'blob' })
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      const text = await error.response.data.text()
+      try {
+        const payload = JSON.parse(text) as { error?: string }
+        throw new Error(payload.error || 'Contract unavailable')
+      } catch (parseError) {
+        if (parseError instanceof Error && parseError.message !== 'Contract unavailable') {
+          throw parseError
+        }
+      }
+    }
+    throw new Error('Contract unavailable')
+  }
+}
+
+export async function uploadQuoteContract(
+  quoteId: number,
+  input: { contractTitle: string; contractFile: File }
+): Promise<QuoteDetailResult> {
+  const formData = new FormData()
+  formData.append('contractTitle', input.contractTitle.trim())
+  formData.append('contractFile', input.contractFile)
+  const response = await api.post(`/vendor/quotes/${quoteId}/contract`, formData)
+  return { quote: response.data.quote, quotePath: `/quote/${response.data.quote.token}` }
 }
 
 export async function acknowledgeQuoteContract(

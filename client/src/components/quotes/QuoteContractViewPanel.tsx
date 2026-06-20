@@ -36,9 +36,10 @@ const QuoteContractViewPanel: React.FC<QuoteContractViewPanelProps> = ({
         const url = URL.createObjectURL(blob)
         pdfUrlRef.current = url
         setPdfUrl(url)
-      } catch {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError('Could not load contract for review')
+          const message = err instanceof Error ? err.message : 'Could not load contract for review'
+          setError(message)
         }
       } finally {
         if (!cancelled) {

@@ -219,6 +219,16 @@ router.get('/:token/contract', async (req: Request, res: Response): Promise<void
     }
 
     const absolutePath = QuoteContract.getAbsolutePath(contract.filePath)
+    if (!QuoteContract.fileExists(contract.filePath)) {
+      logger.error('Public quote contract file missing on disk:', {
+        token,
+        filePath: contract.filePath,
+        absolutePath,
+      })
+      res.status(404).json({ error: 'Contract file not found on server' })
+      return
+    }
+
     res.setHeader('Content-Type', contract.mimeType)
     res.setHeader('Content-Disposition', `inline; filename="${contract.fileName}"`)
     res.sendFile(absolutePath, (err) => {

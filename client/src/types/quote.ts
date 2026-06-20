@@ -15,6 +15,7 @@ export interface QuoteLineItemInput {
 export interface QuoteContractSummary {
   title: string
   fileName: string
+  fileAvailable: boolean
   viewOnly: boolean
   canSign: boolean
   acknowledgedAt: string | null

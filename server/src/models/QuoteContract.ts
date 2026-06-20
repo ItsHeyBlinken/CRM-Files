@@ -35,6 +35,7 @@ export interface IQuoteContract {
 export interface IQuoteContractSummary {
   title: string
   fileName: string
+  fileAvailable: boolean
   viewOnly: boolean
   canSign: boolean
   acknowledgedAt: string | null
@@ -112,13 +113,22 @@ function ensureDir(dir: string): void {
   }
 }
 
+function normalizeRelativePath(relativePath: string): string {
+  return relativePath.replace(/\\/g, '/')
+}
+
 function canSignForQuoteStatus(status: QuoteStatus): boolean {
   return status === 'accepted' || status === 'converted'
 }
 
 export class QuoteContractModel {
   static getAbsolutePath(relativePath: string): string {
-    return path.join(uploadDir, relativePath)
+    const normalized = normalizeRelativePath(relativePath)
+    return path.join(uploadDir, ...normalized.split('/'))
+  }
+
+  static fileExists(relativePath: string): boolean {
+    return fs.existsSync(this.getAbsolutePath(relativePath))
   }
 
   static toSummary(
@@ -135,6 +145,7 @@ export class QuoteContractModel {
     return {
       title: contract.title,
       fileName: contract.fileName,
+      fileAvailable: this.fileExists(contract.filePath),
       viewOnly: !accepted,
       canSign: accepted && !signed,
       acknowledgedAt: contract.acknowledgedAt ? contract.acknowledgedAt.toISOString() : null,
@@ -206,6 +217,10 @@ export class QuoteContractModel {
     const quoteStatus = quoteRow.status as QuoteStatus
     const contract = await this.findByQuoteId(quoteRow.id as number)
     if (!contract) {
+      return null
+    }
+
+    if (!this.fileExists(contract.filePath)) {
       return null
     }
 
@@ -345,7 +360,7 @@ export class QuoteContractModel {
     const absolutePath = path.join(dir, storedName)
     fs.writeFileSync(absolutePath, data.buffer)
 
-    const relativePath = path.join('quote-contracts', String(quoteId), storedName)
+    const relativePath = path.posix.join('quote-contracts', String(quoteId), storedName)
     const quoteStatus = quoteCheck.rows[0].status as QuoteStatus
 
     const result = await pool.query(
@@ -366,6 +381,86 @@ export class QuoteContractModel {
         vendorId,
       ]
     )
+
+    const contract = mapRow(result.rows[0] as QuoteContractRow)
+    const summary = this.toSummary(contract, quoteStatus)
+    if (!summary) {
+      throw new Error('QUOTE_CONTRACT_CREATE_FAILED')
+    }
+    return summary
+  }
+
+  static async replaceOrAttach(
+    quoteId: number,
+    vendorId: number,
+    data: {
+      title: string
+      buffer: Buffer
+      originalFileName: string
+      fileSizeBytes: number
+      mimeType: string
+    }
+  ): Promise<IQuoteContractSummary> {
+    const pool = getPool()
+
+    const quoteCheck = await pool.query(
+      `SELECT id, status FROM quotes WHERE id = $1 AND vendor_id = $2`,
+      [quoteId, vendorId]
+    )
+    if (quoteCheck.rows.length === 0) {
+      throw new Error('QUOTE_NOT_FOUND')
+    }
+
+    const quoteStatus = quoteCheck.rows[0].status as QuoteStatus
+    if (quoteStatus === 'converted' || quoteStatus === 'declined') {
+      throw new Error('QUOTE_CONTRACT_UPLOAD_NOT_ALLOWED')
+    }
+
+    const existing = await this.findByQuoteId(quoteId)
+    if (existing?.acknowledgedAt) {
+      throw new Error('QUOTE_CONTRACT_ALREADY_SIGNED')
+    }
+
+    if (!existing) {
+      return this.attach(quoteId, vendorId, data)
+    }
+
+    const dir = path.join(uploadDir, 'quote-contracts', String(quoteId))
+    ensureDir(dir)
+    const storedName = `${uuidv4()}.pdf`
+    const absolutePath = path.join(dir, storedName)
+    fs.writeFileSync(absolutePath, data.buffer)
+
+    const relativePath = path.posix.join('quote-contracts', String(quoteId), storedName)
+    const oldPath = existing.filePath
+
+    const result = await pool.query(
+      `
+      UPDATE quote_contracts
+      SET title = $2,
+          file_path = $3,
+          file_name = $4,
+          file_size_bytes = $5,
+          mime_type = $6,
+          uploaded_by = $7
+      WHERE quote_id = $1
+      RETURNING *
+      `,
+      [
+        quoteId,
+        data.title.trim(),
+        relativePath,
+        data.originalFileName,
+        data.fileSizeBytes,
+        data.mimeType,
+        vendorId,
+      ]
+    )
+
+    const oldAbsolute = this.getAbsolutePath(oldPath)
+    if (oldAbsolute !== absolutePath && fs.existsSync(oldAbsolute)) {
+      fs.unlinkSync(oldAbsolute)
+    }
 
     const contract = mapRow(result.rows[0] as QuoteContractRow)
     const summary = this.toSummary(contract, quoteStatus)
@@ -396,7 +491,7 @@ export class QuoteContractModel {
     const destPath = path.join(destDir, storedName)
     fs.copyFileSync(srcPath, destPath)
 
-    const relativePath = path.join('contracts', String(projectId), storedName)
+    const relativePath = path.posix.join('contracts', String(projectId), storedName)
 
     const pool = getPool()
     await pool.query(

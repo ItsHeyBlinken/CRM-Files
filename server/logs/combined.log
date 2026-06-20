@@ -709,3 +709,24 @@
 {"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 12:45:00"}
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 12:45:00"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 12:45:00"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"🚀 SmoothGig server running on port 3000","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 12:51:01"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"🚀 SmoothGig server running on port 3000","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 12:51:12"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"✅ Database connection established","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"🚀 SmoothGig server running on port 3000","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"📱 Environment: development","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}
+{"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 12:51:39"}

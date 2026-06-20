@@ -217,6 +217,16 @@ router.get('/:id/contract', async (req: AuthRequest, res: Response): Promise<voi
     }
 
     const absolutePath = QuoteContract.getAbsolutePath(contract.filePath)
+    if (!QuoteContract.fileExists(contract.filePath)) {
+      logger.error('Vendor quote contract file missing on disk:', {
+        quoteId,
+        filePath: contract.filePath,
+        absolutePath,
+      })
+      res.status(404).json({ error: 'Contract file not found on server' })
+      return
+    }
+
     res.setHeader('Content-Type', contract.mimeType)
     res.setHeader('Content-Disposition', `inline; filename="${contract.fileName}"`)
     res.sendFile(absolutePath, (err) => {
@@ -232,6 +242,72 @@ router.get('/:id/contract', async (req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ error: 'Failed to load contract' })
   }
 })
+
+// POST /api/vendor/quotes/:id/contract — attach or replace contract PDF on existing quote
+router.post(
+  '/:id/contract',
+  (req, res, next) => {
+    quoteContractPdfUpload.single('contractFile')(req, res, (err: unknown) => {
+      if (err) {
+        const message = err instanceof Error ? err.message : 'File upload failed'
+        res.status(400).json({ error: message })
+        return
+      }
+      next()
+    })
+  },
+  async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const quoteId = Number(req.params['id'])
+      const vendorId = Number(req.user.id)
+      const { contractTitle } = req.body
+
+      if (!req.file) {
+        res.status(400).json({ error: 'Choose a PDF contract file to upload' })
+        return
+      }
+
+      if (!contractTitle?.trim()) {
+        res.status(400).json({ error: 'Contract title is required' })
+        return
+      }
+
+      await QuoteContract.replaceOrAttach(quoteId, vendorId, {
+        title: contractTitle.trim(),
+        buffer: req.file.buffer,
+        originalFileName: req.file.originalname,
+        fileSizeBytes: req.file.size,
+        mimeType: req.file.mimetype,
+      })
+
+      const quote = await Quote.findByIdForVendor(quoteId, vendorId)
+      if (!quote) {
+        res.status(404).json({ error: 'Quote not found' })
+        return
+      }
+
+      res.json({ quote })
+    } catch (error) {
+      logger.error('Upload quote contract error:', error)
+      if (error instanceof Error) {
+        switch (error.message) {
+          case 'QUOTE_NOT_FOUND':
+            res.status(404).json({ error: 'Quote not found' })
+            return
+          case 'QUOTE_CONTRACT_UPLOAD_NOT_ALLOWED':
+            res.status(400).json({ error: 'Cannot change the contract on this quote' })
+            return
+          case 'QUOTE_CONTRACT_ALREADY_SIGNED':
+            res.status(409).json({
+              error: 'Client already signed this contract — create a new quote to send an updated agreement',
+            })
+            return
+        }
+      }
+      res.status(500).json({ error: 'Failed to upload contract' })
+    }
+  }
+)
 
 // POST /api/vendor/quotes/:id/convert-to-project
 router.post('/:id/convert-to-project', async (req: AuthRequest, res: Response): Promise<void> => {
