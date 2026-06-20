@@ -1,6 +1,12 @@
-# Progress: PortalHub (Event Vendor Client Portal)
+# Progress: SmoothGig (Event Vendor Client Portal)
 
-> **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
+> **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
+
+## Handoff — June 20, 2026
+
+**User stepped away.** Code is ahead of database in places. **Must-do on return:** run `008` + `009` in pgAdmin, then smoke-test dashboard/notifications/payment setup. SmoothGig rebrand is in client + Memory Bank; no git commit yet.
+
+**Uncommitted work includes:** vendor calendar, command center, notifications (`009`), email service, pipeline steppers, vendor settings/branding, SmoothGig rebrand + `AppName` wordmark, project payment settings (`008`).
 
 ## What Works
 
@@ -399,12 +405,15 @@
 - [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
 - [ ] User runs `008` + `009` SQL in pgAdmin
 
-### Session: Product rebrand to SmoothGig (June 2026)
-- [x] Official product name: **SmoothGig** (`smoothgig.com`)
+### Session: Product rebrand to SmoothGig (June 20, 2026)
+- [x] Evaluated **Gigly** — rejected (gigly.com taken); user chose **SmoothGig** (`smoothgig.com` available)
 - [x] `client/src/constants/branding.ts` — `APP_NAME`, `APP_NAME_PARTS`, tagline, domain
 - [x] `client/src/components/branding/AppName.tsx` — wordmark split **Smooth** + **Gig** (accent on second half)
 - [x] Login, Register, onboarding, admin Layout, vendor header fallback use `AppName`
 - [x] `index.html` meta/title; server startup log
+- [x] Memory Bank updated for handoff
+- [ ] User: register domain, favicon/logo, git commit
+- [ ] User: run SQL `008` + `009` in pgAdmin (from prior sessions — still pending)
 
 ### Session: Product name — Gigly rejected (June 2026)
 - [x] Considered **Gigly** — rejected because gigly.com is taken

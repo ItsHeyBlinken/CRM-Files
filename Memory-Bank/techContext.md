@@ -1,4 +1,4 @@
-# Technical Context: PortalHub (placeholder)
+# Technical Context: SmoothGig
 
 ## Technologies Used
 
@@ -70,17 +70,23 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 
 **Vendor project detail:** `/dashboard/projects/:id`
 
-### Key Application Files (PortalHub)
+### Key Application Files (SmoothGig)
 
 | Area | Paths |
 |------|-------|
-| Schema / seed | `database/001_schema_portalhub.sql` … `007_*`, `database/reset/` |
+| **Platform branding** | `client/src/constants/branding.ts`, `client/src/components/branding/AppName.tsx` |
+| Schema / seed | `database/001_schema_portalhub.sql` … `009_*`, `database/reset/` |
 | Auth | `server/src/routes/auth.ts`, `client/src/pages/AcceptInvite.tsx` |
 | Vendor API | `server/src/routes/vendorProjects.ts`, `server/src/models/Project.ts` |
+| Vendor dashboard | `server/src/routes/vendorDashboard.ts`, `client/src/pages/VendorDashboard.tsx` |
+| Vendor calendar | `server/src/routes/vendorCalendar.ts`, `client/src/pages/VendorCalendar.tsx` |
+| Notifications | `server/src/routes/vendorNotifications.ts`, `client/src/components/vendor/VendorNotificationBell.tsx` |
+| Email | `server/src/services/emailService.ts` |
+| Vendor profile/branding | `server/src/routes/vendorProfile.ts`, `client/src/pages/VendorSettings.tsx` |
 | Contracts | `server/src/models/Contract.ts`, `client/src/services/contractService.ts` |
 | Deliverables | `server/src/models/Deliverable.ts`, `client/src/services/deliverableService.ts` |
 | Client portal | `server/src/routes/portal.ts`, `client/src/pages/ClientPortal.tsx` |
-| Vendor UI | `client/src/pages/VendorDashboard.tsx`, `client/src/pages/VendorProjectDetail.tsx` |
+| Vendor UI | `client/src/pages/VendorProjectDetail.tsx`, `VendorQuoteDetail.tsx` |
 | Uploads | `server/src/middleware/projectUpload.ts`, `server/uploads/` |
 
 **Test client invite flow (pgAdmin):** Seed invite for `client@test.com` is already accepted. To test `/invite/:token`, create a new pending invite:
@@ -121,8 +127,15 @@ SESSION_SECRET=your_session_secret
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 
-# Client (when configured)
-VITE_APP_NAME=PortalHub
+# Client (optional — branding is in branding.ts; use if you add env-driven title)
+VITE_APP_NAME=SmoothGig
+
+# Transactional email (optional — features skip gracefully if unset)
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=SmoothGig <noreply@smoothgig.com>
 
 # Stripe — client invoice payments (optional for dev; P2P works without)
 STRIPE_SECRET_KEY=sk_test_...

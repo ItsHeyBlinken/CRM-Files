@@ -1,4 +1,4 @@
-# Monetization Plan: PortalHub (placeholder)
+# Monetization Plan: SmoothGig
 
 > **Status:** 📋 **Not decided — planning required before launch.**  
 > This document captures what to decide, options to evaluate, and how monetization ties to product build order.

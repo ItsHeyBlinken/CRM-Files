@@ -1,8 +1,10 @@
-# PortalHub Database
+# SmoothGig Database
+
+> SQL filenames still use `portalhub` from early development — that is historical only. Product name is **SmoothGig**.
 
 ## Active schema (run in order)
 
-Run these **in numeric order** in pgAdmin. If starting over, run `001` through `008`, then optionally seed.
+Run these **in numeric order** in pgAdmin. If starting over, run `001` through `009`, then optionally seed.
 
 ### Naming convention (new migrations)
 

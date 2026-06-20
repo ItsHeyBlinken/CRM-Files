@@ -1,4 +1,4 @@
-# System Patterns: PortalHub (placeholder)
+# System Patterns: SmoothGig
 
 ## System Architecture
 
@@ -84,7 +84,7 @@
 1. **Route groups by role**: Separate layouts for dashboard vs portal
 2. **AuthContext**: User, role, login/logout, post-login redirect
 3. **Protected routes**: Role guard + project scope where needed
-4. **Vendor branding context**: Portal reads vendor profile for theme/logo
+4. **Vendor branding context**: Portal reads vendor profile for theme/logo; platform name uses `AppName` wordmark (**Smooth** + **Gig**)
 
 ## Core Entities (New Model)
 
@@ -117,7 +117,7 @@
 - `POST /projects/:id/invite`
 - `GET/POST /projects/:id/contracts` — PDF upload; one contract per project (MVP)
 - `GET/POST /projects/:id/deliverables` — multi-file upload
-- `GET/PUT /profile` (vendor branding) — *not yet built*
+- `GET/PUT /profile` (vendor branding) — logo upload, colors, tagline (`vendorProfile.ts`)
 
 - `GET/POST /projects/:id/invoices` — create, send, mark paid, delete
 - `GET/PUT /api/vendor/payment-settings` — P2P handles + Stripe Connect status

@@ -1,7 +1,11 @@
 # Active Context: SmoothGig
 
 ## Product Name
-**SmoothGig** — official product name (`smoothgig.com`). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
+**SmoothGig** — official product name (`smoothgig.com` available; register domain when ready). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta/email. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
+
+**Branding files:**
+- `client/src/constants/branding.ts` — `APP_NAME`, `APP_NAME_PARTS`, `APP_TAGLINE`, `APP_DOMAIN`
+- `client/src/components/branding/AppName.tsx` — two-part wordmark (accent on **Gig**)
 
 ## End Goal (Product North Star)
 
@@ -20,11 +24,50 @@
 
 ## Current Work Focus
 
-**Session stopped (June 17, 2026).** Major quote + contract + language work shipped in code. **No git commit** this session (user runs commits manually).
+**Session paused (June 20, 2026).** User stepping away after confirming **SmoothGig** as the launch name and applying the split wordmark rebrand. Prior sessions shipped vendor calendar, command-center dashboard, notifications, transactional email, pipeline steppers, and vendor branding settings — all in code, **not yet committed** (user runs git manually).
 
-**Industry feedback integrated (wedding planner):** Client relationship = three parts (accept quote, sign contract/T&C, pay deposit). Quotes can optionally include contract PDF; contract is view-only until quote accepted, then e-sign on quote link; deposit still required after sign.
+**This session completed:**
+- Evaluated **Gigly** → rejected (domain taken)
+- Confirmed **SmoothGig** + `smoothgig.com`
+- Rebrand: constants, `AppName` wordmark, login/register/onboarding/admin/vendor header, `index.html`, server log
+- Memory Bank updated for SmoothGig
 
-**User action before next dev session:** Run pending SQL in pgAdmin (see Database Status below).
+**No git commit this session.**
+
+## When You Return — Start Here
+
+1. **Run pending SQL in pgAdmin** (blocks several features until applied):
+   - **`008_project_payment_settings.sql`** — project payment setup, invoice kinds, deposit/final presets
+   - **`009_vendor_notifications.sql`** — notification bell + history
+   - Confirm **`002`–`007`** if quote/contract/onboarding flows fail (see Database Status table)
+2. **Smoke-test the app** after SQL:
+   - Login/register show **Smooth** + **Gig** wordmark
+   - `/dashboard` — command center loads; notification bell works (needs `009`)
+   - `/dashboard/calendar` — booked + tentative dates
+   - `/dashboard/settings` — vendor logo/colors
+   - Create quote → optional contract → client accept/sign path
+3. **Optional dev config:**
+   - SMTP env vars for transactional email (`SMTP_HOST`, `SMTP_FROM`, etc.)
+   - Stripe test keys + webhook for card pay
+4. **Launch prep (non-code):**
+   - Register **smoothgig.com**
+   - Quick trademark search in target market
+   - Favicon + logo asset for SmoothGig (still using Vite default icon)
+5. **Git:** Stage branding + polish files; user commits when ready (suggested message below)
+
+**Suggested commit message (when ready):**
+> Rebrand to SmoothGig with split wordmark; vendor dashboard polish, calendar, notifications, email, pipeline, branding settings.
+
+## Next Session — Priority Order (after SQL)
+
+1. **E2E test — full vendor path:** Register → onboarding → quote with contract → client accept/sign → convert → invite → portal
+2. **E2E test — payments path:** Project payment setup (`008`) → deposit invoice → client P2P + optional Stripe card pay
+3. **Verify notifications:** Accept quote, client join, payment claimed, Stripe paid → bell + toasts
+4. **Verify email:** Quote send, invite with `sendEmail: true`, invoice send (requires SMTP)
+5. **Stripe Connect UX:** OAuth “link existing account” vs Express-only — decide and implement
+6. **Polish:** Pre-fill business name from register `company` in onboarding step 1; tune `AppName` styling if desired
+7. **Phase 3e:** Platform vendor subscription billing (pre-launch)
+8. **Future:** Manual calendar day blocking — migration `010` (deferred)
 
 ## MVP Status
 
@@ -50,6 +93,7 @@
 | Transactional email (SMTP) | ✅ Built (env-configured) |
 | Quote/project pipeline steppers | ✅ Built |
 | Vendor branding settings page | ✅ Built |
+| **SmoothGig platform rebrand + wordmark** | ✅ Built (June 2026) |
 | Client card pay + P2P (3c) | ✅ Built |
 | Vendor onboarding wizard + gate | ✅ Built |
 | Dashboard vendor checklist | ✅ Built |
@@ -59,6 +103,8 @@
 | Monetization (vendor → platform subscription) | 📋 Phase 3e — see `monetization.md` |
 
 ## Next Session — Priority Order
+
+*(Superseded by **When You Return — Start Here** above; kept for roadmap reference.)*
 
 1. **Run pending SQL in pgAdmin** (numeric order — see `database/README.md`):
    - `002_schema_quotes_addition.sql` (confirm)
