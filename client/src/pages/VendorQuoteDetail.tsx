@@ -4,9 +4,13 @@ import { useAuth } from '../contexts/AuthContext'
 import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
 import QuoteDocument from '../components/quotes/QuoteDocument'
 import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
+import PipelineStepper from '../components/vendor/PipelineStepper'
 import { convertQuoteToProject, fetchVendorQuote, openVendorQuoteContract } from '../services/quoteService'
+import { sendQuoteEmail } from '../services/vendorExtrasService'
 import type { Quote } from '../types/quote'
 import { formatQuoteMoney } from '../utils/formatQuoteMoney'
+import { getQuotePipelineSteps } from '../utils/quotePipeline'
+import toast from 'react-hot-toast'
 
 const statusLabel: Record<Quote['status'], string> = {
   draft: 'Draft',
@@ -69,6 +73,25 @@ const VendorQuoteDetail: React.FC = () => {
         `Let us know if you have any questions!\n`
     )
     window.location.href = `mailto:${quote.clientEmail}?subject=${subject}&body=${body}`
+  }
+
+  const handleSendQuoteEmail = async () => {
+    if (!quoteId) return
+    setSubmitting(true)
+    try {
+      const result = await sendQuoteEmail(quoteId)
+      if (result.sent) {
+        toast.success('Quote email sent')
+      } else if (result.skippedReason === 'EMAIL_NOT_CONFIGURED') {
+        toast.error('Email is not configured on the server — use “Open in email app” instead')
+      } else {
+        toast.error('Could not send quote email')
+      }
+    } catch {
+      toast.error('Could not send quote email')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleConvert = async () => {
@@ -144,6 +167,10 @@ const VendorQuoteDetail: React.FC = () => {
           <QuoteClientAgreementNotice variant="vendor" />
         </div>
 
+        <div className="no-print">
+          <PipelineStepper steps={getQuotePipelineSteps(quote)} title="Quote progress" />
+        </div>
+
         <QuoteDocument
           quote={{
             title: quote.title,
@@ -211,8 +238,16 @@ const VendorQuoteDetail: React.FC = () => {
               </button>
               <button
                 type="button"
+                onClick={() => void handleSendQuoteEmail()}
+                disabled={submitting}
+                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              >
+                Send email
+              </button>
+              <button
+                type="button"
                 onClick={openQuoteEmailDraft}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 text-sm text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
               >
                 Open in email app
               </button>

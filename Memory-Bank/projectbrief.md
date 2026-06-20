@@ -1,9 +1,9 @@
-# Project Brief: PortalHub (placeholder)
+# Project Brief: Gigly
 
-> **Product name:** **PortalHub** — generic placeholder; rebrand before launch.
+> **Product name:** **Gigly** — booking gigs for event vendors (quotes, projects, clients, payments).
 
 ## Project Overview
-A two-sided web application for event freelancers and vendors (photographers, florists, DJs, planners, etc.). Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.
+A two-sided web application for event freelancers and vendors (photographers, florists, DJs, planners, etc.) who **book gigs**. Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.
 
 ## End Goal
 **Vendor side:** Main product focus — efficient workflows, fewer manual steps, one place to run the business.

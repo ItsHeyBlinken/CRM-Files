@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express'
 import { Quote } from '../models/Quote'
 import { QuoteContract } from '../models/QuoteContract'
+import {
+  notifyQuoteAccepted,
+  notifyQuoteContractSigned,
+  notifyQuoteDeclined,
+} from '../services/notificationService'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -52,6 +57,16 @@ router.post('/:token/accept', async (req: Request, res: Response): Promise<void>
       return
     }
 
+    const meta = await Quote.findVendorMetaByToken(token)
+    if (meta) {
+      await notifyQuoteAccepted({
+        vendorId: meta.vendorId,
+        quoteId: meta.quoteId,
+        quoteTitle: meta.title,
+        clientName: meta.clientName,
+      })
+    }
+
     res.json({ quote })
   } catch (error) {
     logger.error('Accept quote error:', error)
@@ -73,6 +88,16 @@ router.post('/:token/decline', async (req: Request, res: Response): Promise<void
     if (!quote) {
       res.status(410).json({ error: 'This quote is no longer available to decline' })
       return
+    }
+
+    const meta = await Quote.findVendorMetaByToken(token)
+    if (meta) {
+      await notifyQuoteDeclined({
+        vendorId: meta.vendorId,
+        quoteId: meta.quoteId,
+        quoteTitle: meta.title,
+        clientName: meta.clientName,
+      })
     }
 
     res.json({ quote })
@@ -140,6 +165,15 @@ router.post('/:token/contract/acknowledge', async (req: Request, res: Response):
     }
 
     const quote = await Quote.findByToken(token)
+    const meta = token ? await Quote.findVendorMetaByToken(token) : null
+    if (meta) {
+      await notifyQuoteContractSigned({
+        vendorId: meta.vendorId,
+        quoteId: meta.quoteId,
+        quoteTitle: meta.title,
+        legalName: contract.acknowledgementLegalName,
+      })
+    }
     res.json({ contract, quote })
   } catch (error) {
     logger.error('Quote contract acknowledge error:', error)

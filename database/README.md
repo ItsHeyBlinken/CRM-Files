@@ -1,4 +1,4 @@
-# PortalHub Database
+# Gigly Database
 
 ## Active schema (run in order)
 
@@ -14,7 +14,7 @@ NNN_short_descriptive_name.sql
 
 | Rule | Detail |
 |------|--------|
-| **Next number** | `009` (then `010`, `011`, …) |
+| **Next number** | `010` (then `011`, `012`, …) |
 | **Prefix** | Zero-padded: `008`, not `8` |
 | **Suffix** | Short snake_case description of what the migration does |
 | **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
@@ -34,6 +34,7 @@ Example for the next migration: `009_schema_vendor_subscriptions.sql`
 | 006 | **`006_schema_quote_contract_addition.sql`** | Optional contract PDF attached to quotes |
 | 007 | **`007_schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance |
 | 008 | **`008_project_payment_settings.sql`** | Project-level payment setup defaults + invoice kind metadata |
+| 009 | **`009_vendor_notifications.sql`** | In-app vendor notifications for client actions |
 
 ### Dev reset & seed (`reset/`)
 

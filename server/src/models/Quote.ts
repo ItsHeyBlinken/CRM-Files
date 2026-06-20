@@ -203,6 +203,26 @@ export class QuoteModel {
     return quotes
   }
 
+  static async findVendorMetaByToken(
+    token: string
+  ): Promise<{ vendorId: number; quoteId: number; title: string; clientName: string | null } | null> {
+    const pool = getPool()
+    const result = await pool.query(
+      `SELECT id, vendor_id, title, client_name FROM quotes WHERE token = $1`,
+      [token]
+    )
+    if (result.rows.length === 0) {
+      return null
+    }
+    const row = result.rows[0]
+    return {
+      vendorId: row.vendor_id,
+      quoteId: row.id,
+      title: row.title,
+      clientName: row.client_name,
+    }
+  }
+
   static async findByIdForVendor(id: number, vendorId: number): Promise<IQuote | null> {
     const pool = getPool()
     const result = await pool.query(

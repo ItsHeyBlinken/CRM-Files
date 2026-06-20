@@ -11,6 +11,8 @@ import {
   hasAnyClientPaymentMethod,
   VendorPaymentSettings,
 } from '../models/VendorPaymentSettings'
+import { VendorProfile } from '../models/VendorProfile'
+import { getPublicAppUrl, sendInviteEmail, sendInvoiceEmail } from '../services/emailService'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -428,7 +430,25 @@ router.post(
         return
       }
 
-      res.json({ invoice })
+      const project = await Project.findByIdForVendor(projectId, Number(req.user.id))
+      const profile = await VendorProfile.findByUserId(Number(req.user.id))
+      let emailResult: { sent: boolean; skippedReason?: string } | undefined
+
+      if (project?.clientEmail) {
+        emailResult = await sendInvoiceEmail({
+          to: project.clientEmail,
+          vendorBusinessName: profile?.businessName ?? 'Your vendor',
+          projectTitle: project.title,
+          invoiceTitle: invoice.title,
+          amountLabel: new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: invoice.currency,
+          }).format(invoice.amount),
+          portalUrl: getPublicAppUrl('/portal'),
+        })
+      }
+
+      res.json({ invoice, email: emailResult })
     } catch (error: unknown) {
       if (error instanceof Error && error.message === 'INVALID_STATUS_TRANSITION') {
         res.status(409).json({ error: 'This invoice cannot be sent to the client' })
@@ -562,11 +582,26 @@ router.post('/:id/invite', async (req: AuthRequest, res: Response): Promise<void
       expiresInDays ?? 14
     )
 
+    const project = await Project.findByIdForVendor(Number(req.params['id']), Number(req.user.id))
+    const profile = await VendorProfile.findByUserId(Number(req.user.id))
+    const invitePath = `/invite/${invite.token}`
+    let emailResult: { sent: boolean; skippedReason?: string } | undefined
+
+    if (req.body.sendEmail === true) {
+      emailResult = await sendInviteEmail({
+        to: email.trim(),
+        vendorBusinessName: profile?.businessName ?? 'Your vendor',
+        projectTitle: project?.title ?? 'your project',
+        inviteUrl: getPublicAppUrl(invitePath),
+      })
+    }
+
     res.status(201).json({
       invite: {
         ...invite,
-        invitePath: `/invite/${invite.token}`,
+        invitePath,
       },
+      email: emailResult,
     })
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {

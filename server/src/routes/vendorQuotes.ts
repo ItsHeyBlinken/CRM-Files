@@ -3,6 +3,8 @@ import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { quoteContractPdfUpload } from '../middleware/quoteUpload'
 import { Quote } from '../models/Quote'
 import { QuoteContract } from '../models/QuoteContract'
+import { VendorProfile } from '../models/VendorProfile'
+import { getPublicAppUrl, sendQuoteEmail } from '../services/emailService'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -246,6 +248,40 @@ router.post('/:id/convert-to-project', async (req: AuthRequest, res: Response): 
     }
 
     res.status(500).json({ error: 'Failed to convert quote to project' })
+  }
+})
+
+// POST /api/vendor/quotes/:id/send-email
+router.post('/:id/send-email', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const quoteId = Number(req.params['id'])
+    const vendorId = Number(req.user.id)
+    const quote = await Quote.findByIdForVendor(quoteId, vendorId)
+
+    if (!quote) {
+      res.status(404).json({ error: 'Quote not found' })
+      return
+    }
+
+    const profile = await VendorProfile.findByUserId(vendorId)
+    const quotePath = `/quote/${quote.token}`
+    const emailResult = await sendQuoteEmail({
+      to: quote.clientEmail,
+      clientName: quote.clientName,
+      vendorBusinessName: profile?.businessName ?? 'Your vendor',
+      quoteTitle: quote.title,
+      quoteUrl: getPublicAppUrl(quotePath),
+      totalLabel: new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: quote.currency,
+      }).format(quote.totalAmount),
+      hasContract: Boolean(quote.contract),
+    })
+
+    res.json({ email: emailResult, quotePath })
+  } catch (error) {
+    logger.error('Send quote email error:', error)
+    res.status(500).json({ error: 'Failed to send quote email' })
   }
 })
 

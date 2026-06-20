@@ -1,7 +1,9 @@
 import Stripe from 'stripe'
 import { logger } from '../utils/logger'
 import { Invoice, IInvoice } from '../models/Invoice'
+import { Project } from '../models/Project'
 import { VendorPaymentSettings } from '../models/VendorPaymentSettings'
+import { notifyInvoicePaid } from './notificationService'
 
 let stripeClient: Stripe | null = null
 
@@ -200,7 +202,18 @@ export async function handleStripeWebhook(
           ? session.payment_intent
           : session.payment_intent?.id ?? null
 
-      await Invoice.markPaidFromStripe(Number(invoiceId), session.id, paymentIntentId)
+      const paidInvoice = await Invoice.markPaidFromStripe(Number(invoiceId), session.id, paymentIntentId)
+      if (paidInvoice) {
+        const project = await Project.findById(paidInvoice.projectId)
+        if (project) {
+          await notifyInvoicePaid({
+            vendorId: project.vendorId,
+            projectId: project.id,
+            invoiceTitle: paidInvoice.title,
+            paymentMethod: 'stripe',
+          })
+        }
+      }
       break
     }
     default:

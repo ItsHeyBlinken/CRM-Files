@@ -5,6 +5,7 @@ import { Contract } from '../models/Contract'
 import { Deliverable } from '../models/Deliverable'
 import { Invoice } from '../models/Invoice'
 import { createInvoiceCheckoutSession, isStripeConfigured } from '../services/stripeService'
+import { notifyInvoicePaymentClaimed } from '../services/notificationService'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -260,6 +261,15 @@ router.post('/invoices/:id/claim-sent', async (req: AuthRequest, res: Response):
     if (!invoice) {
       res.status(404).json({ error: 'Invoice not found' })
       return
+    }
+
+    const project = await Project.findById(invoice.projectId)
+    if (project) {
+      await notifyInvoicePaymentClaimed({
+        vendorId: project.vendorId,
+        projectId: project.id,
+        invoiceTitle: invoice.title,
+      })
     }
 
     res.json({ invoice })

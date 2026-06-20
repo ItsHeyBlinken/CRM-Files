@@ -2,14 +2,20 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { createProject, fetchVendorProjects } from '../services/projectService'
+import { fetchVendorDashboardSummary } from '../services/dashboardService'
 import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import { useVendorBranding } from '../components/vendor/VendorBrandingProvider'
+import { formatCalendarDate } from '../utils/calendarHelpers'
+import type { VendorDashboardSummary } from '../types/dashboard'
 import type { Project } from '../types/portal'
 
 const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { accentColor } = useVendorBranding()
   const [projects, setProjects] = useState<Project[]>([])
+  const [summary, setSummary] = useState<VendorDashboardSummary | null>(null)
   const [checklist, setChecklist] = useState<VendorChecklist | null>(null)
   const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
   const [loading, setLoading] = useState(true)
@@ -28,11 +34,13 @@ const VendorDashboard: React.FC = () => {
   const loadProjects = useCallback(async () => {
     try {
       setError('')
-      const [data, onboarding] = await Promise.all([
+      const [data, onboarding, dashboardSummary] = await Promise.all([
         fetchVendorProjects(),
         fetchVendorOnboarding(),
+        fetchVendorDashboardSummary(),
       ])
       setProjects(data)
+      setSummary(dashboardSummary)
       setChecklist(onboarding.checklist)
       setHasPaymentMethod(onboarding.status.hasPaymentMethod)
     } catch {
@@ -87,22 +95,99 @@ const VendorDashboard: React.FC = () => {
       />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <section
+          className="rounded-2xl p-6 text-white shadow-sm"
+          style={{ backgroundColor: accentColor }}
+        >
+          <h2 className="text-2xl font-semibold">
+            Welcome back{user?.firstName ? `, ${user.firstName}` : ''}
+          </h2>
+          <p className="mt-2 text-sm text-white/90">
+            Here&apos;s what needs your attention today.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              to="/dashboard/quotes"
+              className="rounded-md bg-white/15 px-4 py-2 text-sm font-medium hover:bg-white/25"
+            >
+              New quote
+            </Link>
+            <Link
+              to="/dashboard/calendar"
+              className="rounded-md bg-white/15 px-4 py-2 text-sm font-medium hover:bg-white/25"
+            >
+              View calendar
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-white/90"
+            >
+              New project
+            </button>
+          </div>
+        </section>
+
+        {summary && (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label="Quotes awaiting response" value={summary.stats.quotesAwaitingResponse} />
+              <StatCard label="Ready to convert" value={summary.stats.quotesReadyToConvert} />
+              <StatCard label="Upcoming events" value={summary.stats.upcomingEvents} />
+              <StatCard label="Payments to confirm" value={summary.stats.paymentClaimsPending} />
+            </div>
+
+            {summary.attention.length > 0 && (
+              <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
+                  <h3 className="font-medium text-gray-900">Needs attention</h3>
+                </div>
+                <ul className="divide-y divide-gray-100">
+                  {summary.attention.map((item) => (
+                    <li key={item.id}>
+                      <Link to={item.linkPath} className="block px-6 py-4 hover:bg-gray-50 transition">
+                        <p className="font-medium text-gray-900">{item.title}</p>
+                        <p className="text-sm text-gray-500">{item.subtitle}</p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {summary.upcomingEvents.length > 0 && (
+              <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">Coming up</h3>
+                  <Link to="/dashboard/calendar" className="text-sm text-indigo-600 hover:text-indigo-500">
+                    Full calendar
+                  </Link>
+                </div>
+                <ul className="divide-y divide-gray-100">
+                  {summary.upcomingEvents.map((event) => (
+                    <li key={event.id}>
+                      <Link to={event.linkPath} className="block px-6 py-4 hover:bg-gray-50 transition">
+                        <p className="font-medium text-gray-900">{event.title}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatCalendarDate(event.eventDate)}
+                          {event.kind === 'quote_tentative' ? ' · Tentative quote' : ' · Booked'}
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-lg font-medium text-gray-900">
-              Welcome{user?.firstName ? `, ${user.firstName}` : ''}
-            </h2>
+            <h2 className="text-lg font-medium text-gray-900">Projects</h2>
             <p className="text-sm text-gray-600">
-              Select a project to manage invites, contracts, and client portal setup.
+              Manage invites, contracts, invoices, and client portal setup.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
-            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-          >
-            New project
-          </button>
         </div>
 
         {error && (
@@ -186,7 +271,8 @@ const VendorDashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                className="px-4 py-2 text-sm text-white rounded-md disabled:opacity-50"
+                style={{ backgroundColor: accentColor }}
               >
                 {submitting ? 'Saving...' : 'Create project'}
               </button>
@@ -201,7 +287,7 @@ const VendorDashboard: React.FC = () => {
           </form>
         )}
 
-        <section className="bg-white rounded-lg shadow overflow-hidden">
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="font-medium text-gray-900">Your projects</h3>
           </div>
@@ -245,6 +331,13 @@ const VendorDashboard: React.FC = () => {
     </div>
   )
 }
+
+const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
+  <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+    <p className="text-2xl font-semibold text-gray-900">{value}</p>
+    <p className="mt-1 text-sm text-gray-500">{label}</p>
+  </div>
+)
 
 const ChecklistItem: React.FC<{
   done: boolean

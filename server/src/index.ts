@@ -41,6 +41,7 @@ import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
 import { logger } from './utils/logger'
 import { socketHandler } from './services/socketService'
+import { initRealtimeNotifications } from './services/realtimeNotifications'
 
 // Import routes
 import authRoutes from './routes/auth'
@@ -49,6 +50,9 @@ import vendorQuoteRoutes from './routes/vendorQuotes'
 import vendorPaymentSettingsRoutes from './routes/vendorPaymentSettings'
 import vendorOnboardingRoutes from './routes/vendorOnboarding'
 import vendorCalendarRoutes from './routes/vendorCalendar'
+import vendorDashboardRoutes from './routes/vendorDashboard'
+import vendorNotificationRoutes from './routes/vendorNotifications'
+import vendorProfileRoutes from './routes/vendorProfile'
 import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
 import stripeWebhookRoutes from './routes/stripeWebhook'
@@ -249,6 +253,9 @@ function setupMiddleware() {
   app.use('/api/vendor/payment-settings', vendorPaymentSettingsRoutes)
   app.use('/api/vendor/onboarding', vendorOnboardingRoutes)
   app.use('/api/vendor/calendar', vendorCalendarRoutes)
+  app.use('/api/vendor/dashboard', vendorDashboardRoutes)
+  app.use('/api/vendor/notifications', vendorNotificationRoutes)
+  app.use('/api/vendor/profile', vendorProfileRoutes)
   app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 
@@ -256,6 +263,7 @@ function setupMiddleware() {
   app.use('/uploads', express.static('uploads'))
 
   // Socket.io connection handling
+  initRealtimeNotifications(io)
   socketHandler(io)
 
   // Serve built client files in production (before error handlers)
@@ -283,7 +291,7 @@ function setupMiddleware() {
 // Function to start the server (called after middleware setup)
 function startServer() {
   server.listen(PORT, () => {
-    logger.info(`🚀 PortalHub server running on port ${PORT}`)
+    logger.info(`🚀 Gigly server running on port ${PORT}`)
     logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
     logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
     logger.info(`🔌 Socket.io enabled for real-time communication`)

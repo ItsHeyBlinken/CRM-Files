@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { fetchVendorOnboarding } from '../../services/onboardingService'
+import { VendorBrandingProvider } from './VendorBrandingProvider'
 
 const VendorOnboardingGate: React.FC = () => {
   const location = useLocation()
@@ -37,7 +38,11 @@ const VendorOnboardingGate: React.FC = () => {
     return <Navigate to="/dashboard" replace />
   }
 
-  return <Outlet />
+  return (
+    <VendorBrandingProvider>
+      <Outlet />
+    </VendorBrandingProvider>
+  )
 }
 
 export default VendorOnboardingGate

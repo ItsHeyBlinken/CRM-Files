@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { APP_NAME } from '../constants/branding'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
@@ -147,7 +148,7 @@ const VendorPaymentSettingsPage: React.FC = () => {
           <h2 className="font-medium text-gray-900">Accept card payments (Stripe Connect)</h2>
           <p className="text-sm text-gray-600">
             Connect Stripe so clients can pay invoices with a card in their portal. Funds go to your
-            Stripe account — PortalHub does not take a platform fee at launch.
+            Stripe account — {APP_NAME} does not take a platform fee at launch.
           </p>
 
           {settings?.stripeChargesEnabled ? (

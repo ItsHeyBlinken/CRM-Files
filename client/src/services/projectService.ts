@@ -60,10 +60,14 @@ export interface InviteResult {
 
 export async function createProjectInvite(
   projectId: number,
-  email: string
-): Promise<InviteResult> {
-  const response = await api.post(`/vendor/projects/${projectId}/invite`, { email })
-  return response.data.invite
+  email: string,
+  options?: { sendEmail?: boolean }
+): Promise<{ invite: InviteResult; email?: { sent: boolean; skippedReason?: string } }> {
+  const response = await api.post(`/vendor/projects/${projectId}/invite`, {
+    email,
+    sendEmail: options?.sendEmail === true,
+  })
+  return response.data
 }
 
 export async function fetchClientPortal(): Promise<ClientPortalData> {

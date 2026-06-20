@@ -17,7 +17,10 @@ import {
   type InviteResult,
 } from '../services/projectService'
 import { fetchVendorOnboarding } from '../services/onboardingService'
+import PipelineStepper from '../components/vendor/PipelineStepper'
 import type { Invoice, ProjectStatus, VendorProjectDetail } from '../types/portal'
+import { getProjectPipelineSteps } from '../utils/projectPipeline'
+import toast from 'react-hot-toast'
 import {
   formatCurrency,
   formatFileSize,
@@ -58,6 +61,7 @@ const VendorProjectDetail: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
 
   const [inviteEmail, setInviteEmail] = useState('')
+  const [sendInviteByEmail, setSendInviteByEmail] = useState(true)
   const [inviteLink, setInviteLink] = useState<InviteResult | null>(null)
 
   const [contractTitle, setContractTitle] = useState('Photography Agreement')
@@ -207,8 +211,15 @@ const VendorProjectDetail: React.FC = () => {
     setError('')
 
     try {
-      const invite = await createProjectInvite(projectId, inviteEmail.trim())
-      setInviteLink(invite)
+      const result = await createProjectInvite(projectId, inviteEmail.trim(), {
+        sendEmail: sendInviteByEmail,
+      })
+      setInviteLink(result.invite)
+      if (result.email?.sent) {
+        toast.success('Invite email sent')
+      } else if (sendInviteByEmail && result.email?.skippedReason === 'EMAIL_NOT_CONFIGURED') {
+        toast.error('Email not configured — copy the invite link instead')
+      }
     } catch (err: unknown) {
       setError(getApiError(err, 'Failed to create invite'))
     } finally {
@@ -519,6 +530,8 @@ const VendorProjectDetail: React.FC = () => {
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
 
+        <PipelineStepper steps={getProjectPipelineSteps(detail)} title="Project progress" />
+
         <section className="bg-white rounded-lg shadow p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
@@ -729,6 +742,14 @@ const VendorProjectDetail: React.FC = () => {
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
               />
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={sendInviteByEmail}
+                  onChange={(e) => setSendInviteByEmail(e.target.checked)}
+                />
+                Send invite by email (when SMTP is configured)
+              </label>
               {inviteLink && (
                 <div className="rounded-md bg-green-50 p-4 text-sm text-green-900 space-y-3">
                   <p className="font-medium">Invite ready</p>

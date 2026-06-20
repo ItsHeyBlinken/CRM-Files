@@ -1,7 +1,7 @@
-# Active Context: PortalHub (placeholder)
+# Active Context: Gigly
 
 ## Product Name
-**PortalHub** — generic placeholder for the platform. Vendor-facing branding (logo, colors) is per-vendor inside the app; this name is only for the product itself until a final name is chosen.
+**Gigly** — platform for event vendors to book gigs: quote → contract → deposit → deliver. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app; **Gigly** is the product name on login, register, and default header fallback.
 
 ## End Goal (Product North Star)
 
@@ -45,13 +45,18 @@
 | Vendor invoice CRUD (3a) | ✅ Built |
 | Vendor payment settings (3b) | ✅ Built |
 | Vendor calendar (derived availability) | ✅ Built |
+| Vendor command center dashboard | ✅ Built |
+| In-app notifications + bell | ✅ Built (SQL `009`) |
+| Transactional email (SMTP) | ✅ Built (env-configured) |
+| Quote/project pipeline steppers | ✅ Built |
+| Vendor branding settings page | ✅ Built |
 | Client card pay + P2P (3c) | ✅ Built |
 | Vendor onboarding wizard + gate | ✅ Built |
 | Dashboard vendor checklist | ✅ Built |
 | Invoice send guard | ✅ Built |
 | Event-neutral UI copy (`eventDate`, `clientDisplayName`) | ✅ Done |
 | Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
-| Monetization (vendor → PortalHub subscription) | 📋 Phase 3e — see `monetization.md` |
+| Monetization (vendor → Gigly subscription) | 📋 Phase 3e — see `monetization.md` |
 
 ## Next Session — Priority Order
 
@@ -68,7 +73,7 @@
 4. **Stripe dev config** (optional): test keys + webhook for card pay
 5. **Stripe Connect UX:** “Link existing Stripe account” (OAuth Standard) as primary; Express onboarding as fallback for vendors without Stripe
 6. **Polish:** Pre-fill business name from register `company` in onboarding step 1
-7. **Phase 3e:** PortalHub vendor subscription billing (pre-launch)
+7. **Phase 3e:** Gigly vendor subscription billing (pre-launch)
 
 ## Payment Architecture (Agreed)
 
@@ -77,7 +82,7 @@
 | Flow | Who pays whom | Mechanism | Status |
 |------|---------------|-----------|--------|
 | **Client → Vendor** | Client pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built (Express Connect today) |
-| **Vendor → PortalHub** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
+| **Vendor → Gigly** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
 
 **Client invoice payments (built):**
 - Vendor configures handles + Stripe at onboarding and `/dashboard/payments`
@@ -97,6 +102,13 @@
 - Tentative = sent/accepted quotes with an event date (until converted/booked)
 - Cancelled projects free their date; manual day blocking deferred to a future migration
 - Calendar page at `/dashboard/calendar`; quote create uses schedule-aware date picker
+
+**Vendor product polish (priorities 1–5 — built):**
+- Command center home: attention queue, stats, upcoming events, quick actions
+- Persistent notifications (`009`) + bell + realtime toasts via Socket.io
+- Transactional email for quotes, invites, invoices when `SMTP_HOST` + `SMTP_FROM` are set
+- Pipeline progress steppers on quote detail and project detail
+- `/dashboard/settings` for logo, colors, tagline; branded vendor header shell
 
 **Key files:** `Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `VendorOnboarding.tsx`, `VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `p2pPaymentLinks.ts`
 
@@ -126,6 +138,7 @@
 | `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
 | `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
 | `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ⬜ Run in pgAdmin |
+| `009_vendor_notifications.sql` | In-app vendor notifications | ⬜ Run in pgAdmin |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 | `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
 | `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
@@ -141,6 +154,7 @@
 | `/dashboard/quotes` | VENDOR | Quote list + create (optional contract) |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, convert to project |
 | `/dashboard/calendar` | VENDOR | Month/agenda view of booked + tentative events |
+| `/dashboard/settings` | VENDOR | Branding, logo, colors, business profile |
 | `/dashboard/payments` | VENDOR | Stripe Connect + P2P handles |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
@@ -169,7 +183,7 @@
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `009`)
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `010`)
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?

@@ -1,4 +1,4 @@
-# Progress: PortalHub (Event Vendor Client Portal)
+# Progress: Gigly (Event Vendor Booking Platform)
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
 
@@ -389,4 +389,17 @@
 - [x] Quote create form — `VendorEventDatePicker` highlights busy days + soft warning (react-calendar)
 - [x] Shared `VendorDashboardHeader` nav includes Calendar across vendor pages
 - [x] Unit tests: `server/src/utils/vendorCalendar.test.ts`
-- [ ] Future: manual day blocking (`009_vendor_blocked_dates` or similar)
+- [ ] Future: manual day blocking (`010_vendor_blocked_dates` or similar)
+
+### Session: Vendor product polish priorities 1–5 (June 2026)
+- [x] P1 — Vendor command center: `GET /api/vendor/dashboard`, attention queue, stats, upcoming events, refreshed home UI
+- [x] P2 — Notifications: `009_vendor_notifications.sql`, bell dropdown, Socket.io push, hooks on quote/invite/payment events
+- [x] P3 — Transactional email: nodemailer service; send quote / invite / invoice when SMTP configured; UI send buttons
+- [x] P4 — Pipeline steppers on quote detail and project detail
+- [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
+- [ ] User runs `008` + `009` SQL in pgAdmin
+
+### Session: Product rebrand to Gigly (June 2026)
+- [x] Official product name: **Gigly** (booking gigs for event vendors)
+- [x] Client `APP_NAME` / `APP_TAGLINE` constants; login, register, onboarding, admin, vendor shell updated
+- [x] Memory Bank + database README updated (SQL filenames still use legacy `portalhub` prefix — no rename needed)

@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { APP_NAME } from '../../constants/branding'
 
 interface LayoutProps {
   children?: ReactNode
@@ -27,7 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex">
         <div className="w-64 bg-white shadow-lg flex flex-col">
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800">PortalHub</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{APP_NAME}</h1>
             <p className="text-sm text-gray-500 mt-1">Admin</p>
           </div>
           <nav className="mt-6 flex-1">

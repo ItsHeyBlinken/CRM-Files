@@ -1,13 +1,22 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../constants/branding'
+import { useVendorBranding } from './VendorBrandingProvider'
+import VendorNotificationBell from './VendorNotificationBell'
 
-export type VendorNavSection = 'projects' | 'quotes' | 'calendar' | 'payments'
+export type VendorNavSection =
+  | 'projects'
+  | 'quotes'
+  | 'calendar'
+  | 'payments'
+  | 'settings'
 
 const NAV_ITEMS: { key: VendorNavSection; label: string; to: string }[] = [
-  { key: 'projects', label: 'Projects', to: '/dashboard' },
+  { key: 'projects', label: 'Home', to: '/dashboard' },
   { key: 'quotes', label: 'Quotes', to: '/dashboard/quotes' },
   { key: 'calendar', label: 'Calendar', to: '/dashboard/calendar' },
   { key: 'payments', label: 'Payments', to: '/dashboard/payments' },
+  { key: 'settings', label: 'Settings', to: '/dashboard/settings' },
 ]
 
 interface VendorDashboardHeaderProps {
@@ -22,18 +31,42 @@ const VendorDashboardHeader: React.FC<VendorDashboardHeaderProps> = ({
   active,
   userEmail,
   onLogout,
-  title = 'PortalHub',
+  title,
   maxWidthClass = 'max-w-5xl',
 }) => {
+  const { profile, accentColor } = useVendorBranding()
+  const displayTitle = title ?? profile?.businessName ?? APP_NAME
+
   return (
     <header className="bg-white border-b border-gray-200">
-      <div className={`${maxWidthClass} mx-auto px-4 py-4 flex items-center justify-between`}>
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
-          <nav className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <div className={`${maxWidthClass} mx-auto px-4 py-4 flex items-center justify-between gap-4`}>
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            {profile?.logoUrl ? (
+              <img
+                src={profile.logoUrl}
+                alt=""
+                className="h-10 w-10 rounded-xl object-cover border border-gray-200"
+              />
+            ) : (
+              <div
+                className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
+                style={{ backgroundColor: accentColor }}
+              >
+                {displayTitle.slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold text-gray-900 truncate">{displayTitle}</h1>
+              {profile?.tagline && (
+                <p className="text-xs text-gray-500 truncate">{profile.tagline}</p>
+              )}
+            </div>
+          </div>
+          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             {NAV_ITEMS.map((item) =>
               item.key === active ? (
-                <span key={item.key} className="text-indigo-600 font-medium">
+                <span key={item.key} className="font-medium" style={{ color: accentColor }}>
                   {item.label}
                 </span>
               ) : (
@@ -44,12 +77,14 @@ const VendorDashboardHeader: React.FC<VendorDashboardHeaderProps> = ({
             )}
           </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600 hidden sm:inline">{userEmail}</span>
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <VendorNotificationBell />
+          <span className="text-sm text-gray-600 hidden md:inline">{userEmail}</span>
           <button
             type="button"
             onClick={onLogout}
-            className="text-sm text-indigo-600 hover:text-indigo-500"
+            className="text-sm hover:opacity-80"
+            style={{ color: accentColor }}
           >
             Sign out
           </button>

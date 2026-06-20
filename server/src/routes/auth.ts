@@ -4,6 +4,8 @@ import jwt, { SignOptions } from 'jsonwebtoken'
 import { optionalAuth, AuthRequest } from '../middleware/auth'
 import { User } from '../models/User'
 import { ProjectInvite } from '../models/ProjectInvite'
+import { Project } from '../models/Project'
+import { notifyClientJoined } from '../services/notificationService'
 import { formatAuthUser } from '../utils/authHelpers'
 import { getPool } from '../config/database'
 import { logger } from '../utils/logger'
@@ -350,6 +352,16 @@ router.post('/register/client', async (req: Request, res: Response): Promise<voi
       Number(newUser.id),
       clientDisplayName
     )
+
+    const project = await Project.findById(invite.projectId)
+    if (project) {
+      await notifyClientJoined({
+        vendorId: project.vendorId,
+        projectId: project.id,
+        projectTitle: project.title,
+        clientName: clientDisplayName,
+      })
+    }
 
     const authToken = generateToken(newUser.id, newUser.role)
 
