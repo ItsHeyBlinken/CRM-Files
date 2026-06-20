@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { fetchQuoteContractPdfBlob } from '../../services/quoteService'
+import React, { useState } from 'react'
+import { getPublicQuoteContractUrl } from '../../services/quoteService'
 
 interface QuoteContractViewPanelProps {
   token: string
@@ -10,78 +10,27 @@ const QuoteContractViewPanel: React.FC<QuoteContractViewPanelProps> = ({
   token,
   contractTitle,
 }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const pdfUrlRef = useRef<string | null>(null)
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    let cancelled = false
-
-    const load = async () => {
-      setLoading(true)
-      setError('')
-
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
-
-      try {
-        const blob = await fetchQuoteContractPdfBlob(token)
-        if (cancelled) {
-          return
-        }
-        const url = URL.createObjectURL(blob)
-        pdfUrlRef.current = url
-        setPdfUrl(url)
-      } catch (err: unknown) {
-        if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Could not load contract for review'
-          setError(message)
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    load()
-
-    return () => {
-      cancelled = true
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
-    }
-  }, [token])
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-        Loading contract...
-      </div>
-    )
-  }
-
-  if (error || !pdfUrl) {
-    return (
-      <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">
-        {error || 'Contract unavailable'}
-      </div>
-    )
-  }
+  const pdfUrl = getPublicQuoteContractUrl(token)
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+      {loading && !error && (
+        <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">Loading contract...</div>
+      )}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">{error}</div>
+      )}
       <iframe
-        ref={iframeRef}
         src={pdfUrl}
         title={contractTitle}
-        className="h-80 w-full bg-white"
+        onLoad={() => setLoading(false)}
+        onError={() => {
+          setLoading(false)
+          setError('Could not load contract for review')
+        }}
+        className={`h-80 w-full bg-white ${loading || error ? 'hidden' : ''}`}
       />
     </div>
   )

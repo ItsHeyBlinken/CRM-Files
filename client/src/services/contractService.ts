@@ -57,6 +57,13 @@ export async function fetchContractSigningContext(
   return response.data.context
 }
 
+export function getPortalContractFileUrl(contractId: number): string {
+  const apiBaseURL = import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : '/api'
+  return `${apiBaseURL}/portal/contracts/${contractId}/file`
+}
+
 export async function fetchContractPdfBlob(contractId: number): Promise<Blob> {
   const response = await api.get(`/portal/contracts/${contractId}/file`, {
     responseType: 'blob',

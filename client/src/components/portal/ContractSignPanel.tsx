@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   acknowledgeContract,
-  fetchContractPdfBlob,
   fetchContractSigningContext,
+  getPortalContractFileUrl,
   type ContractSigningContext,
 } from '../../services/contractService'
 
@@ -25,10 +25,9 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const viewStartedAtRef = useRef<number | null>(null)
-  const pdfUrlRef = useRef<string | null>(null)
+  const pdfUrl = getPortalContractFileUrl(contractId)
 
   const [context, setContext] = useState<ContractSigningContext | null>(null)
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pdfReady, setPdfReady] = useState(false)
@@ -94,7 +93,6 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
       setLoading(true)
       setError('')
       setPdfReady(false)
-      setPdfUrl(null)
       setViewSeconds(0)
       setScrolledToEnd(false)
       setConsentAccepted(false)
@@ -103,26 +101,14 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
       setLegalNameOverride('')
       viewStartedAtRef.current = null
 
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
-
       try {
-        const [signingContext, blob] = await Promise.all([
-          fetchContractSigningContext(contractId),
-          fetchContractPdfBlob(contractId),
-        ])
+        const signingContext = await fetchContractSigningContext(contractId)
 
         if (cancelled) {
           return
         }
 
         setContext(signingContext)
-
-        const url = URL.createObjectURL(blob)
-        pdfUrlRef.current = url
-        setPdfUrl(url)
       } catch (err: unknown) {
         if (cancelled) {
           return
@@ -144,10 +130,6 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
     return () => {
       cancelled = true
       detachScroll?.()
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
     }
   }, [contractId])
 
@@ -228,7 +210,7 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
         <iframe
           ref={iframeRef}
-          src={pdfUrl ?? undefined}
+          src={pdfUrl}
           title={contractTitle}
           onLoad={handleIframeLoad}
           className="h-80 w-full bg-white"

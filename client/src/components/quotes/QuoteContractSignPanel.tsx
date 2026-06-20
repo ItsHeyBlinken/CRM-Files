@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   acknowledgeQuoteContract,
-  fetchQuoteContractPdfBlob,
   fetchQuoteContractSigningContext,
+  getPublicQuoteContractUrl,
   type QuoteContractSigningContext,
 } from '../../services/quoteService'
 
@@ -19,10 +19,9 @@ const QuoteContractSignPanel: React.FC<QuoteContractSignPanelProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const viewStartedAtRef = useRef<number | null>(null)
-  const pdfUrlRef = useRef<string | null>(null)
+  const pdfUrl = getPublicQuoteContractUrl(token)
 
   const [context, setContext] = useState<QuoteContractSigningContext | null>(null)
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pdfReady, setPdfReady] = useState(false)
@@ -77,22 +76,13 @@ const QuoteContractSignPanel: React.FC<QuoteContractSignPanelProps> = ({
       setLoading(true)
       setError('')
       setPdfReady(false)
-      setPdfUrl(null)
       setViewSeconds(0)
       setScrolledToEnd(false)
       setConsentAccepted(false)
       viewStartedAtRef.current = null
 
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
-
       try {
-        const [signingContext, blob] = await Promise.all([
-          fetchQuoteContractSigningContext(token),
-          fetchQuoteContractPdfBlob(token),
-        ])
+        const signingContext = await fetchQuoteContractSigningContext(token)
 
         if (cancelled) {
           return
@@ -100,10 +90,6 @@ const QuoteContractSignPanel: React.FC<QuoteContractSignPanelProps> = ({
 
         setContext(signingContext)
         setLegalName(signingContext.suggestedLegalName)
-
-        const url = URL.createObjectURL(blob)
-        pdfUrlRef.current = url
-        setPdfUrl(url)
       } catch (err: unknown) {
         if (cancelled) {
           return
@@ -125,10 +111,6 @@ const QuoteContractSignPanel: React.FC<QuoteContractSignPanelProps> = ({
     return () => {
       cancelled = true
       detachScroll?.()
-      if (pdfUrlRef.current) {
-        URL.revokeObjectURL(pdfUrlRef.current)
-        pdfUrlRef.current = null
-      }
     }
   }, [token])
 
@@ -208,7 +190,7 @@ const QuoteContractSignPanel: React.FC<QuoteContractSignPanelProps> = ({
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
         <iframe
           ref={iframeRef}
-          src={pdfUrl ?? undefined}
+          src={pdfUrl}
           title={contractTitle}
           onLoad={handleIframeLoad}
           className="h-80 w-full bg-white"
