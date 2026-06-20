@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { createProject, fetchVendorProjects } from '../services/projectService'
 import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
+import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import type { Project } from '../types/portal'
 
 const VendorDashboard: React.FC = () => {
@@ -79,32 +80,11 @@ const VendorDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">PortalHub</h1>
-            <nav className="mt-1 flex gap-4 text-sm">
-              <span className="text-indigo-600 font-medium">Projects</span>
-              <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
-                Quotes
-              </Link>
-              <Link to="/dashboard/payments" className="text-gray-500 hover:text-indigo-600">
-                Payments
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <VendorDashboardHeader
+        active="projects"
+        userEmail={user?.email}
+        onLogout={() => logout()}
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

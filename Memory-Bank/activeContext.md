@@ -44,6 +44,7 @@
 | Client-agreement notices (quote → client status) | ✅ Built |
 | Vendor invoice CRUD (3a) | ✅ Built |
 | Vendor payment settings (3b) | ✅ Built |
+| Vendor calendar (derived availability) | ✅ Built |
 | Client card pay + P2P (3c) | ✅ Built |
 | Vendor onboarding wizard + gate | ✅ Built |
 | Dashboard vendor checklist | ✅ Built |
@@ -90,6 +91,13 @@
 - Deposit/final presets prefill invoice title, amount, and due date guidance for vendors
 - Client portal next action and payment labels now distinguish deposits from other invoices
 
+**Vendor calendar (built — no migration):**
+- Derived from existing project + quote event dates (no availability table yet)
+- Booked = non-cancelled projects with an event date
+- Tentative = sent/accepted quotes with an event date (until converted/booked)
+- Cancelled projects free their date; manual day blocking deferred to a future migration
+- Calendar page at `/dashboard/calendar`; quote create uses schedule-aware date picker
+
 **Key files:** `Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `VendorOnboarding.tsx`, `VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `p2pPaymentLinks.ts`
 
 ## Quote → Client Agreement Flow (Built)
@@ -132,6 +140,7 @@
 | `/dashboard/projects/:id` | VENDOR | Project detail + **edit overview** |
 | `/dashboard/quotes` | VENDOR | Quote list + create (optional contract) |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, convert to project |
+| `/dashboard/calendar` | VENDOR | Month/agenda view of booked + tentative events |
 | `/dashboard/payments` | VENDOR | Stripe Connect + P2P handles |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |

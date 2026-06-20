@@ -485,12 +485,15 @@ const VendorProjectDetail: React.FC = () => {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <div className="flex gap-4 text-sm">
+            <div className="flex flex-wrap gap-4 text-sm">
               <Link to="/dashboard" className="text-indigo-600 hover:text-indigo-500">
                 ← Projects
               </Link>
               <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
                 Quotes
+              </Link>
+              <Link to="/dashboard/calendar" className="text-gray-500 hover:text-indigo-600">
+                Calendar
               </Link>
               <Link to="/dashboard/payments" className="text-gray-500 hover:text-indigo-600">
                 Payments

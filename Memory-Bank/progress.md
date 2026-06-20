@@ -381,3 +381,12 @@
 - [x] Implemented guided invoice workflow on project detail: payment setup, deposit/final presets, payment summary
 - [x] Client portal payment labels and next action now distinguish deposits from generic invoices
 - [x] Added focused tests for payment summary logic (`server`) and deposit portal behavior (`client`)
+
+### Session: Vendor calendar views (June 2026)
+- [x] `GET /api/vendor/calendar` — aggregates booked projects + tentative quotes into calendar events + `busyDates`
+- [x] Derived availability rules: open = no scheduled project (non-cancelled) and no tentative quote on that date
+- [x] `/dashboard/calendar` — month/agenda view (react-big-calendar), upcoming list, click-through to project/quote
+- [x] Quote create form — `VendorEventDatePicker` highlights busy days + soft warning (react-calendar)
+- [x] Shared `VendorDashboardHeader` nav includes Calendar across vendor pages
+- [x] Unit tests: `server/src/utils/vendorCalendar.test.ts`
+- [ ] Future: manual day blocking (`009_vendor_blocked_dates` or similar)

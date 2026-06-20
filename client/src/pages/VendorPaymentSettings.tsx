@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import {
   fetchPaymentSettings,
   refreshStripeConnectStatus,
@@ -128,32 +129,13 @@ const VendorPaymentSettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <nav className="flex gap-4 text-sm">
-              <Link to="/dashboard" className="text-gray-500 hover:text-indigo-600">
-                Projects
-              </Link>
-              <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
-                Quotes
-              </Link>
-              <span className="text-indigo-600 font-medium">Payments</span>
-            </nav>
-            <h1 className="text-xl font-semibold text-gray-900 mt-1">Payment settings</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <VendorDashboardHeader
+        active="payments"
+        title="Payment settings"
+        maxWidthClass="max-w-3xl"
+        userEmail={user?.email}
+        onLogout={() => logout()}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}

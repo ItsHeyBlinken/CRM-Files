@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
+import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import VendorEventDatePicker from '../components/vendor/VendorEventDatePicker'
 import { createQuote, fetchVendorQuotes } from '../services/quoteService'
 import type { Quote, QuoteLineItemInput } from '../types/quote'
 
@@ -123,29 +125,11 @@ const VendorQuotes: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">PortalHub</h1>
-            <nav className="mt-1 flex gap-4 text-sm">
-              <Link to="/dashboard" className="text-gray-500 hover:text-indigo-600">
-                Projects
-              </Link>
-              <span className="text-indigo-600 font-medium">Quotes</span>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <VendorDashboardHeader
+        active="quotes"
+        userEmail={user?.email}
+        onLogout={() => logout()}
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -195,16 +179,11 @@ const VendorQuotes: React.FC = () => {
                 onChange={(e) => setCreateForm({ ...createForm, clientName: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               />
-              <div>
-                <label htmlFor="quote-event-date" className="block text-xs font-medium text-gray-700 mb-1">
-                  Event date (optional)
-                </label>
-                <input
+              <div className="sm:col-span-2">
+                <VendorEventDatePicker
                   id="quote-event-date"
-                  type="date"
                   value={createForm.eventDate}
-                  onChange={(e) => setCreateForm({ ...createForm, eventDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  onChange={(eventDate) => setCreateForm({ ...createForm, eventDate })}
                 />
               </div>
               <input

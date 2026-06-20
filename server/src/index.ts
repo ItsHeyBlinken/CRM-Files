@@ -48,6 +48,7 @@ import vendorProjectRoutes from './routes/vendorProjects'
 import vendorQuoteRoutes from './routes/vendorQuotes'
 import vendorPaymentSettingsRoutes from './routes/vendorPaymentSettings'
 import vendorOnboardingRoutes from './routes/vendorOnboarding'
+import vendorCalendarRoutes from './routes/vendorCalendar'
 import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
 import stripeWebhookRoutes from './routes/stripeWebhook'
@@ -247,6 +248,7 @@ function setupMiddleware() {
   app.use('/api/vendor/quotes', vendorQuoteRoutes)
   app.use('/api/vendor/payment-settings', vendorPaymentSettingsRoutes)
   app.use('/api/vendor/onboarding', vendorOnboardingRoutes)
+  app.use('/api/vendor/calendar', vendorCalendarRoutes)
   app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 

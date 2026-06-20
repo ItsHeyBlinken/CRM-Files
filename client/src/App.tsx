@@ -12,6 +12,7 @@ import VendorOnboarding from './pages/VendorOnboarding'
 import VendorProjectDetail from './pages/VendorProjectDetail'
 import VendorQuotes from './pages/VendorQuotes'
 import VendorQuoteDetail from './pages/VendorQuoteDetail'
+import VendorCalendar from './pages/VendorCalendar'
 import VendorPaymentSettings from './pages/VendorPaymentSettings'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
@@ -48,6 +49,7 @@ function App() {
             <Route path="projects/:id" element={<VendorProjectDetail />} />
             <Route path="quotes" element={<VendorQuotes />} />
             <Route path="quotes/:id" element={<VendorQuoteDetail />} />
+            <Route path="calendar" element={<VendorCalendar />} />
             <Route path="payments" element={<VendorPaymentSettings />} />
           </Route>
 

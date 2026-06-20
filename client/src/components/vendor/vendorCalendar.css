@@ -1,0 +1,35 @@
+.vendor-date-busy {
+  background-color: #fef3c7 !important;
+  color: #92400e;
+}
+
+.vendor-date-busy:enabled:hover,
+.vendor-date-busy:enabled:focus {
+  background-color: #fde68a !important;
+}
+
+.vendor-date-selected.vendor-date-busy {
+  background-color: #f59e0b !important;
+  color: #fff;
+}
+
+.vendor-calendar-event-project {
+  background-color: #e0e7ff !important;
+  border-color: #6366f1 !important;
+  color: #312e81 !important;
+}
+
+.vendor-calendar-event-tentative {
+  background-color: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  color: #92400e !important;
+}
+
+.vendor-big-calendar .rbc-toolbar button {
+  color: #374151;
+}
+
+.vendor-big-calendar .rbc-toolbar button.rbc-active {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
