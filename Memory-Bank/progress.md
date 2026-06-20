@@ -2,11 +2,17 @@
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
 
-## Handoff — June 20, 2026
+## Handoff — June 20, 2026 (end of session)
 
-**User stepped away.** Code is ahead of database in places. **Must-do on return:** run `008` + `009` in pgAdmin, then smoke-test dashboard/notifications/payment setup. SmoothGig rebrand is in client + Memory Bank; no git commit yet.
+**User stepped away after committing US date format.** Session also shipped quote-contract reliability fixes, CSP iframe fix, and mobile quote layout (may need separate commit/deploy if not yet pushed).
 
-**Uncommitted work includes:** vendor calendar, command center, notifications (`009`), email service, pipeline steppers, vendor settings/branding, SmoothGig rebrand + `AppName` wordmark, project payment settings (`008`).
+**Production checklist before E2E:**
+- Deploy latest client + server to Coolify
+- Persistent volume at `/app/server/uploads`
+- Re-upload quote contracts lost to ephemeral storage
+- Confirm migrations `002`–`007` if any quote/contract flow fails (`008` + `009` applied)
+
+**Next session:** Deploy smoke → E2E vendor path → E2E payments → Stripe Connect OAuth decision.
 
 ## What Works
 
@@ -426,11 +432,18 @@
 - [x] `formatUsDate()` + `formatUsDateTime()` in `calendarHelpers.ts`
 - [x] Replaced all client `toLocaleDateString` usage — quotes, portal, projects, calendar, notifications
 - [x] `formatEventDate()` / `formatCalendarDate()` use shared MM-DD-YYYY formatter
+- [x] User committed: "Implement app-wide US date format"
 
-### Session: Quote US date format (June 20, 2026)
-- [x] `formatUsDateKey()` — converts `YYYY-MM-DD` → `MM-DD-YYYY`
-- [x] `QuoteDocument.tsx` event date display
-- [x] `VendorQuotes.tsx` list snippet
+### Session: Quote reliability + production fixes (June 20, 2026)
+- [x] Quote contract PDF attach fix (FormData Content-Type, mime filter, rollback on failure)
+- [x] `POST /api/vendor/quotes/:id/contract` re-upload endpoint + vendor UI
+- [x] CSP / iframe fix — API URLs instead of blob URLs; helmet `frameSrc`
+- [x] Mobile-responsive `QuoteDocument` line items
+- [x] Documented Coolify volume requirement for `/app/server/uploads`
+- [ ] Deploy to production + verify PDF survives redeploy
+
+### Session: Quote US date format (June 20, 2026) — superseded by app-wide pass
+- [x] Initial `formatUsDateKey()` in quote document + vendor quotes list
 
 ### Session: Product name — Gigly rejected (June 2026)
 - [x] Considered **Gigly** — rejected because gigly.com is taken
@@ -438,3 +451,30 @@
 
 ### Session: Product rebrand to Gigly (June 2026) — superseded
 - ~~Official product name: Gigly~~ — reverted (domain unavailable)
+
+---
+
+## End of session — June 20, 2026
+
+**Stopped here.** User committed US date format. Quote-contract and CSP fixes are in codebase; confirm deploy + volume before production E2E.
+
+### Shipped this session (code)
+- App-wide **MM-DD-YYYY** date display (`formatUsDate`, `formatUsDateTime`)
+- Quote contract upload reliability + re-upload API/UI
+- CSP-safe contract PDF iframes
+- Mobile quote document layout
+
+### User actions before next session
+- [ ] Deploy latest to production (client + server)
+- [ ] Confirm uploads volume mounted at `/app/server/uploads`
+- [ ] Re-upload any missing quote contract PDFs
+- [ ] Confirm migrations `002`–`007` if needed
+
+### Next session priorities
+1. Production smoke (dates, quote PDF iframe, contract after redeploy)
+2. E2E — new vendor: quote + contract → accept → sign → convert → invite → portal
+3. E2E — payments: deposit invoice, P2P, optional Stripe
+4. Stripe Connect OAuth vs Express — decide
+5. Register smoothgig.com + favicon/logo
+6. Phase 3e vendor subscription (pre-launch)
+7. Calendar personal entries — migration `010` (deferred)

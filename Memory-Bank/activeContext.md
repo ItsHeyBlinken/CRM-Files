@@ -24,44 +24,31 @@
 
 ## Current Work Focus
 
-**Session active (June 2026).** User returned after handoff: **migrations `008` + `009` applied** and **changes committed**. About to run **E2E test as a new vendor**.
+**Session ended (June 20, 2026).** User committed **app-wide US date format** (`MM-DD-YYYY`). Prior session work (rebrand, polish, migrations `008`/`009`, quote-contract fixes) is deployed or ready to deploy.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — notes/reminders on days (payments due, off-book obligations, unavailable blocks). See **Planned Features** below.
 
 ## When You Return — Start Here
 
-1. **Run pending SQL in pgAdmin** (blocks several features until applied):
-   - **`008_project_payment_settings.sql`** — project payment setup, invoice kinds, deposit/final presets
-   - **`009_vendor_notifications.sql`** — notification bell + history
-   - Confirm **`002`–`007`** if quote/contract/onboarding flows fail (see Database Status table)
-2. **Smoke-test the app** after SQL:
-   - Login/register show **Smooth** + **Gig** wordmark
-   - `/dashboard` — command center loads; notification bell works (needs `009`)
-   - `/dashboard/calendar` — booked + tentative dates
-   - `/dashboard/settings` — vendor logo/colors
-   - Create quote → optional contract → client accept/sign path
-3. **Optional dev config:**
-   - SMTP env vars for transactional email (`SMTP_HOST`, `SMTP_FROM`, etc.)
-   - Stripe test keys + webhook for card pay
-4. **Launch prep (non-code):**
-   - Register **smoothgig.com**
-   - Quick trademark search in target market
-   - Favicon + logo asset for SmoothGig (still using Vite default icon)
-5. **Git:** Stage branding + polish files; user commits when ready (suggested message below)
+1. **Deploy latest client + server** to production (includes US date format, quote contract multipart fix, CSP iframe fix, mobile quote layout).
+2. **Production uploads volume** — confirm Coolify persistent volume mounted at **`/app/server/uploads`**; re-upload any quote contracts that 404’d before the volume was set.
+3. **Confirm migrations `002`–`007`** in pgAdmin if quote/contract/onboarding flows ever fail (see Database Status table). **`008` + `009` are applied.**
+4. **E2E test — full vendor path:**
+   - Register → onboarding → quote **with contract PDF** → client link → view/sign PDF → convert → invite → portal
+   - Verify contract PDF survives **redeploy** (volume test)
+5. **E2E test — payments path:** Project payment setup → deposit invoice → client P2P + optional Stripe card pay
+6. **Verify notifications + email** (needs `009` + optional SMTP env vars)
+7. **Launch prep (non-code):** Register **smoothgig.com**, favicon/logo, trademark check
 
-**Suggested commit message (when ready):**
-> Rebrand to SmoothGig with split wordmark; vendor dashboard polish, calendar, notifications, email, pipeline, branding settings.
+## Next Session — Priority Order
 
-## Next Session — Priority Order (after SQL)
-
-1. **E2E test — full vendor path:** Register → onboarding → quote with contract → client accept/sign → convert → invite → portal
-2. **E2E test — payments path:** Project payment setup (`008`) → deposit invoice → client P2P + optional Stripe card pay
-3. **Verify notifications:** Accept quote, client join, payment claimed, Stripe paid → bell + toasts
-4. **Verify email:** Quote send, invite with `sendEmail: true`, invoice send (requires SMTP)
-5. **Stripe Connect UX:** OAuth “link existing account” vs Express-only — decide and implement
-6. **Polish:** Pre-fill business name from register `company` in onboarding step 1; tune `AppName` styling if desired
-7. **Phase 3e:** Platform vendor subscription billing (pre-launch)
-8. **Future:** Vendor calendar personal entries — migration `010` (deferred; see Planned Features)
+1. **Production smoke after deploy** — quote PDF iframe loads (no CSP blob error); event dates show `MM-DD-YYYY` everywhere
+2. **E2E — new vendor full path** (quote + contract + accept + sign + convert + invite + portal)
+3. **E2E — payments path** (deposit invoice, P2P claim, optional Stripe Checkout)
+4. **Stripe Connect UX** — OAuth “link existing account” vs Express-only — decide and implement
+5. **Polish:** Pre-fill business name from register `company` in onboarding step 1
+6. **Phase 3e:** Platform vendor subscription billing (pre-launch)
+7. **Future:** Vendor calendar personal entries — migration `010` (deferred)
 
 ## MVP Status
 
@@ -93,27 +80,12 @@
 | Dashboard vendor checklist | ✅ Built |
 | Invoice send guard | ✅ Built |
 | Event-neutral UI copy (`eventDate`, `clientDisplayName`) | ✅ Done |
+| **US date display (`MM-DD-YYYY` app-wide)** | ✅ Built (June 20, 2026) |
+| Quote contract upload + re-upload API | ✅ Built |
+| Quote contract iframe (CSP-safe API URLs) | ✅ Built — redeploy required |
+| Mobile-responsive quote document layout | ✅ Built |
 | Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
 | Monetization (vendor → platform subscription) | 📋 Phase 3e — see `monetization.md` |
-
-## Next Session — Priority Order
-
-*(Superseded by **When You Return — Start Here** above; kept for roadmap reference.)*
-
-1. **Run pending SQL in pgAdmin** (numeric order — see `database/README.md`):
-   - `002_schema_quotes_addition.sql` (confirm)
-   - `003_schema_contract_ack_enhancement.sql`
-   - `005_schema_vendor_onboarding.sql`
-   - `006_schema_quote_contract_addition.sql`
-   - `007_schema_quote_contract_signing.sql`
-   - **Full rebuild:** `001` → `007`, then `reset/seed_portalhub_dev.sql`
-2. **E2E test — full vendor path:**
-   - Register → onboarding → create quote **with contract** → client accepts → client signs contract on quote link → convert to project → invite → portal contract/deposit/invoice
-3. **E2E test — payments path:** onboarding → project → invoice → client P2P + optional Stripe card pay
-4. **Stripe dev config** (optional): test keys + webhook for card pay
-5. **Stripe Connect UX:** “Link existing Stripe account” (OAuth Standard) as primary; Express onboarding as fallback for vendors without Stripe
-6. **Polish:** Pre-fill business name from register `company` in onboarding step 1
-7. **Phase 3e:** Platform vendor subscription billing (pre-launch)
 
 ## Payment Architecture (Agreed)
 
@@ -129,7 +101,7 @@
 - Vendor creates/sends invoices on project detail
 - Client pays via card (Checkout) or P2P; “I've sent payment” → vendor marks paid; Home redirect + polling
 
-**Guided invoice workflow (built in code, pending SQL `008`):**
+**Guided invoice workflow (built — SQL `008` applied):**
 - Project-level payment setup stores project total + payment structure (`pay_in_full`, `deposit_and_balance`, `split_payments`)
 - Vendors can save deposit defaults and due-day guidance on project detail
 - Invoice drafts now support `invoiceKind` (`deposit`, `payment`, `final`, `custom`)
@@ -182,9 +154,9 @@
 | `002_schema_quotes_addition.sql` | Quotes + line items | ⬜ Confirm |
 | `003_schema_contract_ack_enhancement.sql` | Portal contract audit fields | ⬜ Confirm |
 | `004_schema_payments_addition.sql` | Payment settings + invoice fields | ✅ |
-| `005_schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
-| `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
-| `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
+| `005_schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Confirm |
+| `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Confirm |
+| `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Confirm |
 | `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ✅ |
 | `009_vendor_notifications.sql` | In-app vendor notifications | ✅ |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
@@ -228,7 +200,10 @@
 ## Active Technical Decisions
 - Monorepo: `client/`, `server/`, `database/`
 - File storage: `uploads/contracts/{projectId}/`, `uploads/deliverables/{projectId}/`, `uploads/quote-contracts/{quoteId}/`
+- **Production:** Mount persistent volume at `/app/server/uploads` (Coolify) — container disk is ephemeral without it
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
+- Contract PDF iframes use **same-origin API URLs** (not blob URLs) — helmet `frameSrc: ['self']`
+- **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
 - **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `010`)
@@ -242,11 +217,24 @@
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `010` |
 
-## Session Log (June 20, 2026 — US date format app-wide)
-- [x] Centralized US date display in `formatUsDate()` / `formatUsDateTime()` (`calendarHelpers.ts`)
-- [x] All user-facing dates now **MM-DD-YYYY** (quotes, projects, portal, calendar lists, invoices, contracts, notifications)
-- [x] `formatEventDate()` and `formatCalendarDate()` delegate to shared formatter
-- [x] API/storage still uses `YYYY-MM-DD` date keys; only display layer changed
+## Session Log (June 20, 2026 — end of session)
+
+### Quote / contract reliability
+- [x] Fixed quote contract PDF not attaching — strip broken `Content-Type` on FormData; `api.ts` interceptor; relaxed PDF mime; rollback quote if attach fails
+- [x] `POST /api/vendor/quotes/:id/contract` — attach/replace contract after create
+- [x] Re-upload UI on vendor quote detail when file missing on disk
+- [x] CSP fix — contract iframes use API URLs; helmet `frameSrc` / `objectSrc`
+- [x] Mobile quote document — stacked line items on small screens
+
+### US date format (committed)
+- [x] `formatUsDate()` / `formatUsDateTime()` in `calendarHelpers.ts`
+- [x] All user-facing dates **MM-DD-YYYY** (quotes, portal, projects, calendar, invoices, notifications)
+- [x] `formatEventDate()` / `formatCalendarDate()` delegate to shared formatter
+- [x] API/storage unchanged (`YYYY-MM-DD`)
+
+### Prior this session (already committed)
+- [x] SmoothGig rebrand + vendor polish (dashboard, notifications, email, pipeline, settings)
+- [x] Migrations `008` + `009` applied in pgAdmin
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?

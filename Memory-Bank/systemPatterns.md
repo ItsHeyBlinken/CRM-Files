@@ -51,7 +51,7 @@
 - **Soft deletes**: Optional `deleted_at` for data retention
 
 ### Database migrations (manual, pgAdmin)
-- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `007_*` (next: **`008`**)
+- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `009_*` (next: **`010`**)
 - **Format:** `NNN_short_descriptive_name.sql` — zero-padded 3-digit prefix + snake_case suffix
 - **Order:** Run in numeric order; each file header states prerequisite migration(s)
 - **Reset/seed:** Unnumbered scripts in `database/reset/` (data only, not schema)
@@ -70,7 +70,9 @@
 ### File Handling
 - **Contracts**: PDF upload, stored path on `contracts` row
 - **Deliverables**: Multer upload, client download via authenticated route
-- **MVP storage**: Local filesystem or existing static serve pattern
+- **Quote contracts**: PDF at `uploads/quote-contracts/{quoteId}/`; public download via quote token
+- **MVP storage**: Local filesystem; **production requires persistent volume** at `/app/server/uploads`
+- **PDF preview**: Iframes load same-origin API file URLs (not blob URLs) for CSP compatibility
 
 ## Design Patterns in Use
 
@@ -85,6 +87,7 @@
 2. **AuthContext**: User, role, login/logout, post-login redirect
 3. **Protected routes**: Role guard + project scope where needed
 4. **Vendor branding context**: Portal reads vendor profile for theme/logo; platform name uses `AppName` wordmark (**Smooth** + **Gig**)
+5. **Date display**: All user-visible dates use `formatUsDate()` / `formatUsDateTime()` from `calendarHelpers.ts` (**MM-DD-YYYY**); API and DB remain **YYYY-MM-DD** date keys
 
 ## Core Entities (New Model)
 
@@ -148,6 +151,6 @@
 - 401 unauthenticated, 403 wrong role or no project access, 404 not found
 - Consistent JSON error body
 
-## Real-time (Post-MVP)
-- Socket.io for vendor notifications (client acknowledged contract, etc.)
-- Not required for MVP loop
+## Real-time
+- Socket.io pushes vendor notifications (quote accepted, invite accepted, payment claimed, etc.) to bell + toasts
+- Client portal uses polling on Payments tab after payment actions (no socket required for MVP)

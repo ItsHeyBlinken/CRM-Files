@@ -87,7 +87,8 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 | Deliverables | `server/src/models/Deliverable.ts`, `client/src/services/deliverableService.ts` |
 | Client portal | `server/src/routes/portal.ts`, `client/src/pages/ClientPortal.tsx` |
 | Vendor UI | `client/src/pages/VendorProjectDetail.tsx`, `VendorQuoteDetail.tsx` |
-| Uploads | `server/src/middleware/projectUpload.ts`, `server/uploads/` |
+| Uploads | `server/src/middleware/projectUpload.ts`, `server/uploads/` — **prod:** mount volume at `/app/server/uploads` |
+| Date display (client) | `client/src/utils/calendarHelpers.ts` — `formatUsDate()`, `formatUsDateTime()` (MM-DD-YYYY) |
 
 **Test client invite flow (pgAdmin):** Seed invite for `client@test.com` is already accepted. To test `/invite/:token`, create a new pending invite:
 
