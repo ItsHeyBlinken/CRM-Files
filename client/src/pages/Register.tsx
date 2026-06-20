@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { APP_NAME, APP_TAGLINE } from '../constants/branding'
+import AppName from '../components/branding/AppName'
+import { APP_TAGLINE } from '../constants/branding'
 import { getHomePathForRole } from '../utils/roleRedirect'
 
 const Register: React.FC = () => {
@@ -88,7 +89,8 @@ const Register: React.FC = () => {
             Create your vendor account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {APP_NAME} — {APP_TAGLINE}
+            <AppName className="font-semibold" accentClassName="font-semibold text-indigo-600" /> —{' '}
+            {APP_TAGLINE}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

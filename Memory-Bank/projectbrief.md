@@ -1,6 +1,6 @@
-# Project Brief: PortalHub (placeholder)
+# Project Brief: SmoothGig
 
-> **Product name:** **TBD** — working code name **PortalHub** until launch name + `.com` are confirmed. *(Gigly considered June 2026 — rejected, domain taken.)*
+> **Product name:** **SmoothGig** — domain **smoothgig.com** (confirmed June 2026). UI renders as **Smooth** + **Gig** wordmark. *(Gigly considered earlier — rejected, domain taken.)*
 
 ## Project Overview
 A two-sided web application for event freelancers and vendors (photographers, florists, DJs, planners, etc.) who **book gigs**. Each vendor gets a dashboard optimized to **streamline their business processes** — from inquiry and quoting through project delivery. Each vendor's clients get a **deliberately simple** branded portal: only what they need to see and do, with no clutter.

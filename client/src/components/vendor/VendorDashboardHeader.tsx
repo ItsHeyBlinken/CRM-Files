@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import AppName from '../branding/AppName'
 import { APP_NAME } from '../../constants/branding'
 import { useVendorBranding } from './VendorBrandingProvider'
 import VendorNotificationBell from './VendorNotificationBell'
@@ -35,7 +36,9 @@ const VendorDashboardHeader: React.FC<VendorDashboardHeaderProps> = ({
   maxWidthClass = 'max-w-5xl',
 }) => {
   const { profile, accentColor } = useVendorBranding()
-  const displayTitle = title ?? profile?.businessName ?? APP_NAME
+  const businessTitle = title ?? profile?.businessName
+  const showPlatformWordmark = !businessTitle
+  const displayTitle = businessTitle ?? APP_NAME
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -57,7 +60,13 @@ const VendorDashboardHeader: React.FC<VendorDashboardHeaderProps> = ({
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-xl font-semibold text-gray-900 truncate">{displayTitle}</h1>
+              <h1 className="text-xl font-semibold text-gray-900 truncate">
+                {showPlatformWordmark ? (
+                  <AppName accentColor={accentColor} />
+                ) : (
+                  displayTitle
+                )}
+              </h1>
               {profile?.tagline && (
                 <p className="text-xs text-gray-500 truncate">{profile.tagline}</p>
               )}

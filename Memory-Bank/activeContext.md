@@ -1,7 +1,7 @@
-# Active Context: PortalHub (placeholder)
+# Active Context: SmoothGig
 
 ## Product Name
-**PortalHub** — temporary working name in code and UI until a launch name is chosen with an available domain. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
+**SmoothGig** — official product name (`smoothgig.com`). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
 
 ## End Goal (Product North Star)
 

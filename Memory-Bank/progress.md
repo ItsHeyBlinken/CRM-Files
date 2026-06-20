@@ -399,6 +399,13 @@
 - [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
 - [ ] User runs `008` + `009` SQL in pgAdmin
 
+### Session: Product rebrand to SmoothGig (June 2026)
+- [x] Official product name: **SmoothGig** (`smoothgig.com`)
+- [x] `client/src/constants/branding.ts` — `APP_NAME`, `APP_NAME_PARTS`, tagline, domain
+- [x] `client/src/components/branding/AppName.tsx` — wordmark split **Smooth** + **Gig** (accent on second half)
+- [x] Login, Register, onboarding, admin Layout, vendor header fallback use `AppName`
+- [x] `index.html` meta/title; server startup log
+
 ### Session: Product name — Gigly rejected (June 2026)
 - [x] Considered **Gigly** — rejected because gigly.com is taken
 - [x] Reverted UI/Memory Bank to **PortalHub** placeholder; `client/src/constants/branding.ts` is the single swap point for the next name

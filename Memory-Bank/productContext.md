@@ -1,6 +1,6 @@
-# Product Context: PortalHub (placeholder)
+# Product Context: SmoothGig
 
-> **Platform name:** **TBD** — code uses **PortalHub** until final branding.
+> **Platform name:** **SmoothGig** — `client/src/constants/branding.ts` + `AppName` component for split wordmark.
 
 ## End Goal
 
