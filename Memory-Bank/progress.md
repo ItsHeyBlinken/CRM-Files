@@ -401,7 +401,8 @@
 - [x] User applied migrations `008` + `009` and committed prior polish work
 - [x] Confirmed current calendar is **read-only** (derived from projects/quotes only)
 - [x] User wants **personal calendar entries** (payments due, off-book obligations, notes) — documented as **Phase 2 / migration `010`**, not MVP blocker
-- [ ] User E2E test: new vendor full path
+- [x] **Fix:** Quote contract PDF not attaching — removed broken `Content-Type: multipart/form-data` header (missing boundary); FormData interceptor in `api.ts`; relaxed PDF mime filter; rollback quote if attach fails
+- [ ] User E2E test: new vendor full path (re-create quote with contract to verify fix)
 
 ### Session: Vendor product polish priorities 1–5 (June 2026)
 - [x] P1 — Vendor command center: `GET /api/vendor/dashboard`, attention queue, stats, upcoming events, refreshed home UI

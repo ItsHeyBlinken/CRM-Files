@@ -378,6 +378,11 @@ export class QuoteModel {
     return this.findByToken(token)
   }
 
+  static async deleteForVendor(id: number, vendorId: number): Promise<void> {
+    const pool = getPool()
+    await pool.query(`DELETE FROM quotes WHERE id = $1 AND vendor_id = $2`, [id, vendorId])
+  }
+
   static async convertToProject(
     quoteId: number,
     vendorId: number

@@ -6,7 +6,11 @@ const pdfFilter = (
   cb: multer.FileFilterCallback
 ) => {
   const ext = file.originalname.toLowerCase().endsWith('.pdf')
-  if (ext && file.mimetype === 'application/pdf') {
+  const mimeOk =
+    file.mimetype === 'application/pdf' ||
+    file.mimetype === 'application/x-pdf' ||
+    file.mimetype === 'application/octet-stream'
+  if (ext && mimeOk) {
     cb(null, true)
     return
   }

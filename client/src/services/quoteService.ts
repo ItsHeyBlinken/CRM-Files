@@ -32,9 +32,7 @@ export async function createQuote(input: CreateQuoteInput): Promise<QuoteDetailR
     formData.append('contractTitle', input.contractTitle?.trim() || 'Service agreement')
     formData.append('contractFile', input.contractFile)
 
-    const response = await api.post('/vendor/quotes', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await api.post('/vendor/quotes', formData)
     return response.data
   }
 

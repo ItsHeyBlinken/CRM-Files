@@ -128,26 +128,35 @@ router.post(
 
       const parsedExpiresInDays = parseOptionalNumber(expiresInDays)
 
-      const quote = await Quote.create(Number(req.user.id), {
-        title: title.trim(),
-        clientEmail: clientEmail.trim(),
-        clientName,
-        eventDate,
-        location,
-        notes,
-        currency,
-        ...(parsedExpiresInDays !== undefined ? { expiresInDays: parsedExpiresInDays } : {}),
-        lineItems,
-      })
+      let quote: Awaited<ReturnType<typeof Quote.create>> | undefined
 
-      if (req.file) {
-        await QuoteContract.attach(quote.id, Number(req.user.id), {
-          title: contractTitle.trim(),
-          buffer: req.file.buffer,
-          originalFileName: req.file.originalname,
-          fileSizeBytes: req.file.size,
-          mimeType: req.file.mimetype,
+      try {
+        quote = await Quote.create(Number(req.user.id), {
+          title: title.trim(),
+          clientEmail: clientEmail.trim(),
+          clientName,
+          eventDate,
+          location,
+          notes,
+          currency,
+          ...(parsedExpiresInDays !== undefined ? { expiresInDays: parsedExpiresInDays } : {}),
+          lineItems,
         })
+
+        if (req.file) {
+          await QuoteContract.attach(quote.id, Number(req.user.id), {
+            title: contractTitle.trim(),
+            buffer: req.file.buffer,
+            originalFileName: req.file.originalname,
+            fileSizeBytes: req.file.size,
+            mimeType: req.file.mimetype,
+          })
+        }
+      } catch (attachError) {
+        if (quote?.id) {
+          await Quote.deleteForVendor(quote.id, Number(req.user.id))
+        }
+        throw attachError
       }
 
       const fullQuote = await Quote.findByIdForVendor(quote.id, Number(req.user.id))
@@ -160,6 +169,14 @@ router.post(
       logger.error('Create quote error:', error)
       if (error instanceof Error && error.message === 'LINE_ITEMS_REQUIRED') {
         res.status(400).json({ error: 'At least one line item is required' })
+        return
+      }
+      if (error instanceof Error && error.message === 'QUOTE_CONTRACT_ALREADY_EXISTS') {
+        res.status(409).json({ error: 'This quote already has a contract attached' })
+        return
+      }
+      if (error instanceof Error && error.message === 'QUOTE_NOT_FOUND') {
+        res.status(404).json({ error: 'Quote not found' })
         return
       }
       res.status(500).json({ error: 'Failed to create quote' })
