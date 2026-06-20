@@ -78,4 +78,7 @@ See `archive/legacy-crm/README.md` for details.
 
 ## Upcoming
 
-Milestone editing from project detail; Stripe Billing for vendor subscriptions (Phase 3e); transactional email provider.
+- **`010_vendor_calendar_entries.sql`** (planned) — vendor-created personal calendar entries: notes, reminders, off-book obligations, optional unavailable blocks; CRUD from `/dashboard/calendar`
+- Milestone editing from project detail
+- Stripe Billing for vendor subscriptions (Phase 3e)
+- Transactional email provider (SMTP env already supported in code)

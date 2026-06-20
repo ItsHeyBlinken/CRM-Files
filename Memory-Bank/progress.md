@@ -395,7 +395,13 @@
 - [x] Quote create form — `VendorEventDatePicker` highlights busy days + soft warning (react-calendar)
 - [x] Shared `VendorDashboardHeader` nav includes Calendar across vendor pages
 - [x] Unit tests: `server/src/utils/vendorCalendar.test.ts`
-- [ ] Future: manual day blocking (`010_vendor_blocked_dates` or similar)
+- [ ] **Later:** Vendor calendar personal entries — notes/reminders/blocks on days (`010_vendor_calendar_entries.sql`; see `activeContext.md`)
+
+### Session: E2E prep + calendar roadmap (June 2026)
+- [x] User applied migrations `008` + `009` and committed prior polish work
+- [x] Confirmed current calendar is **read-only** (derived from projects/quotes only)
+- [x] User wants **personal calendar entries** (payments due, off-book obligations, notes) — documented as **Phase 2 / migration `010`**, not MVP blocker
+- [ ] User E2E test: new vendor full path
 
 ### Session: Vendor product polish priorities 1–5 (June 2026)
 - [x] P1 — Vendor command center: `GET /api/vendor/dashboard`, attention queue, stats, upcoming events, refreshed home UI
@@ -403,7 +409,7 @@
 - [x] P3 — Transactional email: nodemailer service; send quote / invite / invoice when SMTP configured; UI send buttons
 - [x] P4 — Pipeline steppers on quote detail and project detail
 - [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
-- [ ] User runs `008` + `009` SQL in pgAdmin
+- [x] User ran `008` + `009` SQL in pgAdmin
 
 ### Session: Product rebrand to SmoothGig (June 20, 2026)
 - [x] Evaluated **Gigly** — rejected (gigly.com taken); user chose **SmoothGig** (`smoothgig.com` available)
@@ -412,8 +418,8 @@
 - [x] Login, Register, onboarding, admin Layout, vendor header fallback use `AppName`
 - [x] `index.html` meta/title; server startup log
 - [x] Memory Bank updated for handoff
-- [ ] User: register domain, favicon/logo, git commit
-- [ ] User: run SQL `008` + `009` in pgAdmin (from prior sessions — still pending)
+- [x] User committed rebrand + polish work
+- [ ] User: register domain, favicon/logo
 
 ### Session: Product name — Gigly rejected (June 2026)
 - [x] Considered **Gigly** — rejected because gigly.com is taken

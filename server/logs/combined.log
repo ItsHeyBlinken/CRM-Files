@@ -699,3 +699,6 @@
 {"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 11:54:25"}
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 11:54:25"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 11:54:25"}
+{"email":"vendor2@test.com","firstName":"Vendor","lastName":"Two","level":"info","message":"Attempting to create user:","service":"crm-platform","timestamp":"2026-06-20 12:35:28"}
+{"email":"vendor2@test.com","id":"14","level":"info","message":"User created successfully:","service":"crm-platform","timestamp":"2026-06-20 12:35:28"}
+{"level":"warn","message":"Transactional email skipped — SMTP_HOST or SMTP_FROM not configured","service":"crm-platform","timestamp":"2026-06-20 12:39:24"}

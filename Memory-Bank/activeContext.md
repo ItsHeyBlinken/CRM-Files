@@ -24,15 +24,9 @@
 
 ## Current Work Focus
 
-**Session paused (June 20, 2026).** User stepping away after confirming **SmoothGig** as the launch name and applying the split wordmark rebrand. Prior sessions shipped vendor calendar, command-center dashboard, notifications, transactional email, pipeline steppers, and vendor branding settings — all in code, **not yet committed** (user runs git manually).
+**Session active (June 2026).** User returned after handoff: **migrations `008` + `009` applied** and **changes committed**. About to run **E2E test as a new vendor**.
 
-**This session completed:**
-- Evaluated **Gigly** → rejected (domain taken)
-- Confirmed **SmoothGig** + `smoothgig.com`
-- Rebrand: constants, `AppName` wordmark, login/register/onboarding/admin/vendor header, `index.html`, server log
-- Memory Bank updated for SmoothGig
-
-**No git commit this session.**
+**Deferred for later (user confirmed):** Vendor calendar **personal entries** — notes/reminders on days (payments due, off-book obligations, unavailable blocks). See **Planned Features** below.
 
 ## When You Return — Start Here
 
@@ -67,7 +61,7 @@
 5. **Stripe Connect UX:** OAuth “link existing account” vs Express-only — decide and implement
 6. **Polish:** Pre-fill business name from register `company` in onboarding step 1; tune `AppName` styling if desired
 7. **Phase 3e:** Platform vendor subscription billing (pre-launch)
-8. **Future:** Manual calendar day blocking — migration `010` (deferred)
+8. **Future:** Vendor calendar personal entries — migration `010` (deferred; see Planned Features)
 
 ## MVP Status
 
@@ -142,12 +136,20 @@
 - Deposit/final presets prefill invoice title, amount, and due date guidance for vendors
 - Client portal next action and payment labels now distinguish deposits from other invoices
 
-**Vendor calendar (built — no migration):**
-- Derived from existing project + quote event dates (no availability table yet)
+**Vendor calendar (Phase 1 — built, read-only):**
+- Derived from existing project + quote event dates (no personal-entry table yet)
 - Booked = non-cancelled projects with an event date
 - Tentative = sent/accepted quotes with an event date (until converted/booked)
-- Cancelled projects free their date; manual day blocking deferred to a future migration
+- Cancelled projects free their date
 - Calendar page at `/dashboard/calendar`; quote create uses schedule-aware date picker
+- Click event → project/quote detail; **no add/edit on empty days**
+
+**Vendor calendar (Phase 2 — planned, not built):**
+- Personal calendar entries vendors create/edit/delete themselves
+- Use cases: payment due reminders, off-book gigs/obligations, travel/prep, “unavailable” blocks
+- Likely migration **`010_vendor_calendar_entries.sql`** + CRUD API + day-click UI on `/dashboard/calendar`
+- Display alongside booked/tentative events (distinct visual style); optional: mark day busy for quote date picker
+- **Not in scope for current E2E / MVP launch** — build after core vendor path is validated
 
 **Vendor product polish (priorities 1–5 — built):**
 - Command center home: attention queue, stats, upcoming events, quick actions
@@ -183,8 +185,8 @@
 | `005_schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
 | `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
 | `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
-| `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ⬜ Run in pgAdmin |
-| `009_vendor_notifications.sql` | In-app vendor notifications | ⬜ Run in pgAdmin |
+| `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ✅ |
+| `009_vendor_notifications.sql` | In-app vendor notifications | ✅ |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 | `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
 | `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
@@ -230,6 +232,15 @@
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
 - **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `010`)
+
+## Planned Features (Post-MVP / Later)
+
+| Feature | Why | Target |
+|---------|-----|--------|
+| **Vendor calendar personal entries** | Ease of use — vendors need one place for gigs *and* personal reminders (payments due, off-book work, blocked days) | Migration `010` + calendar CRUD UI |
+| Stripe Connect OAuth | Link existing Stripe account | TBD |
+| Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
+| Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `010` |
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?
