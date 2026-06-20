@@ -1,6 +1,6 @@
-# Product Context: Gigly
+# Product Context: PortalHub (placeholder)
 
-> **Platform name:** **Gigly** — book gigs, quote clients, run the client portal.
+> **Platform name:** **TBD** — code uses **PortalHub** until final branding.
 
 ## End Goal
 
@@ -117,10 +117,10 @@ Tools like **HoneyBook**, **17hats**, **Tripleseat**, **Dubsado**, and **Aisle P
 
 **Research source:** `competitivePainPoints.md` (synthesis) and repo-root pain points report.
 
-### Gigly differentiation
+### Platform differentiation
 **Win on two fronts:** (1) **vendor workflow** — one streamlined path from lead to delivery; (2) **client UX** — the clearest, easiest portal in the category.
 
-| Competitor weakness | Gigly response |
+| Competitor weakness | Our response |
 |--------------------|-------------------|
 | Email / spam / missed messages | Link-first flows (`/invite`, `/quote`); portal as source of truth; transactional email post-MVP |
 | Vendor tools scattered / too many apps | Unified vendor dashboard: quote → project → contract → invoice → files |

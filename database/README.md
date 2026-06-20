@@ -1,4 +1,4 @@
-# Gigly Database
+# PortalHub Database
 
 ## Active schema (run in order)
 

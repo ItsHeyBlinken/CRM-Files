@@ -1,7 +1,7 @@
-# Active Context: Gigly
+# Active Context: PortalHub (placeholder)
 
 ## Product Name
-**Gigly** — platform for event vendors to book gigs: quote → contract → deposit → deliver. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app; **Gigly** is the product name on login, register, and default header fallback.
+**PortalHub** — temporary working name in code and UI until a launch name is chosen with an available domain. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
 
 ## End Goal (Product North Star)
 
@@ -56,7 +56,7 @@
 | Invoice send guard | ✅ Built |
 | Event-neutral UI copy (`eventDate`, `clientDisplayName`) | ✅ Done |
 | Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
-| Monetization (vendor → Gigly subscription) | 📋 Phase 3e — see `monetization.md` |
+| Monetization (vendor → platform subscription) | 📋 Phase 3e — see `monetization.md` |
 
 ## Next Session — Priority Order
 
@@ -73,7 +73,7 @@
 4. **Stripe dev config** (optional): test keys + webhook for card pay
 5. **Stripe Connect UX:** “Link existing Stripe account” (OAuth Standard) as primary; Express onboarding as fallback for vendors without Stripe
 6. **Polish:** Pre-fill business name from register `company` in onboarding step 1
-7. **Phase 3e:** Gigly vendor subscription billing (pre-launch)
+7. **Phase 3e:** Platform vendor subscription billing (pre-launch)
 
 ## Payment Architecture (Agreed)
 
@@ -82,7 +82,7 @@
 | Flow | Who pays whom | Mechanism | Status |
 |------|---------------|-----------|--------|
 | **Client → Vendor** | Client pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built (Express Connect today) |
-| **Vendor → Gigly** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
+| **Vendor → platform** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
 
 **Client invoice payments (built):**
 - Vendor configures handles + Stripe at onboarding and `/dashboard/payments`

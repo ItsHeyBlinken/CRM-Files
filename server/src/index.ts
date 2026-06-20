@@ -291,7 +291,7 @@ function setupMiddleware() {
 // Function to start the server (called after middleware setup)
 function startServer() {
   server.listen(PORT, () => {
-    logger.info(`🚀 Gigly server running on port ${PORT}`)
+    logger.info(`🚀 PortalHub server running on port ${PORT}`)
     logger.info(`📱 Environment: ${process.env['NODE_ENV']}`)
     logger.info(`🌐 API URL: http://localhost:${PORT}/api`)
     logger.info(`🔌 Socket.io enabled for real-time communication`)

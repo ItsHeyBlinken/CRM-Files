@@ -1,4 +1,4 @@
-# Progress: Gigly (Event Vendor Booking Platform)
+# Progress: PortalHub (Event Vendor Client Portal)
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. History below includes pre-pivot work (auth, deploy) that is reused. See "Post-Pivot" section for current direction.
 
@@ -399,7 +399,9 @@
 - [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
 - [ ] User runs `008` + `009` SQL in pgAdmin
 
-### Session: Product rebrand to Gigly (June 2026)
-- [x] Official product name: **Gigly** (booking gigs for event vendors)
-- [x] Client `APP_NAME` / `APP_TAGLINE` constants; login, register, onboarding, admin, vendor shell updated
-- [x] Memory Bank + database README updated (SQL filenames still use legacy `portalhub` prefix — no rename needed)
+### Session: Product name — Gigly rejected (June 2026)
+- [x] Considered **Gigly** — rejected because gigly.com is taken
+- [x] Reverted UI/Memory Bank to **PortalHub** placeholder; `client/src/constants/branding.ts` is the single swap point for the next name
+
+### Session: Product rebrand to Gigly (June 2026) — superseded
+- ~~Official product name: Gigly~~ — reverted (domain unavailable)
