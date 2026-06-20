@@ -1,4 +1,5 @@
 import type { ClientPortalData, NextAction, PortalTab, ProjectStatus } from '../types/portal'
+import { formatUsDateKey } from './calendarHelpers'
 
 export function getStatusLabel(status: ProjectStatus): string {
   switch (status) {
@@ -21,12 +22,7 @@ export function getStatusLabel(status: ProjectStatus): string {
 
 export function formatEventDate(date: string | null): string {
   if (!date) return 'Date to be confirmed'
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  return formatUsDateKey(date)
 }
 
 export function formatCurrency(amount: number, currency = 'USD'): string {

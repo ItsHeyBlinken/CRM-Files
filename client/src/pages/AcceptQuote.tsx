@@ -9,6 +9,7 @@ import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
 import { QUOTE_CONTRACT_VIEW_ONLY_NOTE } from '../constants/clientAgreement'
 import { acceptQuote, declineQuote, fetchPublicQuote } from '../services/quoteService'
 import type { PublicQuote } from '../types/quote'
+import { formatUsDate } from '../utils/calendarHelpers'
 
 const statusMessage: Record<PublicQuote['status'], string> = {
   draft: 'This quote is not ready yet.',
@@ -172,13 +173,7 @@ const AcceptQuote: React.FC = () => {
                 <p className="font-medium">Contract signed</p>
                 <p className="mt-1">
                   Signed by {contract.acknowledgementLegalName ?? 'you'}
-                  {contract.acknowledgedAt
-                    ? ` on ${new Date(contract.acknowledgedAt).toLocaleDateString(undefined, {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}`
-                    : ''}
+                  {contract.acknowledgedAt ? ` on ${formatUsDate(contract.acknowledgedAt)}` : ''}
                   .
                 </p>
               </div>

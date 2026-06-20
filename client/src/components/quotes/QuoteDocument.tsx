@@ -1,7 +1,7 @@
 import React from 'react'
 import type { QuoteLineItem } from '../../types/quote'
 import { formatQuoteMoney } from '../../utils/formatQuoteMoney'
-import { formatUsDateKey } from '../../utils/calendarHelpers'
+import { formatUsDate } from '../../utils/calendarHelpers'
 
 export interface QuoteDocumentData {
   title: string
@@ -28,11 +28,7 @@ const cellPad = 'px-4 sm:px-6'
 const headPad = 'px-3 sm:px-4'
 
 const QuoteDocument: React.FC<QuoteDocumentProps> = ({ quote }) => {
-  const printedOn = new Date().toLocaleDateString(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  const printedOn = formatUsDate(new Date())
 
   return (
     <div id={QUOTE_PRINT_AREA_ID} className="quote-print-document bg-white rounded-lg shadow">
@@ -44,19 +40,10 @@ const QuoteDocument: React.FC<QuoteDocumentProps> = ({ quote }) => {
         <div className="mt-3 text-sm text-gray-600 space-y-1">
           {quote.clientName && <p>Prepared for: {quote.clientName}</p>}
           {quote.clientEmail && <p className="break-all">Email: {quote.clientEmail}</p>}
-          {quote.eventDate && <p>Event date: {formatUsDateKey(quote.eventDate)}</p>}
+          {quote.eventDate && <p>Event date: {formatUsDate(quote.eventDate)}</p>}
           {quote.location && <p>Location: {quote.location}</p>}
           {quote.statusLabel && <p>Status: {quote.statusLabel}</p>}
-          {quote.expiresAt && (
-            <p>
-              Valid until:{' '}
-              {new Date(quote.expiresAt).toLocaleDateString(undefined, {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </p>
-          )}
+          {quote.expiresAt && <p>Valid until: {formatUsDate(quote.expiresAt)}</p>}
         </div>
       </div>
 

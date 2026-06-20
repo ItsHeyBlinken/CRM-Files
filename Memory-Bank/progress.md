@@ -422,6 +422,11 @@
 - [x] User committed rebrand + polish work
 - [ ] User: register domain, favicon/logo
 
+### Session: US date format app-wide (June 20, 2026)
+- [x] `formatUsDate()` + `formatUsDateTime()` in `calendarHelpers.ts`
+- [x] Replaced all client `toLocaleDateString` usage — quotes, portal, projects, calendar, notifications
+- [x] `formatEventDate()` / `formatCalendarDate()` use shared MM-DD-YYYY formatter
+
 ### Session: Quote US date format (June 20, 2026)
 - [x] `formatUsDateKey()` — converts `YYYY-MM-DD` → `MM-DD-YYYY`
 - [x] `QuoteDocument.tsx` event date display

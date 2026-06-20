@@ -27,6 +27,7 @@ import {
   getInvoiceDisplayLabel,
   getInvoiceStatusLabel,
 } from '../utils/portalHelpers'
+import { formatUsDate } from '../utils/calendarHelpers'
 
 function getApiError(err: unknown, fallback: string): string {
   const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
@@ -674,7 +675,7 @@ const VendorProjectDetail: React.FC = () => {
                   {project.eventDate && (
                     <p>
                       <span className="font-medium text-gray-700">Event date:</span>{' '}
-                      {new Date(`${project.eventDate}T12:00:00`).toLocaleDateString()}
+                      {formatUsDate(project.eventDate)}
                     </p>
                   )}
                   {project.location && (
@@ -721,12 +722,7 @@ const VendorProjectDetail: React.FC = () => {
               <p className="font-medium">Client linked</p>
               <p className="mt-1">{linkedClient.email}</p>
               <p className="text-green-800 text-xs mt-1">
-                Joined{' '}
-                {new Date(linkedClient.linkedAt).toLocaleDateString(undefined, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
+                Joined {formatUsDate(linkedClient.linkedAt)}
               </p>
             </div>
           ) : (
@@ -795,8 +791,8 @@ const VendorProjectDetail: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-1">
                   {contract.acknowledgedAt
                     ? contract.acknowledgementLegalName
-                      ? `Signed electronically as ${contract.acknowledgementLegalName} on ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
-                      : `Signed ${new Date(contract.acknowledgedAt).toLocaleDateString()}`
+                      ? `Signed electronically as ${contract.acknowledgementLegalName} on ${formatUsDate(contract.acknowledgedAt)}`
+                      : `Signed ${formatUsDate(contract.acknowledgedAt)}`
                     : 'Waiting for client signature'}
                 </p>
               </div>
@@ -897,7 +893,7 @@ const VendorProjectDetail: React.FC = () => {
                     <p className="font-medium text-gray-900">{milestone.title}</p>
                     {milestone.dueDate && (
                       <p className="text-gray-500 text-xs">
-                        {new Date(`${milestone.dueDate}T12:00:00`).toLocaleDateString()}
+                        {formatUsDate(milestone.dueDate)}
                       </p>
                     )}
                   </div>
@@ -1128,7 +1124,7 @@ const VendorProjectDetail: React.FC = () => {
                     </p>
                     {invoice.dueDate && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Due {new Date(`${invoice.dueDate}T12:00:00`).toLocaleDateString()}
+                        Due {formatUsDate(invoice.dueDate)}
                       </p>
                     )}
                     {invoice.clientPaymentClaimedAt && invoice.status !== 'paid' && (
@@ -1138,7 +1134,7 @@ const VendorProjectDetail: React.FC = () => {
                     )}
                     {invoice.status === 'paid' && invoice.paidAt && (
                       <p className="text-xs text-green-700 mt-1">
-                        Paid {new Date(invoice.paidAt).toLocaleDateString()}
+                        Paid {formatUsDate(invoice.paidAt)}
                         {invoice.paymentMethod ? ` via ${invoice.paymentMethod}` : ''}
                       </p>
                     )}

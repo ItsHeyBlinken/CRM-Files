@@ -6,7 +6,7 @@ import { fetchVendorDashboardSummary } from '../services/dashboardService'
 import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import { useVendorBranding } from '../components/vendor/VendorBrandingProvider'
-import { formatCalendarDate } from '../utils/calendarHelpers'
+import { formatCalendarDate, formatUsDate } from '../utils/calendarHelpers'
 import type { VendorDashboardSummary } from '../types/dashboard'
 import type { Project } from '../types/portal'
 
@@ -311,7 +311,7 @@ const VendorDashboard: React.FC = () => {
                         <p className="font-medium text-gray-900">{project.title}</p>
                         <p className="text-sm text-gray-500">
                           {project.clientDisplayName || 'No client name yet'}
-                          {project.eventDate ? ` · ${project.eventDate}` : ''}
+                          {project.eventDate ? ` · ${formatUsDate(project.eventDate)}` : ''}
                         </p>
                       </div>
                       <span className="text-xs capitalize text-indigo-600 font-medium self-start sm:self-center">

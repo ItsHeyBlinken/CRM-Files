@@ -8,6 +8,7 @@ import {
   markNotificationRead,
 } from '../../services/vendorExtrasService'
 import type { VendorNotification } from '../../types/vendorExtras'
+import { formatUsDateTime } from '../../utils/calendarHelpers'
 
 const VendorNotificationBell: React.FC = () => {
   const navigate = useNavigate()
@@ -149,7 +150,7 @@ const VendorNotificationBell: React.FC = () => {
                         <p className="mt-1 text-xs text-gray-600">{notification.body}</p>
                       )}
                       <p className="mt-1 text-[11px] text-gray-400">
-                        {new Date(notification.createdAt).toLocaleString()}
+                        {formatUsDateTime(notification.createdAt)}
                       </p>
                     </button>
                   </li>

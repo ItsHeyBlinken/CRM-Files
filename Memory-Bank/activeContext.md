@@ -242,10 +242,11 @@
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `010` |
 
-## Session Log (June 20, 2026 — quote date format)
-- [x] Quote event dates displayed as **MM-DD-YYYY** (US) instead of raw ISO `YYYY-MM-DD`
-- [x] Added `formatUsDateKey()` in `client/src/utils/calendarHelpers.ts`
-- [x] Applied in `QuoteDocument.tsx` (client-facing quote PDF/view) and `VendorQuotes.tsx` list
+## Session Log (June 20, 2026 — US date format app-wide)
+- [x] Centralized US date display in `formatUsDate()` / `formatUsDateTime()` (`calendarHelpers.ts`)
+- [x] All user-facing dates now **MM-DD-YYYY** (quotes, projects, portal, calendar lists, invoices, contracts, notifications)
+- [x] `formatEventDate()` and `formatCalendarDate()` delegate to shared formatter
+- [x] API/storage still uses `YYYY-MM-DD` date keys; only display layer changed
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?

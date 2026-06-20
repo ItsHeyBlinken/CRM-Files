@@ -5,7 +5,7 @@ import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreemen
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import VendorEventDatePicker from '../components/vendor/VendorEventDatePicker'
 import { createQuote, fetchVendorQuotes } from '../services/quoteService'
-import { formatUsDateKey } from '../utils/calendarHelpers'
+import { formatUsDate } from '../utils/calendarHelpers'
 import type { Quote, QuoteLineItemInput } from '../types/quote'
 
 const emptyLineItem = (): QuoteLineItemInput => ({
@@ -397,7 +397,7 @@ const VendorQuotes: React.FC = () => {
                         <p className="font-medium text-gray-900">{quote.title}</p>
                         <p className="text-sm text-gray-500">
                           {quote.clientName || quote.clientEmail}
-                          {quote.eventDate ? ` · ${formatUsDateKey(quote.eventDate)}` : ''}
+                          {quote.eventDate ? ` · ${formatUsDate(quote.eventDate)}` : ''}
                         </p>
                       </div>
                       <div className="text-right">

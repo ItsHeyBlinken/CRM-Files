@@ -8,6 +8,7 @@ import PipelineStepper from '../components/vendor/PipelineStepper'
 import { convertQuoteToProject, fetchVendorQuote, openVendorQuoteContract, uploadQuoteContract } from '../services/quoteService'
 import { sendQuoteEmail } from '../services/vendorExtrasService'
 import type { Quote } from '../types/quote'
+import { formatUsDate } from '../utils/calendarHelpers'
 import { formatQuoteMoney } from '../utils/formatQuoteMoney'
 import { getQuotePipelineSteps } from '../utils/quotePipeline'
 import toast from 'react-hot-toast'
@@ -233,11 +234,7 @@ const VendorQuoteDetail: React.FC = () => {
             {quote.contract.acknowledgedAt ? (
               <p className="text-sm text-green-800">
                 Signed by {quote.contract.acknowledgementLegalName ?? 'client'} on{' '}
-                {new Date(quote.contract.acknowledgedAt).toLocaleDateString(undefined, {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
+                {formatUsDate(quote.contract.acknowledgedAt)}
                 . Client still needs to pay deposit to become a booked client.
               </p>
             ) : (
@@ -338,11 +335,7 @@ const VendorQuoteDetail: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-gray-500">
-              Expires {new Date(quote.expiresAt).toLocaleDateString(undefined, {
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+              Expires {formatUsDate(quote.expiresAt)}
             </p>
           </section>
         )}

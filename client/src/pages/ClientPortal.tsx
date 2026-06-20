@@ -24,6 +24,7 @@ import {
   getStatusLabel,
   portalTabLabel,
 } from '../utils/portalHelpers'
+import { formatUsDate } from '../utils/calendarHelpers'
 
 const ClientPortal: React.FC = () => {
   const { user, logout } = useAuth()
@@ -306,7 +307,7 @@ const ClientPortal: React.FC = () => {
                     <p className="text-sm font-medium text-gray-900">{milestone.title}</p>
                     {milestone.dueDate && (
                       <p className="text-xs text-gray-500">
-                        {new Date(`${milestone.dueDate}T12:00:00`).toLocaleDateString()}
+                        {formatUsDate(milestone.dueDate)}
                       </p>
                     )}
                   </div>
@@ -352,7 +353,7 @@ const ClientPortal: React.FC = () => {
               ) : (
                 <div className="mt-3 space-y-3">
                   <p className="text-xs text-gray-500">
-                    Signed on {new Date(contract.acknowledgedAt).toLocaleDateString()}
+                    Signed on {formatUsDate(contract.acknowledgedAt)}
                   </p>
                   <button
                     type="button"
@@ -422,7 +423,7 @@ const ClientPortal: React.FC = () => {
                   </p>
                   {invoice.paidAt && (
                     <p className="text-sm text-green-800">
-                      Paid on {new Date(invoice.paidAt).toLocaleDateString()}
+                      Paid on {formatUsDate(invoice.paidAt)}
                     </p>
                   )}
                   <button
@@ -462,7 +463,7 @@ const ClientPortal: React.FC = () => {
               </p>
               {invoice.dueDate && (
                 <p className="mt-1 text-sm text-gray-500">
-                  Due {new Date(`${invoice.dueDate}T12:00:00`).toLocaleDateString()}
+                  Due {formatUsDate(invoice.dueDate)}
                 </p>
               )}
               {invoice.description && (
