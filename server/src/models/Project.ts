@@ -1,8 +1,17 @@
 import { getPool } from '../config/database'
 import { Contract } from './Contract'
 import { Deliverable } from './Deliverable'
+import {
+  ProjectPaymentSettings,
+  type IProjectPaymentSettings,
+} from './ProjectPaymentSettings'
 import { VendorPaymentSettings } from './VendorPaymentSettings'
 import { formatDateOnly } from '../utils/dateOnly'
+import {
+  summarizeProjectPayments,
+  type InvoiceKind,
+  type ProjectPaymentSummary,
+} from '../utils/projectPaymentSummary'
 
 export type ProjectStatus =
   | 'inquiry'
@@ -71,6 +80,8 @@ export interface IInvoice {
   currency: string
   dueDate: string | null
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  invoiceKind: InvoiceKind
+  isDateHoldingDeposit: boolean
   paidAt?: Date | null
   paymentMethod?: string | null
   clientPaymentClaimedAt?: Date | null
@@ -107,6 +118,8 @@ export interface IClientPortalProject {
   vendorLogoUrl: string | null
   primaryColor: string
   paymentOptions: IClientPaymentOptions
+  paymentSettings: IProjectPaymentSettings
+  paymentSummary: ProjectPaymentSummary
   milestones: IMilestone[]
   invoices: IInvoice[]
   contracts: IContractSummary[]
@@ -123,6 +136,8 @@ export interface ILinkedClient {
 export interface IVendorProjectDetail {
   project: IProject
   linkedClient: ILinkedClient | null
+  paymentSettings: IProjectPaymentSettings
+  paymentSummary: ProjectPaymentSummary
   contracts: Array<{
     id: number
     title: string
@@ -169,6 +184,8 @@ function mapInvoiceSummary(inv: {
   currency: string
   due_date: Date | string | null
   status: IInvoice['status']
+  invoice_kind: InvoiceKind
+  is_date_holding_deposit: boolean
   paid_at?: Date | null
   payment_method?: string | null
   client_payment_claimed_at?: Date | null
@@ -184,6 +201,8 @@ function mapInvoiceSummary(inv: {
     currency: inv.currency,
     dueDate: formatDateOnly(inv.due_date),
     status: inv.status,
+    invoiceKind: inv.invoice_kind,
+    isDateHoldingDeposit: inv.is_date_holding_deposit,
     paidAt: inv.paid_at ?? null,
     paymentMethod: inv.payment_method ?? null,
     clientPaymentClaimedAt: inv.client_payment_claimed_at ?? null,
@@ -231,7 +250,7 @@ export class ProjectModel {
 
     const pool = getPool()
 
-    const [linkedClientResult, milestonesResult, invoicesResult, contracts, deliverables] =
+    const [linkedClientResult, milestonesResult, invoicesResult, contracts, deliverables, paymentSettings] =
       await Promise.all([
       pool.query(
         `
@@ -261,6 +280,7 @@ export class ProjectModel {
       ),
       Contract.findByProjectForVendor(id, vendorId),
       Deliverable.findByProjectForVendor(id, vendorId),
+      ProjectPaymentSettings.findByProjectForVendor(id, vendorId),
     ])
 
     const linkedRow = linkedClientResult.rows[0]
@@ -272,9 +292,24 @@ export class ProjectModel {
         }
       : null
 
+    const invoiceSummaries = invoicesResult.rows.map(mapInvoiceSummary)
+    const resolvedPaymentSettings = paymentSettings ?? ProjectPaymentSettings.getDefault(id)
+    const paymentSummary = summarizeProjectPayments({
+      settings: resolvedPaymentSettings,
+      invoices: invoiceSummaries.map((invoice) => ({
+        id: invoice.id,
+        title: invoice.title,
+        amount: invoice.amount,
+        status: invoice.status,
+        invoiceKind: invoice.invoiceKind,
+      })),
+    })
+
     return {
       project,
       linkedClient,
+      paymentSettings: resolvedPaymentSettings,
+      paymentSummary,
       contracts,
       milestones: milestonesResult.rows.map((m) => ({
         id: m.id,
@@ -287,7 +322,7 @@ export class ProjectModel {
         sortOrder: m.sort_order,
         completedAt: m.completed_at,
       })),
-      invoices: invoicesResult.rows.map(mapInvoiceSummary),
+      invoices: invoiceSummaries,
       deliverables,
     }
   }
@@ -398,7 +433,7 @@ export class ProjectModel {
     const project = mapProjectRow(row)
     const projectId = project.id
 
-    const [milestones, invoices, contracts, deliverables, paymentOptions] = await Promise.all([
+    const [milestones, invoices, contracts, deliverables, paymentOptions, paymentSettings] = await Promise.all([
       pool.query(
         `
         SELECT * FROM milestones
@@ -428,7 +463,20 @@ export class ProjectModel {
         [projectId]
       ),
       VendorPaymentSettings.findByProjectForClient(projectId),
+      ProjectPaymentSettings.findByProjectForClient(projectId),
     ])
+
+    const invoiceSummaries = invoices.rows.map(mapInvoiceSummary)
+    const paymentSummary = summarizeProjectPayments({
+      settings: paymentSettings,
+      invoices: invoiceSummaries.map((invoice) => ({
+        id: invoice.id,
+        title: invoice.title,
+        amount: invoice.amount,
+        status: invoice.status,
+        invoiceKind: invoice.invoiceKind,
+      })),
+    })
 
     return {
       project,
@@ -436,6 +484,8 @@ export class ProjectModel {
       vendorLogoUrl: row.logo_url ?? null,
       primaryColor: row.primary_color,
       paymentOptions,
+      paymentSettings,
+      paymentSummary,
       milestones: milestones.rows.map((m) => ({
         id: m.id,
         projectId: m.project_id,
@@ -447,7 +497,7 @@ export class ProjectModel {
         sortOrder: m.sort_order,
         completedAt: m.completed_at,
       })),
-      invoices: invoices.rows.map(mapInvoiceSummary),
+      invoices: invoiceSummaries,
       contracts: contracts.rows.map((c) => ({
         id: c.id,
         title: c.title,

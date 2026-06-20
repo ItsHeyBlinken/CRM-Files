@@ -212,7 +212,7 @@ npm run start        # Start production server
 # Optional dev seed: database/reset/seed_portalhub_dev.sql
 ```
 
-**Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `quotes`, `quote_line_items`
+**Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `quotes`, `quote_line_items`
 
 Legacy `client_event_access` removed — not used by PortalHub.
 

@@ -3,6 +3,7 @@ import path from 'path'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { contractPdfUpload, deliverableFileUpload } from '../middleware/projectUpload'
 import { Project, ProjectStatus } from '../models/Project'
+import { ProjectPaymentSettings } from '../models/ProjectPaymentSettings'
 import { Contract } from '../models/Contract'
 import { Deliverable } from '../models/Deliverable'
 import { Invoice } from '../models/Invoice'
@@ -224,7 +225,18 @@ router.get('/:id/invoices', async (req: AuthRequest, res: Response): Promise<voi
 router.post('/:id/invoices', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const projectId = Number(req.params['id'])
-    const { title, invoiceNumber, description, amount, currency, dueDate, notes, status } =
+    const {
+      title,
+      invoiceNumber,
+      description,
+      amount,
+      currency,
+      dueDate,
+      notes,
+      status,
+      invoiceKind,
+      isDateHoldingDeposit,
+    } =
       req.body
 
     const invoice = await Invoice.create(projectId, Number(req.user.id), {
@@ -236,6 +248,8 @@ router.post('/:id/invoices', async (req: AuthRequest, res: Response): Promise<vo
       dueDate,
       notes,
       status,
+      invoiceKind,
+      isDateHoldingDeposit: Boolean(isDateHoldingDeposit),
     })
 
     res.status(201).json({ invoice })
@@ -254,6 +268,84 @@ router.post('/:id/invoices', async (req: AuthRequest, res: Response): Promise<vo
     }
     logger.error('Create invoice error:', error)
     res.status(500).json({ error: 'Failed to create invoice' })
+  }
+})
+
+// GET /api/vendor/projects/:id/payment-settings
+router.get('/:id/payment-settings', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const settings = await ProjectPaymentSettings.findByProjectForVendor(
+      projectId,
+      Number(req.user.id)
+    )
+
+    if (!settings) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    res.json({ settings })
+  } catch (error) {
+    logger.error('Get project payment settings error:', error)
+    res.status(500).json({ error: 'Failed to load project payment settings' })
+  }
+})
+
+// PUT /api/vendor/projects/:id/payment-settings
+router.put('/:id/payment-settings', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const projectId = Number(req.params['id'])
+    const {
+      projectTotal,
+      paymentPlanType,
+      depositType,
+      depositValue,
+      secondPaymentDueDaysBeforeEvent,
+      finalPaymentDueDaysBeforeEvent,
+    } = req.body
+
+    if (
+      paymentPlanType !== 'pay_in_full' &&
+      paymentPlanType !== 'deposit_and_balance' &&
+      paymentPlanType !== 'split_payments'
+    ) {
+      res.status(400).json({ error: 'Invalid payment plan type' })
+      return
+    }
+
+    const settings = await ProjectPaymentSettings.upsertForVendor(projectId, Number(req.user.id), {
+      projectTotal: projectTotal == null || projectTotal === '' ? null : Number(projectTotal),
+      paymentPlanType,
+      depositType:
+        depositType === 'fixed' || depositType === 'percentage' ? depositType : null,
+      depositValue: depositValue == null || depositValue === '' ? null : Number(depositValue),
+      secondPaymentDueDaysBeforeEvent:
+        secondPaymentDueDaysBeforeEvent == null || secondPaymentDueDaysBeforeEvent === ''
+          ? null
+          : Number(secondPaymentDueDaysBeforeEvent),
+      finalPaymentDueDaysBeforeEvent:
+        finalPaymentDueDaysBeforeEvent == null || finalPaymentDueDaysBeforeEvent === ''
+          ? null
+          : Number(finalPaymentDueDaysBeforeEvent),
+    })
+
+    if (!settings) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+
+    res.json({ settings })
+  } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      (error.message === 'INVALID_DEPOSIT_VALUE' || error.message === 'INVALID_PROJECT_TOTAL')
+    ) {
+      res.status(400).json({ error: 'Payment amounts must be zero or greater' })
+      return
+    }
+    logger.error('Update project payment settings error:', error)
+    res.status(500).json({ error: 'Failed to update project payment settings' })
   }
 })
 

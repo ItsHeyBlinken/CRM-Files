@@ -93,11 +93,12 @@
 | **User** | Auth; role VENDOR or CLIENT |
 | **VendorProfile** | Business name, logo, brand colors |
 | **VendorPaymentSettings** | Stripe Connect account, P2P handles (venmo, zelle, cashapp, paypal) |
+| **ProjectPaymentSettings** | Per-project payment setup: total, deposit defaults, staged payment guidance |
 | **Project** | Event/booking; status, date, location |
 | **ProjectClient** | Links client user to project |
 | **Milestone** | Timeline step; `client_visible` flag |
 | **Contract** | PDF file + acknowledgement fields |
-| **Invoice** | Amount, due date, status; payment_method, paid_at, Stripe session IDs, client claim fields |
+| **Invoice** | Amount, due date, status; `invoice_kind`, date-holding deposit flag, payment_method, paid_at, Stripe session IDs, client claim fields |
 | **Deliverable** | File metadata + download path |
 | **Quote** | Pre-project proposal; line items; optional `quote_contracts`; accept → convert to Project |
 | **QuoteContract** | PDF on quote; view-only until accepted; public e-sign via quote token |

@@ -83,6 +83,13 @@
 - Vendor creates/sends invoices on project detail
 - Client pays via card (Checkout) or P2P; “I've sent payment” → vendor marks paid; Home redirect + polling
 
+**Guided invoice workflow (built in code, pending SQL `008`):**
+- Project-level payment setup stores project total + payment structure (`pay_in_full`, `deposit_and_balance`, `split_payments`)
+- Vendors can save deposit defaults and due-day guidance on project detail
+- Invoice drafts now support `invoiceKind` (`deposit`, `payment`, `final`, `custom`)
+- Deposit/final presets prefill invoice title, amount, and due date guidance for vendors
+- Client portal next action and payment labels now distinguish deposits from other invoices
+
 **Key files:** `Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `VendorOnboarding.tsx`, `VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `p2pPaymentLinks.ts`
 
 ## Quote → Client Agreement Flow (Built)
@@ -110,6 +117,7 @@
 | `005_schema_vendor_onboarding.sql` | `payment_setup_complete` flag | ⬜ Run in pgAdmin |
 | `006_schema_quote_contract_addition.sql` | `quote_contracts` table | ⬜ Run in pgAdmin |
 | `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Run in pgAdmin |
+| `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ⬜ Run in pgAdmin |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 | `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
 | `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
@@ -152,7 +160,7 @@
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `008`)
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `009`)
 
 ## Open Questions (Deferred)
 - **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?

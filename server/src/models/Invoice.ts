@@ -1,5 +1,6 @@
 import { getPool } from '../config/database'
 import { formatDateOnly } from '../utils/dateOnly'
+import type { InvoiceKind } from '../utils/projectPaymentSummary'
 import { Project } from './Project'
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
@@ -15,6 +16,8 @@ export interface IInvoice {
   currency: string
   dueDate: string | null
   status: InvoiceStatus
+  invoiceKind: InvoiceKind
+  isDateHoldingDeposit: boolean
   notes: string | null
   paidAt: Date | null
   paymentMethod: PaymentMethod | null
@@ -34,6 +37,8 @@ export interface IInvoiceCreate {
   currency?: string
   dueDate?: string | null
   status?: InvoiceStatus
+  invoiceKind?: InvoiceKind
+  isDateHoldingDeposit?: boolean
   notes?: string | null
 }
 
@@ -45,6 +50,8 @@ export interface IInvoiceUpdate {
   currency?: string
   dueDate?: string | null
   status?: InvoiceStatus
+  invoiceKind?: InvoiceKind
+  isDateHoldingDeposit?: boolean
   notes?: string | null
 }
 
@@ -58,6 +65,8 @@ function mapInvoiceRow(row: {
   currency: string
   due_date: Date | string | null
   status: InvoiceStatus
+  invoice_kind: InvoiceKind
+  is_date_holding_deposit: boolean
   notes: string | null
   paid_at: Date | null
   payment_method: PaymentMethod | null
@@ -78,6 +87,8 @@ function mapInvoiceRow(row: {
     currency: row.currency,
     dueDate: formatDateOnly(row.due_date),
     status: row.status,
+    invoiceKind: row.invoice_kind,
+    isDateHoldingDeposit: row.is_date_holding_deposit,
     notes: row.notes,
     paidAt: row.paid_at,
     paymentMethod: row.payment_method,
@@ -179,8 +190,8 @@ export class InvoiceModel {
       `
       INSERT INTO invoices (
         project_id, invoice_number, title, description, amount, currency,
-        due_date, status, notes, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        due_date, status, invoice_kind, is_date_holding_deposit, notes, created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
       `,
       [
@@ -192,6 +203,8 @@ export class InvoiceModel {
         (data.currency || 'USD').toUpperCase(),
         formatDateOnly(data.dueDate),
         data.status || 'draft',
+        data.invoiceKind || 'custom',
+        data.isDateHoldingDeposit ?? false,
         data.notes?.trim() || null,
         vendorId,
       ]
@@ -239,6 +252,10 @@ export class InvoiceModel {
     if (data.currency !== undefined) setField('currency', data.currency.toUpperCase())
     if (data.dueDate !== undefined) setField('due_date', formatDateOnly(data.dueDate))
     if (data.status !== undefined) setField('status', data.status)
+    if (data.invoiceKind !== undefined) setField('invoice_kind', data.invoiceKind)
+    if (data.isDateHoldingDeposit !== undefined) {
+      setField('is_date_holding_deposit', data.isDateHoldingDeposit)
+    }
     if (data.notes !== undefined) setField('notes', data.notes?.trim() || null)
 
     if (fields.length === 0) {

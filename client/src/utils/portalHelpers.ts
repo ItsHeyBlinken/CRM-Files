@@ -33,6 +33,31 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount)
 }
 
+export function getInvoiceDisplayLabel(invoice: {
+  title: string
+  invoiceKind: 'deposit' | 'payment' | 'final' | 'custom'
+  isDateHoldingDeposit: boolean
+}): string {
+  if (invoice.invoiceKind === 'deposit' && invoice.isDateHoldingDeposit) {
+    return 'Deposit to hold your date'
+  }
+
+  switch (invoice.invoiceKind) {
+    case 'deposit':
+      return 'Deposit'
+    case 'payment':
+      return 'Payment'
+    case 'final':
+      return 'Final payment'
+    case 'custom':
+      return invoice.title
+    default: {
+      const exhaustiveCheck: never = invoice.invoiceKind
+      return exhaustiveCheck
+    }
+  }
+}
+
 export function getNextAction(data: ClientPortalData): NextAction | null {
   const unackedContract = data.contracts.find((c) => !c.acknowledgedAt)
   if (unackedContract) {
@@ -48,8 +73,15 @@ export function getNextAction(data: ClientPortalData): NextAction | null {
   )
   if (openInvoice) {
     const canPayWithCard = data.paymentOptions.stripeEnabled
+    const isDeposit = openInvoice.invoiceKind === 'deposit'
     return {
-      label: canPayWithCard ? 'Pay your invoice' : 'View your invoice',
+      label: canPayWithCard
+        ? isDeposit
+          ? 'Pay your deposit'
+          : 'Pay your invoice'
+        : isDeposit
+          ? 'View your deposit'
+          : 'View your invoice',
       description: `${openInvoice.title} — ${formatCurrency(openInvoice.amount, openInvoice.currency)}`,
       tab: 'payments',
     }

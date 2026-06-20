@@ -377,3 +377,7 @@
 - [x] Moved dev reset/seed SQL into `database/reset/` with local README
 - [x] Renumbered schema migrations `001`–`007` in `database/` for ordered pgAdmin runs
 - [x] Documented migration naming convention (`NNN_*.sql`, next `008`) in `database/README.md` + Memory Bank
+- [x] Added `008_project_payment_settings.sql` for project payment setup + invoice kind metadata
+- [x] Implemented guided invoice workflow on project detail: payment setup, deposit/final presets, payment summary
+- [x] Client portal payment labels and next action now distinguish deposits from generic invoices
+- [x] Added focused tests for payment summary logic (`server`) and deposit portal behavior (`client`)

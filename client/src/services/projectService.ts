@@ -1,5 +1,11 @@
 import api from './api'
-import type { ClientPortalData, Project, ProjectStatus, VendorProjectDetail } from '../types/portal'
+import type {
+  ClientPortalData,
+  Project,
+  ProjectPaymentSettings,
+  ProjectStatus,
+  VendorProjectDetail,
+} from '../types/portal'
 
 export async function fetchVendorProjects(): Promise<Project[]> {
   const response = await api.get('/vendor/projects')
@@ -63,4 +69,21 @@ export async function createProjectInvite(
 export async function fetchClientPortal(): Promise<ClientPortalData> {
   const response = await api.get('/portal/project')
   return response.data
+}
+
+export interface UpdateProjectPaymentSettingsInput {
+  projectTotal?: number | null
+  paymentPlanType: ProjectPaymentSettings['paymentPlanType']
+  depositType?: ProjectPaymentSettings['depositType']
+  depositValue?: number | null
+  secondPaymentDueDaysBeforeEvent?: number | null
+  finalPaymentDueDaysBeforeEvent?: number | null
+}
+
+export async function updateProjectPaymentSettings(
+  projectId: number,
+  input: UpdateProjectPaymentSettingsInput
+): Promise<ProjectPaymentSettings> {
+  const response = await api.put(`/vendor/projects/${projectId}/payment-settings`, input)
+  return response.data.settings
 }

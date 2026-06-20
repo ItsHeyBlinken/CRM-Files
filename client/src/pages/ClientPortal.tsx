@@ -18,6 +18,7 @@ import {
   formatCurrency,
   formatFileSize,
   formatEventDate,
+  getInvoiceDisplayLabel,
   getInvoiceStatusLabel,
   getNextAction,
   getStatusLabel,
@@ -410,7 +411,9 @@ const ClientPortal: React.FC = () => {
                   <span className="inline-block rounded-full bg-green-200 px-3 py-1 text-sm font-semibold text-green-900">
                     Paid
                   </span>
-                  <p className="text-xl font-semibold text-green-900">{invoice.title}</p>
+                  <p className="text-xl font-semibold text-green-900">
+                    {getInvoiceDisplayLabel(invoice)}
+                  </p>
                   {invoice.invoiceNumber && (
                     <p className="text-xs text-green-700">{invoice.invoiceNumber}</p>
                   )}
@@ -439,7 +442,7 @@ const ClientPortal: React.FC = () => {
             <li key={invoice.id} className="rounded-2xl bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-gray-900">{invoice.title}</p>
+                  <p className="font-medium text-gray-900">{getInvoiceDisplayLabel(invoice)}</p>
                   {invoice.invoiceNumber && (
                     <p className="text-xs text-gray-500">{invoice.invoiceNumber}</p>
                   )}

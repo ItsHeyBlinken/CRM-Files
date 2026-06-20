@@ -25,8 +25,11 @@ const socketService_1 = require("./services/socketService");
 const auth_1 = __importDefault(require("./routes/auth"));
 const vendorProjects_1 = __importDefault(require("./routes/vendorProjects"));
 const vendorQuotes_1 = __importDefault(require("./routes/vendorQuotes"));
+const vendorPaymentSettings_1 = __importDefault(require("./routes/vendorPaymentSettings"));
+const vendorOnboarding_1 = __importDefault(require("./routes/vendorOnboarding"));
 const quotes_1 = __importDefault(require("./routes/quotes"));
 const portal_1 = __importDefault(require("./routes/portal"));
+const stripeWebhook_1 = __importDefault(require("./routes/stripeWebhook"));
 dotenv_1.default.config();
 const CODE_VERSION = 'v2.1.0-FIXED';
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString();
@@ -123,6 +126,7 @@ function setupMiddleware() {
         legacyHeaders: false,
     });
     app.use('/api/', limiter);
+    app.use('/api/webhooks', express_1.default.raw({ type: 'application/json' }), stripeWebhook_1.default);
     app.use(express_1.default.json({ limit: '10mb' }));
     app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
     app.use((0, cookie_parser_1.default)());
@@ -165,6 +169,8 @@ function setupMiddleware() {
     app.use('/api/auth', auth_1.default);
     app.use('/api/vendor/projects', vendorProjects_1.default);
     app.use('/api/vendor/quotes', vendorQuotes_1.default);
+    app.use('/api/vendor/payment-settings', vendorPaymentSettings_1.default);
+    app.use('/api/vendor/onboarding', vendorOnboarding_1.default);
     app.use('/api/quotes', quotes_1.default);
     app.use('/api/portal', portal_1.default);
     app.use('/uploads', express_1.default.static('uploads'));

@@ -10,6 +10,8 @@ export interface CreateInvoiceInput {
   dueDate?: string
   notes?: string
   status?: Invoice['status']
+  invoiceKind?: Invoice['invoiceKind']
+  isDateHoldingDeposit?: boolean
 }
 
 export interface UpdateInvoiceInput {
@@ -21,6 +23,8 @@ export interface UpdateInvoiceInput {
   dueDate?: string | null
   notes?: string | null
   status?: Invoice['status']
+  invoiceKind?: Invoice['invoiceKind']
+  isDateHoldingDeposit?: boolean
 }
 
 export async function createProjectInvoice(

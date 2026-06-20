@@ -28,6 +28,8 @@ export interface LinkedClient {
 export interface VendorProjectDetail {
   project: Project
   linkedClient: LinkedClient | null
+  paymentSettings: ProjectPaymentSettings
+  paymentSummary: ProjectPaymentSummary
   contracts: Array<{
     id: number
     title: string
@@ -66,6 +68,8 @@ export interface Invoice {
   currency: string
   dueDate: string | null
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+  invoiceKind: 'deposit' | 'payment' | 'final' | 'custom'
+  isDateHoldingDeposit: boolean
   paidAt?: string | null
   paymentMethod?: string | null
   clientPaymentClaimedAt?: string | null
@@ -79,6 +83,22 @@ export interface ClientPaymentOptions {
   cashappHandle: string | null
   paypalHandle: string | null
   paymentInstructions: string | null
+}
+
+export interface ProjectPaymentSettings {
+  projectTotal: number | null
+  paymentPlanType: 'pay_in_full' | 'deposit_and_balance' | 'split_payments'
+  depositType: 'fixed' | 'percentage' | null
+  depositValue: number | null
+  secondPaymentDueDaysBeforeEvent: number | null
+  finalPaymentDueDaysBeforeEvent: number | null
+}
+
+export interface ProjectPaymentSummary {
+  amountPaid: number
+  amountOutstanding: number
+  depositStatus: 'not_applicable' | 'not_sent' | 'unpaid' | 'paid'
+  nextSuggestedInvoiceKind: 'deposit' | 'payment' | 'final' | 'custom' | null
 }
 
 export interface ContractSummary {
@@ -101,6 +121,8 @@ export interface ClientPortalData {
   vendorLogoUrl: string | null
   primaryColor: string
   paymentOptions: ClientPaymentOptions
+  paymentSettings: ProjectPaymentSettings
+  paymentSummary: ProjectPaymentSummary
   milestones: Milestone[]
   invoices: Invoice[]
   contracts: ContractSummary[]

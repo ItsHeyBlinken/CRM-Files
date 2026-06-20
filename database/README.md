@@ -2,7 +2,7 @@
 
 ## Active schema (run in order)
 
-Run these **in numeric order** in pgAdmin. If starting over, run `001` through `007`, then optionally seed.
+Run these **in numeric order** in pgAdmin. If starting over, run `001` through `008`, then optionally seed.
 
 ### Naming convention (new migrations)
 
@@ -14,7 +14,7 @@ NNN_short_descriptive_name.sql
 
 | Rule | Detail |
 |------|--------|
-| **Next number** | `008` (then `009`, `010`, …) |
+| **Next number** | `009` (then `010`, `011`, …) |
 | **Prefix** | Zero-padded: `008`, not `8` |
 | **Suffix** | Short snake_case description of what the migration does |
 | **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
@@ -22,7 +22,7 @@ NNN_short_descriptive_name.sql
 | **Additive** | Prefer `IF NOT EXISTS` / idempotent patterns; safe to run once |
 | **Not numbered** | Dev reset/seed scripts stay in `database/reset/` |
 
-Example for the next migration: `008_schema_vendor_subscriptions.sql`
+Example for the next migration: `009_schema_vendor_subscriptions.sql`
 
 | # | File | Purpose |
 |---|------|---------|
@@ -33,6 +33,7 @@ Example for the next migration: `008_schema_vendor_subscriptions.sql`
 | 005 | **`005_schema_vendor_onboarding.sql`** | `payment_setup_complete` flag for onboarding gate |
 | 006 | **`006_schema_quote_contract_addition.sql`** | Optional contract PDF attached to quotes |
 | 007 | **`007_schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance |
+| 008 | **`008_project_payment_settings.sql`** | Project-level payment setup defaults + invoice kind metadata |
 
 ### Dev reset & seed (`reset/`)
 
@@ -48,7 +49,7 @@ See **`reset/README.md`** for when to use each script.
 **Fresh start from scratch (pgAdmin):**
 
 1. Connect to your database and open Query Tool
-2. Run **`001_schema_portalhub.sql`** through **`007_schema_quote_contract_signing.sql`** in order  
+2. Run **`001_schema_portalhub.sql`** through **`008_project_payment_settings.sql`** in order  
    (`001` drops legacy CRM tables — all app data is removed)
 3. Optionally run **`reset/seed_portalhub_dev.sql`**
 
@@ -56,7 +57,7 @@ Test logins are documented in `Memory-Bank/techContext.md`.
 
 ### Current tables
 
-`users`, `vendor_profiles`, `vendor_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`
+`users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`
 
 ---
 
