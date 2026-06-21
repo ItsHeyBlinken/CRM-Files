@@ -36,7 +36,7 @@ const quotes_1 = __importDefault(require("./routes/quotes"));
 const portal_1 = __importDefault(require("./routes/portal"));
 const stripeWebhook_1 = __importDefault(require("./routes/stripeWebhook"));
 dotenv_1.default.config();
-const CODE_VERSION = 'v2.1.0-FIXED';
+const CODE_VERSION = 'v2.2.0-vendor-routes';
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString();
 console.error('========================================');
 console.error('🚀 SERVER STARTING - NEW CODE VERSION');

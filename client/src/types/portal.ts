@@ -40,14 +40,6 @@ export interface VendorProjectDetail {
   }>
   milestones: Milestone[]
   invoices: Invoice[]
-  deliverables: Array<{
-    id: number
-    title: string
-    fileName: string
-    fileSizeBytes: number | null
-    clientVisible: boolean
-    createdAt: string
-  }>
 }
 
 export interface Milestone {
@@ -108,13 +100,6 @@ export interface ContractSummary {
   acknowledgementLegalName?: string | null
 }
 
-export interface DeliverableSummary {
-  id: number
-  title: string
-  fileName: string
-  fileSizeBytes: number | null
-}
-
 export interface ClientPortalData {
   project: Project
   vendorBusinessName: string
@@ -126,10 +111,9 @@ export interface ClientPortalData {
   milestones: Milestone[]
   invoices: Invoice[]
   contracts: ContractSummary[]
-  deliverables: DeliverableSummary[]
 }
 
-export type PortalTab = 'home' | 'documents' | 'payments' | 'files'
+export type PortalTab = 'home' | 'documents' | 'payments'
 
 export interface NextAction {
   label: string

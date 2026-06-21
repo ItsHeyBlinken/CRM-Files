@@ -428,6 +428,13 @@
 - [x] User committed rebrand + polish work
 - [ ] User: register domain, favicon/logo
 
+### Session: Remove deliverables feature (June 21, 2026)
+- [x] Product decision: vendors share photos/galleries externally (Pixieset, Drive, etc.)
+- [x] Removed Files tab, vendor upload UI, deliverable API routes
+- [x] Kept contract PDF on Documents tab with view/download after sign
+- [x] User dropped `deliverables` table in pgAdmin (`010_drop_deliverables.sql` added to repo for other envs)
+- [ ] User commit + deploy when ready
+
 ### Session: US date format app-wide (June 20, 2026)
 - [x] `formatUsDate()` + `formatUsDateTime()` in `calendarHelpers.ts`
 - [x] Replaced all client `toLocaleDateString` usage — quotes, portal, projects, calendar, notifications

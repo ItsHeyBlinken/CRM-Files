@@ -1,11 +1,10 @@
 import { Router, Response, NextFunction } from 'express'
 import path from 'path'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
-import { contractPdfUpload, deliverableFileUpload } from '../middleware/projectUpload'
+import { contractPdfUpload } from '../middleware/projectUpload'
 import { Project, ProjectStatus } from '../models/Project'
 import { ProjectPaymentSettings } from '../models/ProjectPaymentSettings'
 import { Contract } from '../models/Contract'
-import { Deliverable } from '../models/Deliverable'
 import { Invoice } from '../models/Invoice'
 import {
   hasAnyClientPaymentMethod,
@@ -137,76 +136,6 @@ router.post(
       }
       logger.error('Upload contract error:', error)
       res.status(500).json({ error: 'Failed to upload contract' })
-    }
-  }
-)
-
-// GET /api/vendor/projects/:id/deliverables
-router.get('/:id/deliverables', async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const projectId = Number(req.params['id'])
-    const deliverables = await Deliverable.findByProjectForVendor(
-      projectId,
-      Number(req.user.id)
-    )
-    res.json({ deliverables })
-  } catch (error) {
-    logger.error('List deliverables error:', error)
-    res.status(500).json({ error: 'Failed to load deliverables' })
-  }
-})
-
-// POST /api/vendor/projects/:id/deliverables
-router.post(
-  '/:id/deliverables',
-  (req: AuthRequest, res: Response, next: NextFunction) => {
-    deliverableFileUpload.single('file')(req, res, (err: unknown) => {
-      if (err) {
-        const message = err instanceof Error ? err.message : 'File upload failed'
-        res.status(400).json({ error: message })
-        return
-      }
-      next()
-    })
-  },
-  async (req: AuthRequest, res: Response): Promise<void> => {
-    try {
-      const projectId = Number(req.params['id'])
-      const title = typeof req.body.title === 'string' ? req.body.title.trim() : ''
-      const description =
-        typeof req.body.description === 'string' ? req.body.description.trim() : null
-
-      if (!title) {
-        res.status(400).json({ error: 'Deliverable title is required' })
-        return
-      }
-
-      if (!req.file) {
-        res.status(400).json({ error: 'File is required' })
-        return
-      }
-
-      const relativeFilePath = path
-        .join('deliverables', String(projectId), req.file.filename)
-        .replace(/\\/g, '/')
-
-      const deliverable = await Deliverable.create(projectId, Number(req.user.id), {
-        title,
-        description,
-        relativeFilePath,
-        fileName: req.file.originalname,
-        fileSizeBytes: req.file.size,
-        mimeType: req.file.mimetype || null,
-      })
-
-      res.status(201).json({ deliverable })
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {
-        res.status(404).json({ error: 'Project not found' })
-        return
-      }
-      logger.error('Upload deliverable error:', error)
-      res.status(500).json({ error: 'Failed to upload deliverable' })
     }
   }
 )

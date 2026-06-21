@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ContractSignPanel from '../components/portal/ContractSignPanel'
-import { downloadDeliverableBlob } from '../services/deliverableService'
+import { fetchContractPdfBlob } from '../services/contractService'
 import {
   claimInvoicePaymentSent,
   startInvoiceCheckout,
@@ -16,7 +16,6 @@ import {
 } from '../utils/p2pPaymentLinks'
 import {
   formatCurrency,
-  formatFileSize,
   formatEventDate,
   getInvoiceDisplayLabel,
   getInvoiceStatusLabel,
@@ -39,8 +38,7 @@ const ClientPortal: React.FC = () => {
   const [payingInvoiceId, setPayingInvoiceId] = useState<number | null>(null)
   const [claimingInvoiceId, setClaimingInvoiceId] = useState<number | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filesError, setFilesError] = useState('')
-  const [downloadingId, setDownloadingId] = useState<number | null>(null)
+  const [viewingContractId, setViewingContractId] = useState<number | null>(null)
   const previousInvoiceStatusRef = useRef<Map<number, string>>(new Map())
 
   const loadPortal = useCallback(async () => {
@@ -132,25 +130,20 @@ const ClientPortal: React.FC = () => {
     setActiveTab('home')
   }
 
-  const handleDownload = async (deliverableId: number) => {
-    setFilesError('')
-    setDownloadingId(deliverableId)
-
+  const handleViewContract = async (contractId: number) => {
+    setViewingContractId(contractId)
     try {
-      const { blob, fileName } = await downloadDeliverableBlob(deliverableId)
+      const blob = await fetchContractPdfBlob(contractId)
       const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = fileName
-      link.click()
-      URL.revokeObjectURL(url)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Could not download file'
-      setFilesError(message)
+        'Could not open contract PDF'
+      setError(message)
     } finally {
-      setDownloadingId(null)
+      setViewingContractId(null)
     }
   }
 
@@ -197,7 +190,7 @@ const ClientPortal: React.FC = () => {
   const accent = data?.primaryColor || '#2563eb'
   const nextAction = data ? getNextAction(data) : null
 
-  const tabs: PortalTab[] = ['home', 'documents', 'payments', 'files']
+  const tabs: PortalTab[] = ['home', 'documents', 'payments']
 
   const renderHome = () => {
     if (!data) return null
@@ -245,7 +238,7 @@ const ClientPortal: React.FC = () => {
             <p className="mt-2 text-sm text-green-800">
               <strong>{signedContractTitle}</strong> is complete. You&apos;re all set for now — you
               can sign out or close this page. Come back anytime; your next step will appear on
-              Home when your vendor adds an invoice or files.
+              Home when your vendor adds an invoice or contract.
             </p>
             <button
               type="button"
@@ -357,11 +350,12 @@ const ClientPortal: React.FC = () => {
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('home')}
-                    className="text-sm font-medium"
+                    onClick={() => void handleViewContract(contract.id)}
+                    disabled={viewingContractId === contract.id}
+                    className="text-sm font-medium disabled:opacity-50"
                     style={{ color: accent }}
                   >
-                    Back to Home
+                    {viewingContractId === contract.id ? 'Opening...' : 'View contract PDF'}
                   </button>
                 </div>
               )}
@@ -569,47 +563,6 @@ const ClientPortal: React.FC = () => {
     )
   }
 
-  const renderFiles = () => {
-    if (!data) return null
-
-    if (data.deliverables.length === 0) {
-      return (
-        <EmptySection
-          title="No files yet"
-          description="Photos, galleries, and deliverables from your vendor will appear here."
-        />
-      )
-    }
-
-    return (
-      <ul className="space-y-3">
-        {filesError && (
-          <li className="list-none">
-            <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800">{filesError}</div>
-          </li>
-        )}
-        {data.deliverables.map((file) => (
-          <li key={file.id} className="rounded-2xl bg-white p-5 shadow-sm">
-            <p className="font-medium text-gray-900">{file.title}</p>
-            <p className="mt-1 text-sm text-gray-500">{file.fileName}</p>
-            {file.fileSizeBytes != null && (
-              <p className="text-xs text-gray-400">{formatFileSize(file.fileSizeBytes)}</p>
-            )}
-            <button
-              type="button"
-              onClick={() => handleDownload(file.id)}
-              disabled={downloadingId === file.id}
-              className="mt-3 text-sm font-medium disabled:opacity-50"
-              style={{ color: accent }}
-            >
-              {downloadingId === file.id ? 'Downloading...' : 'Download'}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
@@ -618,8 +571,6 @@ const ClientPortal: React.FC = () => {
         return renderDocuments()
       case 'payments':
         return renderPayments()
-      case 'files':
-        return renderFiles()
       default: {
         const _exhaustive: never = activeTab
         return _exhaustive

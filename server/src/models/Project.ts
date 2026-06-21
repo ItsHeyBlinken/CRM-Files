@@ -1,6 +1,5 @@
 import { getPool } from '../config/database'
 import { Contract } from './Contract'
-import { Deliverable } from './Deliverable'
 import {
   ProjectPaymentSettings,
   type IProjectPaymentSettings,
@@ -104,14 +103,6 @@ export interface IContractSummary {
   acknowledgementLegalName?: string | null
 }
 
-export interface IDeliverableSummary {
-  id: number
-  title: string
-  fileName: string
-  fileSizeBytes: number | null
-  clientVisible: boolean
-}
-
 export interface IClientPortalProject {
   project: IProject
   vendorBusinessName: string
@@ -123,7 +114,6 @@ export interface IClientPortalProject {
   milestones: IMilestone[]
   invoices: IInvoice[]
   contracts: IContractSummary[]
-  deliverables: IDeliverableSummary[]
   pendingInvite: { token: string; email: string; expiresAt: Date } | null
 }
 
@@ -147,14 +137,6 @@ export interface IVendorProjectDetail {
   }>
   milestones: IMilestone[]
   invoices: IInvoice[]
-  deliverables: Array<{
-    id: number
-    title: string
-    fileName: string
-    fileSizeBytes: number | null
-    clientVisible: boolean
-    createdAt: Date
-  }>
 }
 
 function mapProjectRow(row: any): IProject {
@@ -250,7 +232,7 @@ export class ProjectModel {
 
     const pool = getPool()
 
-    const [linkedClientResult, milestonesResult, invoicesResult, contracts, deliverables, paymentSettings] =
+    const [linkedClientResult, milestonesResult, invoicesResult, contracts, paymentSettings] =
       await Promise.all([
       pool.query(
         `
@@ -279,7 +261,6 @@ export class ProjectModel {
         [id]
       ),
       Contract.findByProjectForVendor(id, vendorId),
-      Deliverable.findByProjectForVendor(id, vendorId),
       ProjectPaymentSettings.findByProjectForVendor(id, vendorId),
     ])
 
@@ -323,7 +304,6 @@ export class ProjectModel {
         completedAt: m.completed_at,
       })),
       invoices: invoiceSummaries,
-      deliverables,
     }
   }
 
@@ -433,7 +413,7 @@ export class ProjectModel {
     const project = mapProjectRow(row)
     const projectId = project.id
 
-    const [milestones, invoices, contracts, deliverables, paymentOptions, paymentSettings] = await Promise.all([
+    const [milestones, invoices, contracts, paymentOptions, paymentSettings] = await Promise.all([
       pool.query(
         `
         SELECT * FROM milestones
@@ -452,14 +432,6 @@ export class ProjectModel {
       ),
       pool.query(
         `SELECT id, title, acknowledged_at FROM contracts WHERE project_id = $1 ORDER BY id ASC`,
-        [projectId]
-      ),
-      pool.query(
-        `
-        SELECT id, title, file_name, file_size_bytes, client_visible FROM deliverables
-        WHERE project_id = $1 AND client_visible = true
-        ORDER BY id DESC
-        `,
         [projectId]
       ),
       VendorPaymentSettings.findByProjectForClient(projectId),
@@ -502,13 +474,6 @@ export class ProjectModel {
         id: c.id,
         title: c.title,
         acknowledgedAt: c.acknowledged_at,
-      })),
-      deliverables: deliverables.rows.map((d) => ({
-        id: d.id,
-        title: d.title,
-        fileName: d.file_name,
-        fileSizeBytes: d.file_size_bytes != null ? Number(d.file_size_bytes) : null,
-        clientVisible: d.client_visible,
       })),
       pendingInvite: null,
     }

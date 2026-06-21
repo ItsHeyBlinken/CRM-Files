@@ -16,7 +16,7 @@ NNN_short_descriptive_name.sql
 
 | Rule | Detail |
 |------|--------|
-| **Next number** | `010` (then `011`, `012`, …) |
+| **Next number** | `011` (then `012`, `013`, …) |
 | **Prefix** | Zero-padded: `008`, not `8` |
 | **Suffix** | Short snake_case description of what the migration does |
 | **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
@@ -37,6 +37,7 @@ Example for the next migration: `009_schema_vendor_subscriptions.sql`
 | 007 | **`007_schema_quote_contract_signing.sql`** | E-sign on quote link after acceptance |
 | 008 | **`008_project_payment_settings.sql`** | Project-level payment setup defaults + invoice kind metadata |
 | 009 | **`009_vendor_notifications.sql`** | In-app vendor notifications for client actions |
+| 010 | **`010_drop_deliverables.sql`** | Drop unused `deliverables` table (feature removed from app) |
 
 ### Dev reset & seed (`reset/`)
 
@@ -60,7 +61,7 @@ Test logins are documented in `Memory-Bank/techContext.md`.
 
 ### Current tables
 
-`users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`
+`users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`, `vendor_notifications`
 
 ---
 
@@ -78,7 +79,7 @@ See `archive/legacy-crm/README.md` for details.
 
 ## Upcoming
 
-- **`010_vendor_calendar_entries.sql`** (planned) — vendor-created personal calendar entries: notes, reminders, off-book obligations, optional unavailable blocks; CRUD from `/dashboard/calendar`
+- **`011_vendor_calendar_entries.sql`** (planned) — vendor-created personal calendar entries: notes, reminders, off-book obligations, optional unavailable blocks; CRUD from `/dashboard/calendar`
 - Milestone editing from project detail
 - Stripe Billing for vendor subscriptions (Phase 3e)
 - Transactional email provider (SMTP env already supported in code)

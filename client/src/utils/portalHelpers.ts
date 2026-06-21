@@ -10,7 +10,7 @@ export function getStatusLabel(status: ProjectStatus): string {
     case 'in_progress':
       return 'Your event is in progress'
     case 'delivered':
-      return 'Deliverables are ready'
+      return 'Project delivered'
     case 'complete':
       return 'All wrapped up'
     case 'cancelled':
@@ -125,8 +125,6 @@ export function portalTabLabel(tab: PortalTab): string {
       return 'Documents'
     case 'payments':
       return 'Payments'
-    case 'files':
-      return 'Files'
     default: {
       const _exhaustive: never = tab
       return _exhaustive

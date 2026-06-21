@@ -17,8 +17,8 @@
 
 | Side | Focus | UX bar |
 |------|--------|--------|
-| **Vendor** | Primary investment — quoting, projects, clients, contracts, invoices, deliverables, workflow efficiency | Can be denser and more capable; optimize for *fewer steps* and *clear process* |
-| **Client** | Constrained surface — status, next action, documents, payments, files | Must pass the **3-second test**; no CRM jargon; mobile-first; zero training |
+| **Vendor** | Primary investment — quoting, projects, clients, contracts, invoices, workflow efficiency | Can be denser and more capable; optimize for *fewer steps* and *clear process* |
+| **Client** | Constrained surface — status, next action, documents, payments | Must pass the **3-second test**; no CRM jargon; mobile-first; zero training |
 
 **Implication for roadmap:** New features are designed **vendor-first**; the client only sees what they need to act on (accept quote, sign contract, pay invoice, download files) — never vendor admin complexity.
 
@@ -49,7 +49,7 @@
 4. **Stripe Connect UX** — OAuth “link existing account” vs Express-only — decide and implement
 5. **Polish:** Pre-fill business name from register `company` in onboarding step 1
 6. **Phase 3e:** Platform vendor subscription billing (pre-launch)
-7. **Future:** Vendor calendar personal entries — migration `010` (deferred)
+7. **Future:** Vendor calendar personal entries — migration `011` (deferred)
 
 ## MVP Status
 
@@ -120,7 +120,7 @@
 **Vendor calendar (Phase 2 — planned, not built):**
 - Personal calendar entries vendors create/edit/delete themselves
 - Use cases: payment due reminders, off-book gigs/obligations, travel/prep, “unavailable” blocks
-- Likely migration **`010_vendor_calendar_entries.sql`** + CRUD API + day-click UI on `/dashboard/calendar`
+- Likely migration **`011_vendor_calendar_entries.sql`** + CRUD API + day-click UI on `/dashboard/calendar`
 - Display alongside booked/tentative events (distinct visual style); optional: mark day busy for quote date picker
 - **Not in scope for current E2E / MVP launch** — build after core vendor path is validated
 
@@ -160,6 +160,7 @@
 | `007_schema_quote_contract_signing.sql` | Quote contract e-sign fields | ⬜ Confirm |
 | `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ✅ |
 | `009_vendor_notifications.sql` | In-app vendor notifications | ✅ |
+| `010_drop_deliverables.sql` | Drop unused deliverables table | ✅ |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 | `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
 | `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
@@ -200,23 +201,29 @@
 
 ## Active Technical Decisions
 - Monorepo: `client/`, `server/`, `database/`
-- File storage: `uploads/contracts/{projectId}/`, `uploads/deliverables/{projectId}/`, `uploads/quote-contracts/{quoteId}/`
+- File storage: `uploads/contracts/{projectId}/`, `uploads/quote-contracts/{quoteId}/` (legacy `uploads/deliverables/` may exist on disk but is unused)
 - **Production:** Mount persistent volume at `/app/server/uploads` (Coolify) — container disk is ephemeral without it
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
 - Contract PDF iframes use **same-origin API URLs** (not blob URLs) — helmet `frameSrc: ['self']`
 - **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `010`)
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `011`)
 
 ## Planned Features (Post-MVP / Later)
 
 | Feature | Why | Target |
 |---------|-----|--------|
-| **Vendor calendar personal entries** | Ease of use — vendors need one place for gigs *and* personal reminders (payments due, off-book work, blocked days) | Migration `010` + calendar CRUD UI |
+| **Vendor calendar personal entries** | Ease of use — vendors need one place for gigs *and* personal reminders (payments due, off-book work, blocked days) | Migration `011` + calendar CRUD UI |
 | Stripe Connect OAuth | Link existing Stripe account | TBD |
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
-| Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `010` |
+| Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `011` |
+
+## Session Log (June 21, 2026 — remove deliverables)
+- [x] Removed vendor deliverables upload section and client portal **Files** tab
+- [x] Contracts remain on **Documents** tab — sign + **View contract PDF** after signing
+- [x] Removed deliverable API routes; **`010` — user dropped `deliverables` table in pgAdmin** (was empty)
+- [x] Client portal tabs: Home / Documents / Payments only
 
 ## Session Log (June 20, 2026 — end of session)
 

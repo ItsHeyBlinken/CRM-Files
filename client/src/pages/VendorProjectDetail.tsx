@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { uploadProjectContract } from '../services/contractService'
-import { uploadProjectDeliverable } from '../services/deliverableService'
 import {
   createProjectInvoice,
   deleteProjectInvoice,
@@ -23,7 +22,6 @@ import { getProjectPipelineSteps } from '../utils/projectPipeline'
 import toast from 'react-hot-toast'
 import {
   formatCurrency,
-  formatFileSize,
   getInvoiceDisplayLabel,
   getInvoiceStatusLabel,
 } from '../utils/portalHelpers'
@@ -67,10 +65,6 @@ const VendorProjectDetail: React.FC = () => {
 
   const [contractTitle, setContractTitle] = useState('Photography Agreement')
   const [contractFile, setContractFile] = useState<File | null>(null)
-
-  const [deliverableTitle, setDeliverableTitle] = useState('')
-  const [deliverableDescription, setDeliverableDescription] = useState('')
-  const [deliverableFile, setDeliverableFile] = useState<File | null>(null)
 
   const [invoiceTitle, setInvoiceTitle] = useState('')
   const [invoiceNumber, setInvoiceNumber] = useState('')
@@ -242,31 +236,6 @@ const VendorProjectDetail: React.FC = () => {
       await loadDetail()
     } catch (err: unknown) {
       setError(getApiError(err, 'Failed to upload contract'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleDeliverableUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!deliverableTitle.trim() || !deliverableFile) return
-
-    setSubmitting(true)
-    setError('')
-
-    try {
-      await uploadProjectDeliverable(
-        projectId,
-        deliverableTitle.trim(),
-        deliverableFile,
-        deliverableDescription || undefined
-      )
-      setDeliverableTitle('')
-      setDeliverableDescription('')
-      setDeliverableFile(null)
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to upload deliverable'))
     } finally {
       setSubmitting(false)
     }
@@ -489,7 +458,7 @@ const VendorProjectDetail: React.FC = () => {
     )
   }
 
-  const { project, linkedClient, paymentSummary, contracts, milestones, invoices, deliverables } =
+  const { project, linkedClient, paymentSummary, contracts, milestones, invoices } =
     detail
 
   return (
@@ -825,59 +794,6 @@ const VendorProjectDetail: React.FC = () => {
               </button>
             </form>
           )}
-        </section>
-
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="font-medium text-gray-900">Deliverables</h2>
-          <p className="text-sm text-gray-600">
-            Upload photos, galleries, or files for your client to download from their portal.
-          </p>
-
-          {deliverables.length > 0 && (
-            <ul className="space-y-2">
-              {deliverables.map((item) => (
-                <li key={item.id} className="rounded-md bg-gray-50 p-4 text-sm">
-                  <p className="font-medium text-gray-900">{item.title}</p>
-                  <p className="text-gray-600">{item.fileName}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formatFileSize(item.fileSizeBytes)}
-                    {item.clientVisible ? ' · Visible to client' : ' · Hidden from client'}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <form onSubmit={handleDeliverableUpload} className="space-y-4 border-t border-gray-100 pt-4">
-            <input
-              required
-              placeholder="Title (e.g. Engagement gallery)"
-              value={deliverableTitle}
-              onChange={(e) => setDeliverableTitle(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
-            />
-            <input
-              placeholder="Description (optional)"
-              value={deliverableDescription}
-              onChange={(e) => setDeliverableDescription(e.target.value)}
-              className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
-            />
-            <input
-              required
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.zip,application/pdf,image/*,application/zip"
-              onChange={(e) => setDeliverableFile(e.target.files?.[0] ?? null)}
-              className="w-full max-w-md text-sm text-gray-600"
-            />
-            <p className="text-xs text-gray-500">PDF, JPG, PNG, GIF, WEBP, or ZIP — max 10MB</p>
-            <button
-              type="submit"
-              disabled={submitting || !deliverableFile}
-              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-            >
-              {submitting ? 'Uploading...' : 'Upload deliverable'}
-            </button>
-          </form>
         </section>
 
         {milestones.length > 0 && (

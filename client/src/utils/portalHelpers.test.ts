@@ -56,7 +56,6 @@ function buildPortalData(): ClientPortalData {
       },
     ],
     contracts: [],
-    deliverables: [],
   }
 }
 

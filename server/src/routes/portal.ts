@@ -2,7 +2,6 @@ import { Router, Response } from 'express'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { Project } from '../models/Project'
 import { Contract } from '../models/Contract'
-import { Deliverable } from '../models/Deliverable'
 import { Invoice } from '../models/Invoice'
 import { createInvoiceCheckoutSession, isStripeConfigured } from '../services/stripeService'
 import { notifyInvoicePaymentClaimed } from '../services/notificationService'
@@ -157,37 +156,6 @@ router.post('/contracts/:id/acknowledge', async (req: AuthRequest, res: Response
     }
 
     res.status(500).json({ error: 'Failed to sign contract' })
-  }
-})
-
-// GET /api/portal/deliverables/:id/file
-router.get('/deliverables/:id/file', async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const deliverable = await Deliverable.findByIdForClient(
-      Number(req.params['id']),
-      Number(req.user.id)
-    )
-
-    if (!deliverable) {
-      res.status(404).json({ error: 'File not found' })
-      return
-    }
-
-    const absolutePath = Deliverable.getAbsolutePath(deliverable.filePath)
-    const mimeType = deliverable.mimeType || 'application/octet-stream'
-    res.setHeader('Content-Type', mimeType)
-    res.setHeader('Content-Disposition', `attachment; filename="${deliverable.fileName}"`)
-    res.sendFile(absolutePath, (err) => {
-      if (err) {
-        logger.error('Deliverable file send error:', err)
-        if (!res.headersSent) {
-          res.status(404).json({ error: 'File not found on server' })
-        }
-      }
-    })
-  } catch (error) {
-    logger.error('Deliverable file error:', error)
-    res.status(500).json({ error: 'Failed to download file' })
   }
 })
 
