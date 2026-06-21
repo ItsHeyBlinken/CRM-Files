@@ -494,3 +494,4 @@
 - [x] Client portal branded header — logo, business name, tagline, accent bar (`ClientPortalHeader.tsx`)
 - [x] Portal API returns `vendorTagline` from `vendor_profiles.tagline`
 - [x] Home card no longer duplicates vendor name (project title focus)
+- [x] Project contract re-upload when PDF missing on disk (`fileAvailable`, vendor UI + API replace)

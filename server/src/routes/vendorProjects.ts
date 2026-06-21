@@ -114,15 +114,20 @@ router.post(
 
       const relativeFilePath = path.join('contracts', String(projectId), req.file.filename)
 
-      const contract = await Contract.create(projectId, Number(req.user.id), {
+      const existing = await Contract.findOneByProjectForVendor(projectId, Number(req.user.id))
+      const contractPayload = {
         title,
         relativeFilePath: relativeFilePath.replace(/\\/g, '/'),
         fileName: req.file.originalname,
         fileSizeBytes: req.file.size,
         mimeType: req.file.mimetype,
-      })
+      }
 
-      res.status(201).json({ contract })
+      const contract = existing
+        ? await Contract.replaceFile(projectId, Number(req.user.id), contractPayload)
+        : await Contract.create(projectId, Number(req.user.id), contractPayload)
+
+      res.status(existing ? 200 : 201).json({ contract })
     } catch (error: unknown) {
       if (error instanceof Error && error.message === 'PROJECT_NOT_FOUND') {
         res.status(404).json({ error: 'Project not found' })
@@ -131,6 +136,12 @@ router.post(
       if (error instanceof Error && error.message === 'CONTRACT_ALREADY_EXISTS') {
         res.status(409).json({
           error: 'This project already has a contract. MVP supports one contract per project.',
+        })
+        return
+      }
+      if (error instanceof Error && error.message === 'CONTRACT_ALREADY_SIGNED') {
+        res.status(409).json({
+          error: 'Client already signed this contract — contact support if you need a new agreement.',
         })
         return
       }

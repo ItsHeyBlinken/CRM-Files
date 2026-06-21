@@ -754,16 +754,52 @@ const VendorProjectDetail: React.FC = () => {
           <h2 className="font-medium text-gray-900">Contract</h2>
           {contracts.length > 0 ? (
             contracts.map((contract) => (
-              <div key={contract.id} className="rounded-md bg-gray-50 p-4 text-sm">
-                <p className="font-medium text-gray-900">{contract.title}</p>
-                <p className="text-gray-600">{contract.fileName}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {contract.acknowledgedAt
-                    ? contract.acknowledgementLegalName
-                      ? `Signed electronically as ${contract.acknowledgementLegalName} on ${formatUsDate(contract.acknowledgedAt)}`
-                      : `Signed ${formatUsDate(contract.acknowledgedAt)}`
-                    : 'Waiting for client signature'}
-                </p>
+              <div key={contract.id} className="space-y-4">
+                <div className="rounded-md bg-gray-50 p-4 text-sm">
+                  <p className="font-medium text-gray-900">{contract.title}</p>
+                  <p className="text-gray-600">{contract.fileName}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {contract.acknowledgedAt
+                      ? contract.acknowledgementLegalName
+                        ? `Signed electronically as ${contract.acknowledgementLegalName} on ${formatUsDate(contract.acknowledgedAt)}`
+                        : `Signed ${formatUsDate(contract.acknowledgedAt)}`
+                      : 'Waiting for client signature'}
+                  </p>
+                </div>
+                {!contract.fileAvailable && (
+                  <>
+                    <p className="text-sm text-red-800 bg-red-50 rounded-lg px-3 py-2">
+                      The contract PDF is missing on the server (often after a redeploy without a
+                      persistent uploads volume). Re-upload the file below so your client can review
+                      and sign it in their portal.
+                    </p>
+                    {!contract.acknowledgedAt && (
+                      <form onSubmit={handleContractUpload} className="space-y-4">
+                        <input
+                          required
+                          placeholder="Contract title (e.g. Photography Agreement)"
+                          value={contractTitle}
+                          onChange={(e) => setContractTitle(e.target.value)}
+                          className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                        <input
+                          required
+                          type="file"
+                          accept="application/pdf,.pdf"
+                          onChange={(e) => setContractFile(e.target.files?.[0] ?? null)}
+                          className="w-full max-w-md text-sm text-gray-600"
+                        />
+                        <button
+                          type="submit"
+                          disabled={submitting || !contractFile}
+                          className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                        >
+                          {submitting ? 'Uploading...' : 'Re-upload PDF'}
+                        </button>
+                      </form>
+                    )}
+                  </>
+                )}
               </div>
             ))
           ) : (

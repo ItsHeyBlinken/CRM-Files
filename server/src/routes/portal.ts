@@ -45,6 +45,12 @@ router.get('/contracts/:id/signing-context', async (req: AuthRequest, res: Respo
 
     res.json({ context })
   } catch (error) {
+    if (error instanceof Error && error.message === 'CONTRACT_FILE_MISSING') {
+      res.status(404).json({
+        error: 'Contract file not found on server. Ask your vendor to re-upload the PDF.',
+      })
+      return
+    }
     logger.error('Contract signing context error:', error)
     res.status(500).json({ error: 'Failed to load contract signing details' })
   }
@@ -60,6 +66,17 @@ router.get('/contracts/:id/file', async (req: AuthRequest, res: Response): Promi
 
     if (!contract) {
       res.status(404).json({ error: 'Contract not found' })
+      return
+    }
+
+    if (!Contract.fileExists(contract.filePath)) {
+      logger.error('Portal contract file missing on disk:', {
+        contractId: contract.id,
+        filePath: contract.filePath,
+      })
+      res.status(404).json({
+        error: 'Contract file not found on server. Ask your vendor to re-upload the PDF.',
+      })
       return
     }
 
@@ -145,6 +162,11 @@ router.post('/contracts/:id/acknowledge', async (req: AuthRequest, res: Response
         case 'REVIEW_INCOMPLETE':
           res.status(400).json({
             error: 'Please review the full contract (scroll to the end or read for at least 15 seconds)',
+          })
+          return
+        case 'CONTRACT_FILE_MISSING':
+          res.status(404).json({
+            error: 'Contract file not found on server. Ask your vendor to re-upload the PDF.',
           })
           return
         case 'LEGAL_NAME_CONFIRMATION_REQUIRED':

@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { getPool } from '../config/database'
 import {
@@ -33,6 +34,7 @@ export interface IContractSummary {
   id: number
   title: string
   fileName: string
+  fileAvailable: boolean
   acknowledgedAt: Date | null
   acknowledgementLegalName: string | null
   createdAt: Date
@@ -104,18 +106,24 @@ function mapContractRow(row: {
   }
 }
 
-function mapSummaryRow(row: {
-  id: number
-  title: string
-  file_name: string
-  acknowledged_at: Date | null
-  acknowledgement_legal_name?: string | null
-  created_at: Date
-}): IContractSummary {
+function mapSummaryRow(
+  row: {
+    id: number
+    title: string
+    file_name: string
+    file_path?: string
+    acknowledged_at: Date | null
+    acknowledgement_legal_name?: string | null
+    created_at: Date
+  },
+  filePath?: string
+): IContractSummary {
+  const resolvedFilePath = filePath ?? row.file_path ?? ''
   return {
     id: row.id,
     title: row.title,
     fileName: row.file_name,
+    fileAvailable: resolvedFilePath ? ContractModel.fileExists(resolvedFilePath) : false,
     acknowledgedAt: row.acknowledged_at,
     acknowledgementLegalName: row.acknowledgement_legal_name ?? null,
     createdAt: row.created_at,
@@ -127,6 +135,33 @@ export class ContractModel {
     return path.join(process.cwd(), 'uploads', relativePath)
   }
 
+  static fileExists(relativePath: string): boolean {
+    return fs.existsSync(this.getAbsolutePath(relativePath))
+  }
+
+  static async findOneByProjectForVendor(
+    projectId: number,
+    vendorId: number
+  ): Promise<IContract | null> {
+    const pool = getPool()
+    const result = await pool.query(
+      `
+      SELECT c.*
+      FROM contracts c
+      INNER JOIN projects p ON p.id = c.project_id
+      WHERE c.project_id = $1 AND p.vendor_id = $2
+      LIMIT 1
+      `,
+      [projectId, vendorId]
+    )
+
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    return mapContractRow(result.rows[0])
+  }
+
   static async findByProjectForVendor(
     projectId: number,
     vendorId: number
@@ -134,7 +169,7 @@ export class ContractModel {
     const pool = getPool()
     const result = await pool.query(
       `
-      SELECT c.id, c.title, c.file_name, c.acknowledged_at, c.acknowledgement_legal_name, c.created_at
+      SELECT c.id, c.title, c.file_name, c.file_path, c.acknowledged_at, c.acknowledgement_legal_name, c.created_at
       FROM contracts c
       INNER JOIN projects p ON p.id = c.project_id
       WHERE c.project_id = $1 AND p.vendor_id = $2
@@ -143,7 +178,7 @@ export class ContractModel {
       [projectId, vendorId]
     )
 
-    return result.rows.map(mapSummaryRow)
+    return result.rows.map((row) => mapSummaryRow(row))
   }
 
   static async countByProject(projectId: number): Promise<number> {
@@ -201,6 +236,60 @@ export class ContractModel {
       ]
     )
 
+    return mapSummaryRow(result.rows[0], data.relativeFilePath)
+  }
+
+  static async replaceFile(
+    projectId: number,
+    vendorId: number,
+    data: {
+      title: string
+      relativeFilePath: string
+      fileName: string
+      fileSizeBytes: number
+      mimeType: string
+    }
+  ): Promise<IContractSummary> {
+    const existing = await this.findOneByProjectForVendor(projectId, vendorId)
+    if (!existing) {
+      throw new Error('CONTRACT_NOT_FOUND')
+    }
+
+    if (existing.acknowledgedAt) {
+      throw new Error('CONTRACT_ALREADY_SIGNED')
+    }
+
+    const pool = getPool()
+    const oldPath = existing.filePath
+
+    const result = await pool.query(
+      `
+      UPDATE contracts
+      SET title = $2,
+          file_path = $3,
+          file_name = $4,
+          file_size_bytes = $5,
+          mime_type = $6,
+          updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, title, file_name, file_path, acknowledged_at, acknowledgement_legal_name, created_at
+      `,
+      [
+        existing.id,
+        data.title,
+        data.relativeFilePath,
+        data.fileName,
+        data.fileSizeBytes,
+        data.mimeType,
+      ]
+    )
+
+    const oldAbsolute = this.getAbsolutePath(oldPath)
+    const newAbsolute = this.getAbsolutePath(data.relativeFilePath)
+    if (oldAbsolute !== newAbsolute && fs.existsSync(oldAbsolute)) {
+      fs.unlinkSync(oldAbsolute)
+    }
+
     return mapSummaryRow(result.rows[0])
   }
 
@@ -250,6 +339,10 @@ export class ContractModel {
     const lastName = String(userResult.rows[0].last_name ?? '').trim()
     const accountLegalName = `${firstName} ${lastName}`.trim()
 
+    if (!this.fileExists(contract.filePath)) {
+      throw new Error('CONTRACT_FILE_MISSING')
+    }
+
     const absolutePath = this.getAbsolutePath(contract.filePath)
     const pdfHash = await sha256File(absolutePath)
 
@@ -285,6 +378,7 @@ export class ContractModel {
         id: contract.id,
         title: contract.title,
         fileName: contract.fileName,
+        fileAvailable: this.fileExists(contract.filePath),
         acknowledgedAt: contract.acknowledgedAt,
         acknowledgementLegalName: contract.acknowledgementLegalName,
         createdAt: contract.createdAt,
@@ -298,6 +392,10 @@ export class ContractModel {
 
     if (!input.consentAccepted) {
       throw new Error('CONSENT_REQUIRED')
+    }
+
+    if (!this.fileExists(contract.filePath)) {
+      throw new Error('CONTRACT_FILE_MISSING')
     }
 
     const absolutePath = this.getAbsolutePath(contract.filePath)

@@ -4,6 +4,7 @@ export interface VendorContract {
   id: number
   title: string
   fileName: string
+  fileAvailable: boolean
   acknowledgedAt: string | null
   acknowledgementLegalName?: string | null
   createdAt: string

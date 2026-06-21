@@ -34,6 +34,7 @@ export interface VendorProjectDetail {
     id: number
     title: string
     fileName: string
+    fileAvailable: boolean
     acknowledgedAt: string | null
     acknowledgementLegalName?: string | null
     createdAt: string

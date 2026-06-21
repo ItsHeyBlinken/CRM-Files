@@ -133,7 +133,9 @@ export interface IVendorProjectDetail {
     id: number
     title: string
     fileName: string
+    fileAvailable: boolean
     acknowledgedAt: Date | null
+    acknowledgementLegalName?: string | null
     createdAt: Date
   }>
   milestones: IMilestone[]
