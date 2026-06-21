@@ -113,6 +113,9 @@ const VendorProjectDetail: React.FC = () => {
       setDetail(data)
       setHasPaymentMethod(onboarding.status.hasPaymentMethod)
       setInviteEmail(data.linkedClient?.email ?? data.project.clientEmail ?? '')
+      if (data.contracts[0]?.title) {
+        setContractTitle(data.contracts[0].title)
+      }
       setPaymentSetupForm({
         projectTotal:
           data.paymentSettings.projectTotal != null ? String(data.paymentSettings.projectTotal) : '',
@@ -461,6 +464,10 @@ const VendorProjectDetail: React.FC = () => {
   const { project, linkedClient, paymentSummary, contracts, milestones, invoices } =
     detail
 
+  const isContractFileMissing = (
+    contract: (typeof contracts)[number]
+  ): boolean => contract.fileAvailable !== true
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
@@ -766,39 +773,53 @@ const VendorProjectDetail: React.FC = () => {
                       : 'Waiting for client signature'}
                   </p>
                 </div>
-                {!contract.fileAvailable && (
-                  <>
-                    <p className="text-sm text-red-800 bg-red-50 rounded-lg px-3 py-2">
-                      The contract PDF is missing on the server (often after a redeploy without a
-                      persistent uploads volume). Re-upload the file below so your client can review
-                      and sign it in their portal.
+                {isContractFileMissing(contract) && (
+                  <p className="text-sm text-red-800 bg-red-50 rounded-lg px-3 py-2">
+                    The contract PDF is missing on the server (often after a redeploy). Upload the
+                    file below so your client can review and sign it in their portal.
+                  </p>
+                )}
+                {!contract.acknowledgedAt ? (
+                  <form onSubmit={handleContractUpload} className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      {isContractFileMissing(contract)
+                        ? 'Choose the contract PDF to restore it for your client.'
+                        : 'Replace the contract PDF before your client signs, if needed.'}
                     </p>
-                    {!contract.acknowledgedAt && (
-                      <form onSubmit={handleContractUpload} className="space-y-4">
-                        <input
-                          required
-                          placeholder="Contract title (e.g. Photography Agreement)"
-                          value={contractTitle}
-                          onChange={(e) => setContractTitle(e.target.value)}
-                          className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
-                        />
-                        <input
-                          required
-                          type="file"
-                          accept="application/pdf,.pdf"
-                          onChange={(e) => setContractFile(e.target.files?.[0] ?? null)}
-                          className="w-full max-w-md text-sm text-gray-600"
-                        />
-                        <button
-                          type="submit"
-                          disabled={submitting || !contractFile}
-                          className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-                        >
-                          {submitting ? 'Uploading...' : 'Re-upload PDF'}
-                        </button>
-                      </form>
-                    )}
-                  </>
+                    <input
+                      required
+                      placeholder="Contract title (e.g. Photography Agreement)"
+                      value={contractTitle}
+                      onChange={(e) => setContractTitle(e.target.value)}
+                      className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md"
+                    />
+                    <input
+                      required
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      onChange={(e) => setContractFile(e.target.files?.[0] ?? null)}
+                      className="w-full max-w-md text-sm text-gray-600"
+                    />
+                    <button
+                      type="submit"
+                      disabled={submitting || !contractFile}
+                      className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                    >
+                      {submitting
+                        ? 'Uploading...'
+                        : isContractFileMissing(contract)
+                          ? 'Re-upload PDF'
+                          : 'Replace PDF'}
+                    </button>
+                  </form>
+                ) : (
+                  isContractFileMissing(contract) && (
+                    <p className="text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2">
+                      This contract was signed, but the PDF file is missing on the server. Keep a
+                      copy from your records; clients may not be able to view it until you add a
+                      new agreement on a future project.
+                    </p>
+                  )
                 )}
               </div>
             ))

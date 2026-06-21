@@ -69,7 +69,24 @@ export async function fetchContractPdfBlob(contractId: number): Promise<Blob> {
   const response = await api.get(`/portal/contracts/${contractId}/file`, {
     responseType: 'blob',
   })
-  return response.data
+  const blob = response.data as Blob
+  const contentType = String(response.headers['content-type'] ?? blob.type ?? '')
+
+  if (!contentType.includes('pdf')) {
+    const text = await blob.text()
+    let message = 'Failed to load contract PDF'
+    try {
+      const parsed = JSON.parse(text) as { error?: string }
+      if (parsed.error) {
+        message = parsed.error
+      }
+    } catch {
+      // keep default message
+    }
+    throw new Error(message)
+  }
+
+  return blob
 }
 
 export async function acknowledgeContract(
