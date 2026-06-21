@@ -17,6 +17,7 @@ function buildPortalData(): ClientPortalData {
     },
     vendorBusinessName: 'Sam Photography',
     vendorLogoUrl: null,
+    vendorTagline: 'Capturing your day, beautifully.',
     primaryColor: '#2563eb',
     paymentOptions: {
       stripeEnabled: true,

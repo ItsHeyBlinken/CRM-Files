@@ -59,9 +59,10 @@
 | Vendor project list + create | ✅ Done |
 | Vendor project detail + **edit overview** | ✅ Done |
 | Client invite flow + duplicate-client guards | ✅ Done |
-| Client portal (Home / Documents / Payments / Files) | ✅ Done |
+| Client portal (Home / Documents / Payments) | ✅ Done |
+| Client portal vendor branding (logo, tagline) | ✅ Done |
 | Contract PDF upload + enhanced e-sign audit trail | ✅ Done |
-| Deliverable upload + client download | ✅ Done |
+| Deliverable upload + client download | ❌ Removed (external gallery tools) |
 | Legacy CRM cleanup | ✅ Done (June 2026) |
 | Quoting / proposals | ✅ Built |
 | Quote + optional contract attachment | ✅ Built |
@@ -239,6 +240,15 @@
 - [x] All user-facing dates **MM-DD-YYYY** (quotes, portal, projects, calendar, invoices, notifications)
 - [x] `formatEventDate()` / `formatCalendarDate()` delegate to shared formatter
 - [x] API/storage unchanged (`YYYY-MM-DD`)
+
+### Client portal branding
+- [x] `ClientPortalHeader` — vendor logo (or accent initial), business name, tagline, accent top bar
+- [x] Client name shown below branding; home card focuses on project title (no duplicate vendor name)
+- [x] API: `vendorTagline` from `vendor_profiles.tagline` in `Project.findClientProject()`
+
+### Deliverables removed
+- [x] Files tab, upload UI, deliverable API routes removed; contracts remain on Documents
+- [x] `database/010_drop_deliverables.sql` — user applied in pgAdmin
 
 ### Prior this session (already committed)
 - [x] SmoothGig rebrand + vendor polish (dashboard, notifications, email, pipeline, settings)

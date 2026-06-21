@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ClientPortalHeader from '../components/portal/ClientPortalHeader'
 import ContractSignPanel from '../components/portal/ContractSignPanel'
 import { fetchContractPdfBlob } from '../services/contractService'
 import {
@@ -251,10 +252,7 @@ const ClientPortal: React.FC = () => {
         )}
 
         <section className="rounded-2xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium" style={{ color: accent }}>
-            {data.vendorBusinessName}
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold text-gray-900">{data.project.title}</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">{data.project.title}</h2>
           <p className="mt-2 text-gray-600">{getStatusLabel(data.project.status)}</p>
           <p className="mt-3 text-sm text-gray-500">
             {formatEventDate(data.project.eventDate)}
@@ -606,25 +604,14 @@ const ClientPortal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 pb-24">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: accent }}>
-              {data.vendorBusinessName}
-            </p>
-            <h1 className="text-lg font-semibold text-gray-900 truncate">
-              {data.project.clientDisplayName || user?.firstName || 'Your portal'}
-            </h1>
-          </div>
-          <button
-            type="button"
-            onClick={() => logout()}
-            className="text-sm text-gray-500 shrink-0 ml-3"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+      <ClientPortalHeader
+        vendorBusinessName={data.vendorBusinessName}
+        vendorLogoUrl={data.vendorLogoUrl}
+        vendorTagline={data.vendorTagline}
+        primaryColor={accent}
+        clientLabel={data.project.clientDisplayName || user?.firstName || 'Your portal'}
+        onSignOut={() => logout()}
+      />
 
       <main className="max-w-lg mx-auto px-4 py-5">{renderTabContent()}</main>
 

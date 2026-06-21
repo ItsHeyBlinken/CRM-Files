@@ -484,4 +484,13 @@
 4. Stripe Connect OAuth vs Express — decide
 5. Register smoothgig.com + favicon/logo
 6. Phase 3e vendor subscription (pre-launch)
-7. Calendar personal entries — migration `010` (deferred)
+7. Calendar personal entries — migration `011` (deferred)
+
+### Session: Deliverables removal + client portal branding (June 20, 2026)
+- [x] Removed deliverables feature (vendor upload, client Files tab, API routes, model queries)
+- [x] Client portal tabs: Home / Documents / Payments only
+- [x] Signed contract PDF view on Documents tab
+- [x] `database/010_drop_deliverables.sql` for other environments
+- [x] Client portal branded header — logo, business name, tagline, accent bar (`ClientPortalHeader.tsx`)
+- [x] Portal API returns `vendorTagline` from `vendor_profiles.tagline`
+- [x] Home card no longer duplicates vendor name (project title focus)

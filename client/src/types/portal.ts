@@ -104,6 +104,7 @@ export interface ClientPortalData {
   project: Project
   vendorBusinessName: string
   vendorLogoUrl: string | null
+  vendorTagline: string | null
   primaryColor: string
   paymentOptions: ClientPaymentOptions
   paymentSettings: ProjectPaymentSettings

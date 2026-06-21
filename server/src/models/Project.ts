@@ -107,6 +107,7 @@ export interface IClientPortalProject {
   project: IProject
   vendorBusinessName: string
   vendorLogoUrl: string | null
+  vendorTagline: string | null
   primaryColor: string
   paymentOptions: IClientPaymentOptions
   paymentSettings: IProjectPaymentSettings
@@ -394,6 +395,7 @@ export class ProjectModel {
       SELECT p.*,
         COALESCE(vp.business_name, u.first_name || ' ' || u.last_name) AS vendor_business_name,
         vp.logo_url,
+        vp.tagline AS vendor_tagline,
         COALESCE(vp.primary_color, '#2563eb') AS primary_color
       FROM project_clients pc
       INNER JOIN projects p ON p.id = pc.project_id
@@ -454,6 +456,7 @@ export class ProjectModel {
       project,
       vendorBusinessName: row.vendor_business_name,
       vendorLogoUrl: row.logo_url ?? null,
+      vendorTagline: row.vendor_tagline ?? null,
       primaryColor: row.primary_color,
       paymentOptions,
       paymentSettings,
