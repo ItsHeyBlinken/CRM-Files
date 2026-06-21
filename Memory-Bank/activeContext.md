@@ -24,30 +24,29 @@
 
 ## Current Work Focus
 
-**Session ended (June 20, 2026).** User committed **app-wide US date format** (`MM-DD-YYYY`). Prior session work (rebrand, polish, migrations `008`/`009`, quote-contract fixes) is deployed or ready to deploy.
+**Session ended (June 21, 2026 — evening).** Production **client portal contract sign/view** verified working after uploads volume + re-upload + iframe auth fix. **Family UAT guide** written for wife/MIL testing. User handles commits manually — pending changes not yet committed.
 
-**Deferred for later (user confirmed):** Vendor calendar **personal entries** — notes/reminders on days (payments due, off-book obligations, unavailable blocks). See **Planned Features** below.
+**Next up:** Email family testers using `docs/family-uat-guide.md`; collect feedback; triage bugs from UAT.
+
+**Deferred for later (user confirmed):** Vendor calendar **personal entries** — migration `011` (see Planned Features).
 
 ## When You Return — Start Here
 
-1. **Deploy latest client + server** to production (includes US date format, quote contract multipart fix, CSP iframe fix, mobile quote layout).
-   - **If you see `Not Found - /api/vendor/calendar|dashboard|notifications|profile`:** production is running an **old server build** while the client is new. Force a **full Coolify redeploy** from latest `main` (clear build cache). Startup logs should show `CODE VERSION: v2.2.0-vendor-routes`.
-2. **Production uploads volume** — confirm Coolify persistent volume mounted at **`/app/server/uploads`**; re-upload any quote contracts that 404’d before the volume was set.
-3. **Confirm migrations `002`–`007`** in pgAdmin if quote/contract/onboarding flows ever fail (see Database Status table). **`008` + `009` are applied.**
-4. **E2E test — full vendor path:**
-   - Register → onboarding → quote **with contract PDF** → client link → view/sign PDF → convert → invite → portal
-   - Verify contract PDF survives **redeploy** (volume test)
-5. **E2E test — payments path:** Project payment setup → deposit invoice → client P2P + optional Stripe card pay
-6. **Verify notifications + email** (needs `009` + optional SMTP env vars)
-7. **Launch prep (non-code):** Register **smoothgig.com**, favicon/logo, trademark check
+1. **Family UAT** — send `docs/family-uat-guide.md` with live logins + quote/invite links filled in; collect screenshots/notes
+2. **Triage UAT feedback** — mobile UX, 3-second test, payment flow clarity
+3. **Commit pending work** if not yet committed (portal branding, contract re-upload, iframe auth, UAT doc)
+4. **Production uploads volume** — confirmed at **`/app/server/uploads`**; re-upload fixes missing `contracts/` tree; verify PDF survives redeploy
+5. **E2E — full vendor path** (quote → accept → sign → convert → invite → portal sign) — largely validated on prod project #6
+6. **E2E — payments path** — deposit invoice, P2P claim, optional Stripe Checkout
+7. **Launch prep:** Register **smoothgig.com**, favicon/logo, trademark check
 
 ## Next Session — Priority Order
 
-1. **Production smoke after deploy** — quote PDF iframe loads (no CSP blob error); event dates show `MM-DD-YYYY` everywhere
-2. **E2E — new vendor full path** (quote + contract + accept + sign + convert + invite + portal)
+1. **Family UAT results** — fix blockers from wife/MIL feedback (especially mobile client portal)
+2. **Commit + deploy** any UAT fixes
 3. **E2E — payments path** (deposit invoice, P2P claim, optional Stripe Checkout)
-4. **Stripe Connect UX** — OAuth “link existing account” vs Express-only — decide and implement
-5. **Polish:** Pre-fill business name from register `company` in onboarding step 1
+4. **Volume persistence test** — redeploy and confirm `uploads/contracts/` PDFs still load
+5. **Stripe Connect UX** — OAuth “link existing account” vs Express-only
 6. **Phase 3e:** Platform vendor subscription billing (pre-launch)
 7. **Future:** Vendor calendar personal entries — migration `011` (deferred)
 
@@ -84,7 +83,9 @@
 | Event-neutral UI copy (`eventDate`, `clientDisplayName`) | ✅ Done |
 | **US date display (`MM-DD-YYYY` app-wide)** | ✅ Built (June 20, 2026) |
 | Quote contract upload + re-upload API | ✅ Built |
-| Quote contract iframe (CSP-safe API URLs) | ✅ Built — redeploy required |
+| Quote contract iframe (CSP-safe public API URLs) | ✅ Built |
+| **Portal contract iframe (auth via `access_token` query on GET)** | ✅ Built + verified prod |
+| Project contract re-upload when PDF missing on disk | ✅ Built |
 | Mobile-responsive quote document layout | ✅ Built |
 | Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
 | Monetization (vendor → platform subscription) | 📋 Phase 3e — see `monetization.md` |
@@ -205,7 +206,8 @@
 - File storage: `uploads/contracts/{projectId}/`, `uploads/quote-contracts/{quoteId}/` (legacy `uploads/deliverables/` may exist on disk but is unused)
 - **Production:** Mount persistent volume at `/app/server/uploads` (Coolify) — container disk is ephemeral without it
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
-- Contract PDF iframes use **same-origin API URLs** (not blob URLs) — helmet `frameSrc: ['self']`
+- **Portal contract PDF iframe:** same-origin `/api/portal/contracts/:id/file?access_token=JWT` — iframes cannot send `Authorization` header; `protect` middleware accepts query token on **GET only**; helmet `frameSrc: ['self']` (no blob URLs)
+- **Signed contract view (new tab):** authenticated blob fetch + `URL.createObjectURL` (not iframe)
 - **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
 - Stripe webhook: raw body at `/api/webhooks/stripe`
 - **Git commits / push:** user only
@@ -219,6 +221,34 @@
 | Stripe Connect OAuth | Link existing Stripe account | TBD |
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `011` |
+
+## Session Log (June 21, 2026 — evening: contracts, prod fixes, UAT prep)
+
+### Production contract PDF issues (resolved)
+- [x] Diagnosed `ENOENT` on `/app/server/uploads/contracts/{projectId}/` — DB row existed but file missing (pre-volume or never written)
+- [x] Confirmed Coolify volume mount **`/app/server/uploads`** — `quote-contracts/` and `vendor-logos/` present; user re-uploaded project contract → `contracts/6/*.pdf` created
+- [x] **`Contract.replaceFile`** + **`fileAvailable`** on project contracts; vendor project detail always shows re-upload/replace for unsigned contracts
+- [x] Portal routes return clear 404 when file missing (`CONTRACT_FILE_MISSING`)
+
+### Client portal contract iframe auth (resolved)
+- [x] Root cause: iframe `src` to protected API without JWT → JSON `"Not authorized to access this route"`
+- [x] Attempted blob URL iframe → blocked by CSP `frame-src 'self'` on production
+- [x] **Final fix:** `getPortalContractFileUrl()` appends `?access_token=` from localStorage; `auth.ts` `protect` reads query token on GET
+- [x] `ContractSignPanel` uses same-origin URL; detects JSON error in iframe before marking review complete
+- [x] `nixpacks.toml` build check: `access_token` present in `dist/middleware/auth.js`
+- [x] User confirmed portal contract sign/view **works** after redeploy
+
+### Client portal branding (same day, earlier)
+- [x] `ClientPortalHeader` — logo, business name, tagline, accent bar; API `vendorTagline`
+
+### Family UAT
+- [x] Created **`docs/family-uat-guide.md`** — vendor + client checklists, email intro, placeholders for logins/links
+- [ ] User to fill placeholders and email wife/MIL for live testing on `plannercrm.bytesbyblinken.com`
+
+### Pending user actions
+- [ ] Git commit pending session changes (user commits manually)
+- [ ] Run family UAT; log feedback
+- [ ] Redeploy volume persistence test when convenient
 
 ## Session Log (June 21, 2026 — remove deliverables)
 - [x] Removed vendor deliverables upload section and client portal **Files** tab

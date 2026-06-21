@@ -72,7 +72,7 @@
 - **Deliverables**: Multer upload, client download via authenticated route
 - **Quote contracts**: PDF at `uploads/quote-contracts/{quoteId}/`; public download via quote token
 - **MVP storage**: Local filesystem; **production requires persistent volume** at `/app/server/uploads`
-- **PDF preview**: Iframes load same-origin API file URLs (not blob URLs) for CSP compatibility
+- **PDF preview:** Quote iframes use public same-origin API URLs. **Portal contract sign iframe** uses `/api/portal/contracts/:id/file?access_token=JWT` (GET-only query auth). Avoid blob URLs in iframes — CSP `frame-src 'self'` on production. Post-sign **view PDF** uses authenticated blob fetch in a new tab.
 
 ## Design Patterns in Use
 

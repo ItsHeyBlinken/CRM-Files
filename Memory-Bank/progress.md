@@ -495,3 +495,43 @@
 - [x] Portal API returns `vendorTagline` from `vendor_profiles.tagline`
 - [x] Home card no longer duplicates vendor name (project title focus)
 - [x] Project contract re-upload when PDF missing on disk (`fileAvailable`, vendor UI + API replace)
+
+---
+
+## End of session — June 21, 2026 (evening)
+
+**Stopped here.** Portal contract sign/view verified on production. Family UAT guide ready to send.
+
+### Shipped this session (code — user to commit when ready)
+- Client portal **branded header** (`ClientPortalHeader`, `vendorTagline` API)
+- **Project contract re-upload** (`Contract.replaceFile`, `fileAvailable`, vendor UI)
+- **Portal contract iframe auth** — `access_token` query on GET; `ContractSignPanel` + `auth.ts`
+- Portal **404** when contract file missing on disk
+- **`docs/family-uat-guide.md`** for family testers
+
+### Production lessons logged
+- Mount uploads at **`/app/server/uploads`**; missing `contracts/` folder = re-upload or SQL delete + fresh upload on old server
+- Blob iframe URLs blocked by **`frame-src 'self'`** — do not use for portal contracts
+- Iframe cannot send Bearer token — query param or cookie required
+
+### User actions before next session
+- [ ] Commit pending changes
+- [ ] Email family UAT guide with filled logins + quote/invite links
+- [ ] Collect UAT feedback (mobile client portal priority)
+- [ ] Optional: redeploy volume persistence test on `contracts/6/*.pdf`
+
+### Next session priorities
+1. Family UAT feedback → fixes
+2. Payments E2E (deposit, P2P, Stripe)
+3. Volume survives redeploy confirmation
+4. Stripe Connect OAuth decision
+5. Register smoothgig.com + launch polish
+
+### Session: Portal contracts + prod fixes + UAT doc (June 21, 2026 — evening)
+- [x] Diagnosed missing contract PDFs on disk (`ENOENT`); volume at `/app/server/uploads` confirmed
+- [x] Project contract **re-upload/replace** API + vendor UI (`fileAvailable`)
+- [x] Portal contract iframe: **`access_token` query** auth (rejected blob URL due to CSP)
+- [x] User verified client portal contract flow on production after redeploy + re-upload
+- [x] **`docs/family-uat-guide.md`** for wife/MIL testing on live site
+- [ ] Family UAT execution + feedback triage
+- [ ] User commit when ready
