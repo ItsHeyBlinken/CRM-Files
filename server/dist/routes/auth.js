@@ -8,6 +8,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_1 = require("../middleware/auth");
 const User_1 = require("../models/User");
 const ProjectInvite_1 = require("../models/ProjectInvite");
+const Project_1 = require("../models/Project");
+const notificationService_1 = require("../services/notificationService");
 const authHelpers_1 = require("../utils/authHelpers");
 const database_1 = require("../config/database");
 const logger_1 = require("../utils/logger");
@@ -273,6 +275,15 @@ router.post('/register/client', async (req, res) => {
         });
         const clientDisplayName = invite.clientDisplayName || `${firstName} ${lastName}`.trim();
         await ProjectInvite_1.ProjectInvite.acceptInvite(invite.id, invite.projectId, Number(newUser.id), clientDisplayName);
+        const project = await Project_1.Project.findById(invite.projectId);
+        if (project) {
+            await (0, notificationService_1.notifyClientJoined)({
+                vendorId: project.vendorId,
+                projectId: project.id,
+                projectTitle: project.title,
+                clientName: clientDisplayName,
+            });
+        }
         const authToken = generateToken(newUser.id, newUser.role);
         res.status(201).json({
             token: authToken,

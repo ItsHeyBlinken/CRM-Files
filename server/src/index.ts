@@ -65,7 +65,7 @@ dotenv.config()
 // ============================================
 // CODE VERSION CHECK - UPDATE THIS TO VERIFY DEPLOYMENT
 // ============================================
-const CODE_VERSION = 'v2.1.0-FIXED'
+const CODE_VERSION = 'v2.2.0-vendor-routes'
 const BUILD_TIMESTAMP = process.env['BUILD_TIMESTAMP'] || new Date().toISOString()
 
 // CRITICAL: These console.logs MUST appear in logs if new code is deployed

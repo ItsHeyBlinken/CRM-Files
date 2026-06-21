@@ -15,9 +15,10 @@
  */
 
 import { Request, Response, NextFunction } from 'express'
+import type { AppError } from './errorHandler'
 
-export const notFound = (req: Request, res: Response, next: NextFunction): void => {
-  const error = new Error(`Not Found - ${req.originalUrl}`)
-  res.status(404)
+export const notFound = (req: Request, _res: Response, next: NextFunction): void => {
+  const error = new Error(`Not Found - ${req.originalUrl}`) as AppError
+  error.statusCode = 404
   next(error)
 }

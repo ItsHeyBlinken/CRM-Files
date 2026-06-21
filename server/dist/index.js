@@ -22,11 +22,16 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
 const logger_1 = require("./utils/logger");
 const socketService_1 = require("./services/socketService");
+const realtimeNotifications_1 = require("./services/realtimeNotifications");
 const auth_1 = __importDefault(require("./routes/auth"));
 const vendorProjects_1 = __importDefault(require("./routes/vendorProjects"));
 const vendorQuotes_1 = __importDefault(require("./routes/vendorQuotes"));
 const vendorPaymentSettings_1 = __importDefault(require("./routes/vendorPaymentSettings"));
 const vendorOnboarding_1 = __importDefault(require("./routes/vendorOnboarding"));
+const vendorCalendar_1 = __importDefault(require("./routes/vendorCalendar"));
+const vendorDashboard_1 = __importDefault(require("./routes/vendorDashboard"));
+const vendorNotifications_1 = __importDefault(require("./routes/vendorNotifications"));
+const vendorProfile_1 = __importDefault(require("./routes/vendorProfile"));
 const quotes_1 = __importDefault(require("./routes/quotes"));
 const portal_1 = __importDefault(require("./routes/portal"));
 const stripeWebhook_1 = __importDefault(require("./routes/stripeWebhook"));
@@ -107,6 +112,8 @@ function setupMiddleware() {
                 scriptSrc: ["'self'"],
                 imgSrc: ["'self'", "data:", "https:"],
                 connectSrc: ["'self'"],
+                frameSrc: ["'self'"],
+                objectSrc: ["'self'"],
             },
         },
     }));
@@ -171,9 +178,14 @@ function setupMiddleware() {
     app.use('/api/vendor/quotes', vendorQuotes_1.default);
     app.use('/api/vendor/payment-settings', vendorPaymentSettings_1.default);
     app.use('/api/vendor/onboarding', vendorOnboarding_1.default);
+    app.use('/api/vendor/calendar', vendorCalendar_1.default);
+    app.use('/api/vendor/dashboard', vendorDashboard_1.default);
+    app.use('/api/vendor/notifications', vendorNotifications_1.default);
+    app.use('/api/vendor/profile', vendorProfile_1.default);
     app.use('/api/quotes', quotes_1.default);
     app.use('/api/portal', portal_1.default);
     app.use('/uploads', express_1.default.static('uploads'));
+    (0, realtimeNotifications_1.initRealtimeNotifications)(io);
     (0, socketService_1.socketHandler)(io);
     if (process.env['NODE_ENV'] === 'production') {
         const clientDistPath = path_1.default.join(__dirname, '../../client/dist');
@@ -190,7 +202,7 @@ function setupMiddleware() {
 }
 function startServer() {
     server.listen(PORT, () => {
-        logger_1.logger.info(`🚀 PortalHub server running on port ${PORT}`);
+        logger_1.logger.info(`🚀 SmoothGig server running on port ${PORT}`);
         logger_1.logger.info(`📱 Environment: ${process.env['NODE_ENV']}`);
         logger_1.logger.info(`🌐 API URL: http://localhost:${PORT}/api`);
         logger_1.logger.info(`🔌 Socket.io enabled for real-time communication`);

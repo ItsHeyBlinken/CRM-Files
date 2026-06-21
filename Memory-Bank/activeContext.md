@@ -31,6 +31,7 @@
 ## When You Return — Start Here
 
 1. **Deploy latest client + server** to production (includes US date format, quote contract multipart fix, CSP iframe fix, mobile quote layout).
+   - **If you see `Not Found - /api/vendor/calendar|dashboard|notifications|profile`:** production is running an **old server build** while the client is new. Force a **full Coolify redeploy** from latest `main` (clear build cache). Startup logs should show `CODE VERSION: v2.2.0-vendor-routes`.
 2. **Production uploads volume** — confirm Coolify persistent volume mounted at **`/app/server/uploads`**; re-upload any quote contracts that 404’d before the volume was set.
 3. **Confirm migrations `002`–`007`** in pgAdmin if quote/contract/onboarding flows ever fail (see Database Status table). **`008` + `009` are applied.**
 4. **E2E test — full vendor path:**

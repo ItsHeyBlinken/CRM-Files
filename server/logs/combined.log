@@ -737,3 +737,4 @@
 {"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-20 13:11:26"}
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-20 13:11:26"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-20 13:11:26"}
+{"level":"info","message":"📦 PostgreSQL Connected: 168.231.66.214:5432/planner-crm","service":"crm-platform","timestamp":"2026-06-20 16:08:14"}
