@@ -1,13 +1,26 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   acknowledgeContract,
-  fetchContractPdfBlob,
   fetchContractSigningContext,
+  getPortalContractFileUrl,
   type ContractSigningContext,
 } from '../../services/contractService'
 
 function normalizeName(name: string): string {
   return name.trim().replace(/\s+/g, ' ').toLowerCase()
+}
+
+function iframeShowsAuthOrLoadError(iframe: HTMLIFrameElement | null): boolean {
+  if (!iframe?.contentDocument) {
+    return false
+  }
+
+  const bodyText = iframe.contentDocument.body?.innerText ?? ''
+  return (
+    bodyText.includes('Not authorized to access this route') ||
+    bodyText.includes('Contract file not found') ||
+    bodyText.includes('"success":false')
+  )
 }
 
 interface ContractSignPanelProps {
@@ -25,9 +38,9 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const viewStartedAtRef = useRef<number | null>(null)
+  const pdfUrl = useMemo(() => getPortalContractFileUrl(contractId), [contractId])
 
   const [context, setContext] = useState<ContractSigningContext | null>(null)
-  const [pdfObjectUrl, setPdfObjectUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [pdfReady, setPdfReady] = useState(false)
@@ -87,13 +100,11 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
 
   useEffect(() => {
     let cancelled = false
-    let objectUrl: string | null = null
 
     const load = async () => {
       setLoading(true)
       setError('')
       setPdfReady(false)
-      setPdfObjectUrl(null)
       setViewSeconds(0)
       setScrolledToEnd(false)
       setConsentAccepted(false)
@@ -109,25 +120,15 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
           return
         }
 
-        const blob = await fetchContractPdfBlob(contractId)
-
-        if (cancelled) {
-          return
-        }
-
-        objectUrl = URL.createObjectURL(blob)
-        setPdfObjectUrl(objectUrl)
         setContext(signingContext)
       } catch (err: unknown) {
         if (cancelled) {
           return
         }
         const message =
-          err instanceof Error
-            ? err.message
-            : err && typeof err === 'object' && 'response' in err
-              ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-              : undefined
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+            : undefined
         setError(message || 'Could not load contract for signing')
         setContext(null)
       } finally {
@@ -141,9 +142,6 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
 
     return () => {
       cancelled = true
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl)
-      }
     }
   }, [contractId])
 
@@ -161,6 +159,12 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
   }, [pdfReady])
 
   const handleIframeLoad = () => {
+    if (iframeShowsAuthOrLoadError(iframeRef.current)) {
+      setError('Could not load contract PDF for review. Try signing out and back in.')
+      setPdfReady(false)
+      return
+    }
+
     setPdfReady(true)
     viewStartedAtRef.current = Date.now()
     attachScrollTracking()
@@ -222,19 +226,13 @@ const ContractSignPanel: React.FC<ContractSignPanelProps> = ({
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-        {pdfObjectUrl ? (
-          <iframe
-            ref={iframeRef}
-            src={pdfObjectUrl}
-            title={contractTitle}
-            onLoad={handleIframeLoad}
-            className="h-80 w-full bg-white"
-          />
-        ) : (
-          <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
-            Preparing contract preview...
-          </div>
-        )}
+        <iframe
+          ref={iframeRef}
+          src={pdfUrl}
+          title={contractTitle}
+          onLoad={handleIframeLoad}
+          className="h-80 w-full bg-white"
+        />
       </div>
 
       {!reviewComplete && pdfReady && (

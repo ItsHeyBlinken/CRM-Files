@@ -169,8 +169,8 @@ function setupMiddleware() {
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", "data:", "https:"],
         connectSrc: ["'self'"],
-        frameSrc: ["'self'", "blob:"],
-        objectSrc: ["'self'", "blob:"],
+        frameSrc: ["'self'"],
+        objectSrc: ["'self'"],
       },
     },
   }))

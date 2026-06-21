@@ -40,6 +40,14 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
       token = req.cookies['token']
     }
 
+    // Same-origin iframe PDF loads cannot send Authorization headers — allow query token on GET
+    if (!token && req.method === 'GET') {
+      const queryToken = req.query['access_token']
+      if (typeof queryToken === 'string' && queryToken.length > 0) {
+        token = queryToken
+      }
+    }
+
     if (!token) {
       res.status(401).json({
         success: false,

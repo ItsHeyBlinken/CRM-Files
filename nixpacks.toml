@@ -46,7 +46,7 @@ cmds = [
   'grep -q "/api/vendor/dashboard" /app/server/dist/index.js && echo "✅ Vendor dashboard route registered" || (echo "❌ ERROR: vendor dashboard route missing from server dist" && exit 1)',
   'grep -q "/api/vendor/notifications" /app/server/dist/index.js && echo "✅ Vendor notifications route registered" || (echo "❌ ERROR: vendor notifications route missing from server dist" && exit 1)',
   'grep -q "BUILD_TIMESTAMP" /app/server/dist/index.js && echo "✅ Build timestamp code found" || echo "❌ WARNING: Build timestamp code missing"',
-  'grep -q "fonts.googleapis.com" /app/server/dist/index.js && echo "✅ CSP includes fonts.googleapis.com" || echo "⚠️ WARNING: CSP may not be updated"',
+  'grep -q "access_token" /app/server/dist/middleware/auth.js && echo "✅ Iframe auth query token support found" || (echo "❌ ERROR: access_token query auth missing from server dist" && exit 1)',
   'grep -q "trust proxy" /app/server/dist/index.js && echo "✅ Trust proxy code found" || echo "⚠️ WARNING: Trust proxy code may not be set"',
   'echo "========================================"',
   'echo "=== BUILD VERIFICATION COMPLETE ==="',

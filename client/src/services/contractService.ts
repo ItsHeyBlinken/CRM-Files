@@ -62,7 +62,12 @@ export function getPortalContractFileUrl(contractId: number): string {
   const apiBaseURL = import.meta.env.VITE_API_URL
     ? `${import.meta.env.VITE_API_URL}/api`
     : '/api'
-  return `${apiBaseURL}/portal/contracts/${contractId}/file`
+  const token = localStorage.getItem('token')
+  const base = `${apiBaseURL}/portal/contracts/${contractId}/file`
+  if (!token) {
+    return base
+  }
+  return `${base}?access_token=${encodeURIComponent(token)}`
 }
 
 export async function fetchContractPdfBlob(contractId: number): Promise<Blob> {

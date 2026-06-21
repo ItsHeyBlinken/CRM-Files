@@ -16,6 +16,12 @@ const protect = async (req, res, next) => {
         if (!token && req.cookies['token']) {
             token = req.cookies['token'];
         }
+        if (!token && req.method === 'GET') {
+            const queryToken = req.query['access_token'];
+            if (typeof queryToken === 'string' && queryToken.length > 0) {
+                token = queryToken;
+            }
+        }
         if (!token) {
             res.status(401).json({
                 success: false,
