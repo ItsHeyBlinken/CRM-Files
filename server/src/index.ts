@@ -53,13 +53,15 @@ import vendorCalendarRoutes from './routes/vendorCalendar'
 import vendorDashboardRoutes from './routes/vendorDashboard'
 import vendorNotificationRoutes from './routes/vendorNotifications'
 import vendorProfileRoutes from './routes/vendorProfile'
+import vendorPlanRoutes from './routes/vendorPlan'
 import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
 import stripeWebhookRoutes from './routes/stripeWebhook'
 
 // Models are now using PostgreSQL - no imports needed for basic functionality
 
-// Load environment variables
+// Load environment variables — server/.env overrides repo root .env
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') })
 dotenv.config()
 
 // ============================================
@@ -258,6 +260,7 @@ function setupMiddleware() {
   app.use('/api/vendor/dashboard', vendorDashboardRoutes)
   app.use('/api/vendor/notifications', vendorNotificationRoutes)
   app.use('/api/vendor/profile', vendorProfileRoutes)
+  app.use('/api/vendor/plan', vendorPlanRoutes)
   app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 

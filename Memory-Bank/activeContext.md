@@ -24,9 +24,9 @@
 
 ## Current Work Focus
 
-**Session (June 20, 2026).** Public **vendor marketing landing page** at `/` — conversion copy, pricing section, visual refresh (dark hero, amber CTAs, gradient accents, mock portal preview). Build verified. Family UAT still pending.
+**Session (June 20, 2026).** Public landing + auth visual refresh done. **Starter plan gating** implemented in code (1 active project, 3 quotes/month) — requires migration `011`. Stripe Billing still pending for paid upgrades.
 
-**Next up:** User deploy + visual approval; family UAT via `docs/family-uat-guide.md`; Stripe Billing when ready.
+**Next up:** User runs migration `011` in pgAdmin; deploy; family UAT; Stripe Billing when ready.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — migration `011` (see Planned Features).
 

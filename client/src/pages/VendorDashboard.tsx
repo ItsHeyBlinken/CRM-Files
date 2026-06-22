@@ -1,18 +1,24 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
 import { createProject, fetchVendorProjects } from '../services/projectService'
 import { fetchVendorDashboardSummary } from '../services/dashboardService'
 import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import StarterPlanBanner from '../components/vendor/StarterPlanBanner'
 import { useVendorBranding } from '../components/vendor/VendorBrandingProvider'
+import { fetchVendorPlanUsage } from '../services/planService'
+import { getApiErrorMessage } from '../utils/apiErrors'
 import { formatCalendarDate, formatUsDate } from '../utils/calendarHelpers'
 import type { VendorDashboardSummary } from '../types/dashboard'
+import type { VendorPlanUsage } from '../types/plan'
 import type { Project } from '../types/portal'
 
 const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { accentColor } = useVendorBranding()
   const [projects, setProjects] = useState<Project[]>([])
   const [summary, setSummary] = useState<VendorDashboardSummary | null>(null)
@@ -20,6 +26,7 @@ const VendorDashboard: React.FC = () => {
   const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [planUsage, setPlanUsage] = useState<VendorPlanUsage | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -34,15 +41,17 @@ const VendorDashboard: React.FC = () => {
   const loadProjects = useCallback(async () => {
     try {
       setError('')
-      const [data, onboarding, dashboardSummary] = await Promise.all([
+      const [data, onboarding, dashboardSummary, usage] = await Promise.all([
         fetchVendorProjects(),
         fetchVendorOnboarding(),
         fetchVendorDashboardSummary(),
+        fetchVendorPlanUsage(),
       ])
       setProjects(data)
       setSummary(dashboardSummary)
       setChecklist(onboarding.checklist)
       setHasPaymentMethod(onboarding.status.hasPaymentMethod)
+      setPlanUsage(usage)
     } catch {
       setError('Failed to load projects')
     } finally {
@@ -53,6 +62,20 @@ const VendorDashboard: React.FC = () => {
   useEffect(() => {
     loadProjects()
   }, [loadProjects])
+
+  useEffect(() => {
+    const billing = searchParams.get('billing')
+    if (billing === 'success') {
+      toast.success('Welcome to Pro! Your limits are now unlimited.')
+      void loadProjects()
+      searchParams.delete('billing')
+      setSearchParams(searchParams, { replace: true })
+    } else if (billing === 'cancelled') {
+      toast('Checkout cancelled — you can upgrade anytime from the dashboard.')
+      searchParams.delete('billing')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [loadProjects, searchParams, setSearchParams])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,11 +103,13 @@ const VendorDashboard: React.FC = () => {
       setShowCreate(false)
       navigate(`/dashboard/projects/${project.id}`)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create project')
+      setError(getApiErrorMessage(err, 'Failed to create project'))
     } finally {
       setSubmitting(false)
     }
   }
+
+  const atProjectLimit = planUsage?.limits.activeProjects.atLimit === true
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,6 +120,8 @@ const VendorDashboard: React.FC = () => {
       />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <StarterPlanBanner usage={planUsage} focus="both" />
+
         <section
           className="rounded-2xl p-6 text-white shadow-sm"
           style={{ backgroundColor: accentColor }}
@@ -121,7 +148,8 @@ const VendorDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-white/90"
+              disabled={atProjectLimit}
+              className="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               New project
             </button>

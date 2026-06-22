@@ -1,4 +1,6 @@
 import { getPool } from '../config/database'
+import { isActiveProjectStatus } from '../constants/planLimits'
+import { VendorPlanService } from '../services/vendorPlanService'
 import { Contract } from './Contract'
 import {
   ProjectPaymentSettings,
@@ -311,6 +313,11 @@ export class ProjectModel {
   }
 
   static async create(vendorId: number, data: IProjectCreate): Promise<IProject> {
+    const status = data.status ?? 'inquiry'
+    if (isActiveProjectStatus(status)) {
+      await VendorPlanService.assertCanAddActiveProject(vendorId)
+    }
+
     const pool = getPool()
     const result = await pool.query(
       `
@@ -326,7 +333,7 @@ export class ProjectModel {
         data.description ?? null,
         formatDateOnly(data.eventDate),
         data.location ?? null,
-        data.status ?? 'inquiry',
+        status,
         data.clientDisplayName ?? null,
         data.clientEmail ?? null,
         data.internalNotes ?? null,
@@ -340,6 +347,18 @@ export class ProjectModel {
     vendorId: number,
     data: IProjectUpdate
   ): Promise<IProject | null> {
+    if (data.status !== undefined) {
+      const existing = await this.findByIdForVendor(id, vendorId)
+      if (!existing) {
+        return null
+      }
+      const wasActive = isActiveProjectStatus(existing.status)
+      const willBeActive = isActiveProjectStatus(data.status)
+      if (!wasActive && willBeActive) {
+        await VendorPlanService.assertCanAddActiveProject(vendorId)
+      }
+    }
+
     const fields: string[] = []
     const values: unknown[] = []
     let param = 1

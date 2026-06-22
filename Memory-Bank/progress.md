@@ -545,6 +545,24 @@
 - [ ] User commit + deploy + visual approval
 - [ ] **Later:** `AcceptInvite.tsx` → `MarketingAuthLayout` (deferred; user wants current gray layout for now)
 
+### Session: Starter plan gating (June 2026)
+- [x] Migration `011_vendor_plan.sql` — `vendor_profiles.plan` (`starter` default, `pro` for paid later)
+- [x] Server enforcement: max **3 quotes/calendar month (UTC)**, max **1 active project** (not `complete`/`cancelled`)
+- [x] Gated at `Quote.create`, `Project.create`, re-activating projects via `Project.update`
+- [x] `GET /api/vendor/plan/usage` + 403 `PlanLimitError` responses on create/convert
+- [x] Vendor UI: `StarterPlanBanner`, disabled create buttons, upgrade link to `/#pricing`
+- [ ] User runs migration `011` in pgAdmin + deploy
+- [ ] Stripe Billing sets `plan = 'pro'` on subscribe (Phase 3e)
+
+### Session: Stripe Billing — Pro subscription (June 2026)
+- [x] Migration `012_vendor_stripe_billing.sql` — stripe customer/subscription columns on `vendor_profiles`
+- [x] `stripeBillingService` — Checkout (subscription mode), Customer Portal, webhook sync
+- [x] Webhooks: `checkout.session.completed` (subscription), `customer.subscription.updated/deleted`
+- [x] API: `POST /api/vendor/plan/checkout`, `POST /api/vendor/plan/portal`; usage includes `billing` flags
+- [x] UI: **Upgrade to Pro** button, manage subscription in Settings, billing success toast on dashboard
+- [ ] User runs migration `012` + sets env vars on server + Stripe webhook endpoint
+- [ ] Founding Pro price cap / second price id (future)
+
 ### Session: Portal contracts + prod fixes + UAT doc (June 21, 2026 — evening)
 - [x] Diagnosed missing contract PDFs on disk (`ENOENT`); volume at `/app/server/uploads` confirmed
 - [x] Project contract **re-upload/replace** API + vendor UI (`fileAvailable`)

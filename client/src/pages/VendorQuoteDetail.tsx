@@ -5,8 +5,12 @@ import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreemen
 import QuoteDocument from '../components/quotes/QuoteDocument'
 import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
 import PipelineStepper from '../components/vendor/PipelineStepper'
+import StarterPlanBanner from '../components/vendor/StarterPlanBanner'
 import { convertQuoteToProject, fetchVendorQuote, openVendorQuoteContract, uploadQuoteContract } from '../services/quoteService'
+import { fetchVendorPlanUsage } from '../services/planService'
 import { sendQuoteEmail } from '../services/vendorExtrasService'
+import { getApiErrorMessage } from '../utils/apiErrors'
+import type { VendorPlanUsage } from '../types/plan'
 import type { Quote } from '../types/quote'
 import { formatUsDate } from '../utils/calendarHelpers'
 import { formatQuoteMoney } from '../utils/formatQuoteMoney'
@@ -32,6 +36,7 @@ const VendorQuoteDetail: React.FC = () => {
   const [quotePath, setQuotePath] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [planUsage, setPlanUsage] = useState<VendorPlanUsage | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [contractUploadTitle, setContractUploadTitle] = useState('Service agreement')
   const [contractUploadFile, setContractUploadFile] = useState<File | null>(null)
@@ -40,9 +45,10 @@ const VendorQuoteDetail: React.FC = () => {
     if (!quoteId) return
     try {
       setError('')
-      const data = await fetchVendorQuote(quoteId)
+      const [data, usage] = await Promise.all([fetchVendorQuote(quoteId), fetchVendorPlanUsage()])
       setQuote(data.quote)
       setQuotePath(data.quotePath)
+      setPlanUsage(usage)
     } catch {
       setError('Failed to load quote')
     } finally {
@@ -105,11 +111,7 @@ const VendorQuoteDetail: React.FC = () => {
       const result = await convertQuoteToProject(quoteId)
       navigate(`/dashboard/projects/${result.projectId}`)
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : undefined
-      setError(message || 'Failed to convert quote')
+      setError(getApiErrorMessage(err, 'Failed to convert quote'))
     } finally {
       setSubmitting(false)
     }
@@ -143,6 +145,8 @@ const VendorQuoteDetail: React.FC = () => {
       setSubmitting(false)
     }
   }
+
+  const atProjectLimit = planUsage?.limits.activeProjects.atLimit === true
 
   if (loading) {
     return (
@@ -191,6 +195,8 @@ const VendorQuoteDetail: React.FC = () => {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <StarterPlanBanner usage={planUsage} focus="projects" />
+
         {error && (
           <div className="no-print rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
@@ -350,11 +356,16 @@ const VendorQuoteDetail: React.FC = () => {
             <button
               type="button"
               onClick={handleConvert}
-              disabled={submitting}
-              className="px-4 py-2 text-sm text-white bg-green-700 rounded-md hover:bg-green-800 disabled:opacity-50"
+              disabled={submitting || atProjectLimit}
+              className="px-4 py-2 text-sm text-white bg-green-700 rounded-md hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? 'Creating project...' : 'Convert to project'}
             </button>
+            {atProjectLimit && (
+              <p className="text-sm text-green-900">
+                Starter plan allows 1 active project. Complete or cancel your current project, or upgrade to Pro.
+              </p>
+            )}
           </section>
         )}
 

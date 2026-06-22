@@ -4,6 +4,11 @@ import { Invoice, IInvoice } from '../models/Invoice'
 import { Project } from '../models/Project'
 import { VendorPaymentSettings } from '../models/VendorPaymentSettings'
 import { notifyInvoicePaid } from './notificationService'
+import {
+  handleSubscriptionCheckoutCompleted,
+  handleSubscriptionDeleted,
+  handleSubscriptionUpdated,
+} from './stripeBillingService'
 
 let stripeClient: Stripe | null = null
 
@@ -192,6 +197,12 @@ export async function handleStripeWebhook(
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
+
+      if (session.mode === 'subscription') {
+        await handleSubscriptionCheckoutCompleted(session)
+        break
+      }
+
       const invoiceId = session.metadata?.['invoice_id']
       if (!invoiceId || session.payment_status !== 'paid') {
         return
@@ -214,6 +225,16 @@ export async function handleStripeWebhook(
           })
         }
       }
+      break
+    }
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object as Stripe.Subscription
+      await handleSubscriptionUpdated(subscription)
+      break
+    }
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object as Stripe.Subscription
+      await handleSubscriptionDeleted(subscription)
       break
     }
     default:

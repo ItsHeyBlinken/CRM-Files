@@ -1,4 +1,5 @@
 import { getPool } from '../config/database'
+import { VendorPlanService } from '../services/vendorPlanService'
 import { Project } from './Project'
 import { QuoteContract, type IQuoteContractSummary } from './QuoteContract'
 import { formatDateOnly } from '../utils/dateOnly'
@@ -290,6 +291,8 @@ export class QuoteModel {
     if (!input.lineItems.length) {
       throw new Error('LINE_ITEMS_REQUIRED')
     }
+
+    await VendorPlanService.assertCanCreateQuote(vendorId)
 
     const pool = getPool()
     const client = await pool.connect()

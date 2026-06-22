@@ -148,7 +148,7 @@ Everything in Starter, unlimited — for vendors booking multiple gigs.
 
 ## Open items (remaining)
 
-- [ ] Starter limit tweak: keep 3 quotes/mo or unlimited quotes on free tier?
+- [x] Starter limit: **3 quotes/mo**, **1 active project** — enforced in code (migration `011`)
 - [ ] Legal: ToS, privacy, refund policy before first charge
 - [ ] Admin view: founding slots remaining (50 − count)
 - [ ] Implement Stripe Billing (Phase 3e)

@@ -8,6 +8,9 @@ import {
   updateVendorProfile,
   uploadVendorLogo,
 } from '../services/vendorExtrasService'
+import { fetchVendorPlanUsage } from '../services/planService'
+import StarterPlanBanner, { ProPlanManageLink } from '../components/vendor/StarterPlanBanner'
+import type { VendorPlanUsage } from '../types/plan'
 import type { VendorProfile } from '../types/vendorExtras'
 
 const VendorSettings: React.FC = () => {
@@ -17,12 +20,14 @@ const VendorSettings: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [planUsage, setPlanUsage] = useState<VendorPlanUsage | null>(null)
 
   const loadProfile = useCallback(async () => {
     try {
       setError('')
-      const profile = await fetchVendorProfile()
+      const [profile, usage] = await Promise.all([fetchVendorProfile(), fetchVendorPlanUsage()])
       setForm(profile)
+      setPlanUsage(usage)
     } catch {
       setError('Failed to load settings')
     } finally {
@@ -116,6 +121,22 @@ const VendorSettings: React.FC = () => {
         </div>
 
         {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+
+        <StarterPlanBanner usage={planUsage} focus="both" />
+
+        {planUsage?.plan === 'pro' && (
+          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-2">
+            <h3 className="font-medium text-gray-900">SmoothGig Pro</h3>
+            <p className="text-sm text-gray-600">
+              Unlimited projects and quotes
+              {planUsage.billing?.subscriptionStatus
+                ? ` · Subscription ${planUsage.billing.subscriptionStatus}`
+                : ''}
+              .
+            </p>
+            <ProPlanManageLink usage={planUsage} />
+          </section>
+        )}
 
         <form onSubmit={handleSave} className="space-y-6">
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">

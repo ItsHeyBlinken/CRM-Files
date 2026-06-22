@@ -6,6 +6,7 @@ import { QuoteContract } from '../models/QuoteContract'
 import { VendorProfile } from '../models/VendorProfile'
 import { getPublicAppUrl, sendQuoteEmail } from '../services/emailService'
 import { logger } from '../utils/logger'
+import { isPlanLimitError, sendPlanLimitError } from '../utils/planLimitHttp'
 
 const router = Router()
 
@@ -167,6 +168,10 @@ router.post(
       })
     } catch (error) {
       logger.error('Create quote error:', error)
+      if (isPlanLimitError(error)) {
+        sendPlanLimitError(res, error)
+        return
+      }
       if (error instanceof Error && error.message === 'LINE_ITEMS_REQUIRED') {
         res.status(400).json({ error: 'At least one line item is required' })
         return
@@ -322,6 +327,11 @@ router.post('/:id/convert-to-project', async (req: AuthRequest, res: Response): 
     })
   } catch (error) {
     logger.error('Convert quote error:', error)
+
+    if (isPlanLimitError(error)) {
+      sendPlanLimitError(res, error)
+      return
+    }
 
     if (error instanceof Error) {
       switch (error.message) {

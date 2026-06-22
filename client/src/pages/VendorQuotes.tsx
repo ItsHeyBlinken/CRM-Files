@@ -3,9 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import StarterPlanBanner from '../components/vendor/StarterPlanBanner'
 import VendorEventDatePicker from '../components/vendor/VendorEventDatePicker'
 import { createQuote, fetchVendorQuotes } from '../services/quoteService'
+import { fetchVendorPlanUsage } from '../services/planService'
+import { getApiErrorMessage } from '../utils/apiErrors'
 import { formatUsDate } from '../utils/calendarHelpers'
+import type { VendorPlanUsage } from '../types/plan'
 import type { Quote, QuoteLineItemInput } from '../types/quote'
 
 const emptyLineItem = (): QuoteLineItemInput => ({
@@ -33,6 +37,7 @@ const VendorQuotes: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [planUsage, setPlanUsage] = useState<VendorPlanUsage | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -52,8 +57,9 @@ const VendorQuotes: React.FC = () => {
   const loadQuotes = useCallback(async () => {
     try {
       setError('')
-      const data = await fetchVendorQuotes()
+      const [data, usage] = await Promise.all([fetchVendorQuotes(), fetchVendorPlanUsage()])
       setQuotes(data)
+      setPlanUsage(usage)
     } catch {
       setError('Failed to load quotes')
     } finally {
@@ -114,15 +120,13 @@ const VendorQuotes: React.FC = () => {
       })
       navigate(`/dashboard/quotes/${result.quote.id}`)
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-          : undefined
-      setError(message || 'Failed to create quote')
+      setError(getApiErrorMessage(err, 'Failed to create quote'))
     } finally {
       setSubmitting(false)
     }
   }
+
+  const atQuoteLimit = planUsage?.limits.quotesThisMonth.atLimit === true
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -133,6 +137,8 @@ const VendorQuotes: React.FC = () => {
       />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <StarterPlanBanner usage={planUsage} focus="quotes" />
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-lg font-medium text-gray-900">Quotes</h2>
@@ -143,7 +149,8 @@ const VendorQuotes: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+            disabled={atQuoteLimit}
+            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             New quote
           </button>

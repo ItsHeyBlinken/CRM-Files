@@ -13,6 +13,7 @@ import {
 import { VendorProfile } from '../models/VendorProfile'
 import { getPublicAppUrl, sendInviteEmail, sendInvoiceEmail } from '../services/emailService'
 import { logger } from '../utils/logger'
+import { isPlanLimitError, sendPlanLimitError } from '../utils/planLimitHttp'
 
 const router = Router()
 
@@ -67,6 +68,10 @@ router.post('/', async (req: AuthRequest, res: Response): Promise<void> => {
 
     res.status(201).json({ project })
   } catch (error) {
+    if (isPlanLimitError(error)) {
+      sendPlanLimitError(res, error)
+      return
+    }
     logger.error('Create project error:', error)
     res.status(500).json({ error: 'Failed to create project' })
   }
@@ -477,6 +482,10 @@ router.put('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
 
     res.json({ project })
   } catch (error) {
+    if (isPlanLimitError(error)) {
+      sendPlanLimitError(res, error)
+      return
+    }
     logger.error('Update project error:', error)
     res.status(500).json({ error: 'Failed to update project' })
   }
