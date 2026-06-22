@@ -24,11 +24,13 @@
 
 ## Current Work Focus
 
-**Session (in progress).** Public **vendor marketing landing page** at `/` — conversion-focused copy, CTAs to register/login. Family UAT still pending.
+**Session (June 20, 2026).** Public **vendor marketing landing page** at `/` — conversion copy, pricing section, visual refresh (dark hero, amber CTAs, gradient accents, mock portal preview). Build verified. Family UAT still pending.
 
-**Next up:** Deploy landing page; family UAT via `docs/family-uat-guide.md`.
+**Next up:** User deploy + visual approval; family UAT via `docs/family-uat-guide.md`; Stripe Billing when ready.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — migration `011` (see Planned Features).
+
+**Deferred for later (user confirmed):** Apply `MarketingAuthLayout` to client **invite registration** (`AcceptInvite.tsx`) — intentionally left on gray layout for now.
 
 ## When You Return — Start Here
 
@@ -88,7 +90,7 @@
 | Project contract re-upload when PDF missing on disk | ✅ Built |
 | Mobile-responsive quote document layout | ✅ Built |
 | Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
-| Monetization (vendor → platform subscription) | 📋 Phase 3e — see `monetization.md` |
+| Monetization (vendor subscription) | ✅ Model confirmed — see `monetization.md` |
 
 ## Payment Architecture (Agreed)
 
@@ -97,7 +99,9 @@
 | Flow | Who pays whom | Mechanism | Status |
 |------|---------------|-----------|--------|
 | **Client → Vendor** | Client pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built (Express Connect today) |
-| **Vendor → platform** | Vendor pays platform subscription | Stripe Billing | 📋 Phase 3e / pre-launch |
+| **Vendor → platform** | Vendor pays SmoothGig subscription | Stripe Billing | 📋 Phase 3e — pricing confirmed in `monetization.md` |
+
+**Fee policy (confirmed):** SmoothGig charges **no platform fee** on client payments. Vendors pay **subscription only**. Card processing = **Stripe standard fees** on vendor Connect account only.
 
 **Client invoice payments (built):**
 - Vendor configures handles + Stripe at onboarding and `/dashboard/payments`
@@ -200,7 +204,7 @@
 | **Quote + contract** | Optional attachment at quote create; view-only until accept; then e-sign on quote link |
 | After contract sign on quote | Informational deposit notice; vendor follows up with invoice |
 | Vendor onboarding | Payment setup at signup (P2P required path; Stripe optional) |
-| Payments (MVP) | Stripe Connect Express + P2P; 0% platform fee at launch |
+| Payments (MVP) | Stripe Connect Express + P2P; **0% SmoothGig platform fee (permanent)** |
 | One client per project (MVP) | Enforced in API + UI |
 
 ## Active Technical Decisions
@@ -226,10 +230,20 @@
 
 ## Session Log (landing page — vendor marketing)
 
+## Session Log (pricing model confirmed)
+
+- [x] **No SmoothGig platform fees** on client payments — subscription revenue only
+- [x] **Founding Pro:** $19/mo · $199/yr — first **50** subscribers, **price locked for life** while subscribed
+- [x] **Standard Pro:** $29/mo · $299/yr — after founding cap
+- [x] Card pay: Stripe standard processing fees only (vendor Connect)
+- [x] Document locked in `monetization.md`
+
+## Session Log (landing page — vendor marketing)
+
 - [x] **`/` public landing page** (`Landing.tsx`) — hero, pain points, 4-step flow, feature grid, client portal sell, signup CTAs
-- [x] Logged-in users at `/` redirect to dashboard/portal (replaces `HomeRedirect`)
+- [x] Logged-in users at `/` redirect to dashboard/portal
 - [x] Login + Register: **← Back to home** links
-- [x] `api.ts`: `/` treated as public for 401 redirect
+- [x] Landing page pricing section (`Landing.tsx` — Starter, Founding Pro, Pro)
 
 ## Session Log (June 21, 2026 — evening: contracts, prod fixes, UAT prep)
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import AppName from '../components/branding/AppName'
+import MarketingAuthLayout from '../components/Auth/MarketingAuthLayout'
 import { getHomePathForRole } from '../utils/roleRedirect'
 
 const Login: React.FC = () => {
@@ -44,88 +45,65 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <p className="text-center">
-            <Link to="/" className="text-sm text-indigo-600 hover:text-indigo-500">
-              ← Back to home
-            </Link>
-          </p>
-          <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to <AppName accentClassName="text-indigo-600" />
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Vendors and clients use the same sign-in page
-          </p>
-          <p className="mt-2 text-center text-xs text-gray-500 max-w-sm mx-auto">
-            First time here? If your vendor sent you a link, open that invite link to create your
-            account — you cannot sign in until you have done that once.
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-800 text-center">{error}</div>
-            </div>
-          )}
-
+    <MarketingAuthLayout
+      title={
+        <>
+          Sign in to <AppName accentClassName="text-violet-400" />
+        </>
+      }
+      subtitle="Vendors and clients use the same sign-in page"
+      footnote="First time here? If your vendor sent you a link, open that invite link to create your account — you cannot sign in until you have done that once."
+    >
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="space-y-3">
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+            <label htmlFor="email" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="auth-input"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
+          <div>
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className="auth-input"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Event vendor?{' '}
-              <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Create a vendor account
-              </Link>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
+        {error && <div className="auth-error">{error}</div>}
+
+        <button type="submit" disabled={loading} className="auth-submit">
+          {loading ? 'Signing in...' : 'Sign in'}
+        </button>
+
+        <p className="text-center text-sm text-slate-400">
+          Event vendor?{' '}
+          <Link to="/register" className="auth-link">
+            Create a vendor account
+          </Link>
+        </p>
+      </form>
+    </MarketingAuthLayout>
   )
 }
 

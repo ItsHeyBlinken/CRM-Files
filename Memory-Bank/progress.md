@@ -527,10 +527,23 @@
 4. Stripe Connect OAuth decision
 5. Register smoothgig.com + launch polish
 
+### Session: Pricing model confirmed (June 2026)
+- [x] No platform fees on client payments — ever
+- [x] Founding Pro $19/mo · $199/yr (first 50, grandfathered while subscribed)
+- [x] Standard Pro $29/mo · $299/yr after cap
+- [x] `monetization.md` updated as source of truth
+- [x] Landing page pricing section — Starter / Founding Pro / Pro cards + no platform fee footnote
+- [ ] Stripe Billing (Phase 3e)
+
 ### Session: Vendor marketing landing page
 - [x] `client/src/pages/Landing.tsx` — conversion-focused public home at `/`
 - [x] Removed unused `HomeRedirect.tsx`; auth redirect handled in `Landing`
-- [ ] User commit + deploy
+- [x] **Visual refresh** — dark slate hero with gradient orbs, amber primary CTAs, gradient headline, mock portal preview card, alternating dark/warm-stone sections, per-feature gradient icons, dark pricing band with glowing Founding Pro card, amber final CTA + dark footer
+- [x] **Auth pages** — `MarketingAuthLayout` shared shell; Login + Register match landing (dark bg, glow card, amber submit, violet links)
+- [x] CSS utilities `.landing-gradient-text`, `.landing-glow-card`, `.auth-input`, `.auth-submit`, `.auth-link`, `.auth-error` in `index.css`
+- [x] `npm run build` passes
+- [ ] User commit + deploy + visual approval
+- [ ] **Later:** `AcceptInvite.tsx` → `MarketingAuthLayout` (deferred; user wants current gray layout for now)
 
 ### Session: Portal contracts + prod fixes + UAT doc (June 21, 2026 — evening)
 - [x] Diagnosed missing contract PDFs on disk (`ENOENT`); volume at `/app/server/uploads` confirmed

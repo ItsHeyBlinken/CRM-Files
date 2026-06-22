@@ -91,8 +91,8 @@ The previous Event Planner CRM direction is deprecated. Keep auth patterns, buil
 
 **Paying customer:** Event vendor (freelancer / small business) — not the end client.
 
-**Status:** Monetization plan **not finalized**. Before launch, complete the decision checklist in **`monetization.md`** (pricing model, tiers, trial, what features are gated).
+**Status:** ✅ **Confirmed** — Freemium Starter + Pro. **No platform fees on client payments (ever).** Founding Pro **$19/mo · $199/yr** (first 50, price locked while subscribed); then **$29/mo · $299/yr**. See **`monetization.md`**.
 
-**Working hypothesis:** Freemium or low-tier starter + **Pro ~$29–39/mo** for quoting, unlimited projects, full portal — validate with vendor interviews before implementing Stripe.
+**Revenue:** Vendor subscription only (Stripe Billing). Optional client card pay = Stripe’s processing fee only via vendor Connect.
 
 **Build order:** Product validation first (quoting + core loop) → define tiers → Stripe Billing → optional invoice payment fees later.
