@@ -527,6 +527,11 @@
 4. Stripe Connect OAuth decision
 5. Register smoothgig.com + launch polish
 
+### Session: Vendor marketing landing page
+- [x] `client/src/pages/Landing.tsx` — conversion-focused public home at `/`
+- [x] Removed unused `HomeRedirect.tsx`; auth redirect handled in `Landing`
+- [ ] User commit + deploy
+
 ### Session: Portal contracts + prod fixes + UAT doc (June 21, 2026 — evening)
 - [x] Diagnosed missing contract PDFs on disk (`ENOENT`); volume at `/app/server/uploads` confirmed
 - [x] Project contract **re-upload/replace** API + vendor UI (`fileAvailable`)

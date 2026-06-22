@@ -4,7 +4,7 @@ import { SocketProvider } from './contexts/SocketContext'
 
 import Layout from './components/Layout/Layout'
 import ProtectedRoute from './components/Auth/ProtectedRoute'
-import HomeRedirect from './components/Auth/HomeRedirect'
+import Landing from './pages/Landing'
 import VendorOnboardingGate from './components/vendor/VendorOnboardingGate'
 
 import VendorDashboard from './pages/VendorDashboard'
@@ -35,7 +35,7 @@ function App() {
           <Route path="/invite/:token" element={<AcceptInvite />} />
           <Route path="/quote/:token" element={<AcceptQuote />} />
 
-          <Route path="/" element={<HomeRedirect />} />
+          <Route path="/" element={<Landing />} />
 
           <Route
             path="/dashboard"

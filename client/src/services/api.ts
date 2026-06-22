@@ -74,6 +74,7 @@ api.interceptors.response.use(
 
       const path = window.location.pathname
       const isPublicPage =
+        path === '/' ||
         path === '/login' ||
         path === '/register' ||
         path.startsWith('/invite/') ||

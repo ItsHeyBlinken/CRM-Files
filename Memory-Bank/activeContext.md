@@ -24,9 +24,9 @@
 
 ## Current Work Focus
 
-**Session ended (June 21, 2026 — evening).** Production **client portal contract sign/view** verified working after uploads volume + re-upload + iframe auth fix. **Family UAT guide** written for wife/MIL testing. User handles commits manually — pending changes not yet committed.
+**Session (in progress).** Public **vendor marketing landing page** at `/` — conversion-focused copy, CTAs to register/login. Family UAT still pending.
 
-**Next up:** Email family testers using `docs/family-uat-guide.md`; collect feedback; triage bugs from UAT.
+**Next up:** Deploy landing page; family UAT via `docs/family-uat-guide.md`.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — migration `011` (see Planned Features).
 
@@ -171,6 +171,8 @@
 
 | Path | Role | Purpose |
 |------|------|---------|
+| `/` | Public | **Marketing landing** (vendors); logged-in users redirect to role home |
+| `/login` | Public | Shared sign-in |
 | `/register` | Public | Vendor signup → onboarding |
 | `/dashboard/onboarding` | VENDOR | Business → P2P → optional Stripe |
 | `/dashboard` | VENDOR | Projects + checklist |
@@ -221,6 +223,13 @@
 | Stripe Connect OAuth | Link existing Stripe account | TBD |
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `011` |
+
+## Session Log (landing page — vendor marketing)
+
+- [x] **`/` public landing page** (`Landing.tsx`) — hero, pain points, 4-step flow, feature grid, client portal sell, signup CTAs
+- [x] Logged-in users at `/` redirect to dashboard/portal (replaces `HomeRedirect`)
+- [x] Login + Register: **← Back to home** links
+- [x] `api.ts`: `/` treated as public for 401 redirect
 
 ## Session Log (June 21, 2026 — evening: contracts, prod fixes, UAT prep)
 
