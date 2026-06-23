@@ -4,6 +4,9 @@ import { VendorSubscription, isProSubscriptionStatus } from '../models/VendorSub
 import { logger } from '../utils/logger'
 
 const CHECKOUT_TYPE = 'vendor_subscription'
+export const FOUNDING_PRO_CAP = 50
+
+export type CheckoutPriceTier = 'founding_pro' | 'standard'
 
 let stripeClient: Stripe | null = null
 
@@ -24,7 +27,26 @@ function getFrontendUrl(): string {
 
 export function getProStripePriceId(): string | null {
   const priceId = process.env['PRO_STRIPE_PRICE_ID']?.trim()
-  return priceId || null
+  return validateStripePriceId(priceId)
+}
+
+export function getFoundingProStripePriceId(): string | null {
+  const priceId = process.env['FOUNDING_PRO_STRIPE_PRICE_ID']?.trim()
+  return validateStripePriceId(priceId)
+}
+
+function validateStripePriceId(priceId: string | undefined): string | null {
+  if (!priceId) {
+    return null
+  }
+  if (priceId.startsWith('prod_')) {
+    logger.error(
+      'Stripe env var looks like a Product ID (prod_). Use a Price ID (price_...) instead.',
+      { value: priceId }
+    )
+    return null
+  }
+  return priceId
 }
 
 export function getStripePublishableKey(): string | null {
@@ -33,7 +55,53 @@ export function getStripePublishableKey(): string | null {
 }
 
 export function isStripeBillingConfigured(): boolean {
-  return Boolean(process.env['STRIPE_SECRET_KEY'] && getProStripePriceId())
+  return Boolean(
+    process.env['STRIPE_SECRET_KEY'] &&
+      (getProStripePriceId() || getFoundingProStripePriceId())
+  )
+}
+
+export async function getFoundingProAvailability(): Promise<{
+  cap: number
+  used: number
+  remaining: number | null
+  available: boolean
+}> {
+  const foundingPriceId = getFoundingProStripePriceId()
+  if (!foundingPriceId) {
+    return { cap: FOUNDING_PRO_CAP, used: 0, remaining: null, available: false }
+  }
+
+  const used = await VendorSubscription.countActiveProSubscriptionsOnPrice(foundingPriceId)
+  const remaining = Math.max(0, FOUNDING_PRO_CAP - used)
+  return {
+    cap: FOUNDING_PRO_CAP,
+    used,
+    remaining,
+    available: remaining > 0,
+  }
+}
+
+async function resolveCheckoutPriceId(): Promise<{ priceId: string; tier: CheckoutPriceTier }> {
+  const standardPriceId = getProStripePriceId()
+  const foundingPriceId = getFoundingProStripePriceId()
+
+  if (foundingPriceId) {
+    const founding = await getFoundingProAvailability()
+    if (founding.available) {
+      return { priceId: foundingPriceId, tier: 'founding_pro' }
+    }
+  }
+
+  if (standardPriceId) {
+    return { priceId: standardPriceId, tier: 'standard' }
+  }
+
+  if (foundingPriceId) {
+    throw new Error('FOUNDING_CAP_REACHED')
+  }
+
+  throw new Error('STRIPE_BILLING_NOT_CONFIGURED')
 }
 
 async function getOrCreateStripeCustomer(vendorId: number, email: string): Promise<string> {
@@ -58,11 +126,11 @@ async function getOrCreateStripeCustomer(vendorId: number, email: string): Promi
 
 export async function createProSubscriptionCheckout(vendorId: number): Promise<string> {
   const stripe = getStripe()
-  const priceId = getProStripePriceId()
-
-  if (!stripe || !priceId) {
-    throw new Error('STRIPE_BILLING_NOT_CONFIGURED')
+  if (!stripe) {
+    throw new Error('STRIPE_NOT_CONFIGURED')
   }
+
+  const { priceId } = await resolveCheckoutPriceId()
 
   const billing = await VendorSubscription.findByVendorId(vendorId)
   if (billing?.plan === 'pro') {

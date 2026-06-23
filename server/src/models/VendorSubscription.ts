@@ -122,6 +122,21 @@ export class VendorSubscriptionModel {
       [vendorId, status]
     )
   }
+
+  static async countActiveProSubscriptionsOnPrice(priceId: string): Promise<number> {
+    const pool = getPool()
+    const result = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM vendor_profiles
+      WHERE plan = 'pro'
+        AND stripe_price_id = $1
+        AND subscription_status IN ('active', 'trialing', 'past_due')
+      `,
+      [priceId]
+    )
+    return result.rows[0]?.count ?? 0
+  }
 }
 
 export const VendorSubscription = VendorSubscriptionModel

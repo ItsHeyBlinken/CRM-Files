@@ -13,6 +13,13 @@ export type VendorPlanBilling = {
   canManage: boolean
   subscriptionStatus: string | null
   stripePublishableKey?: string | null
+  checkoutTier?: 'founding_pro' | 'standard' | null
+  foundingPro?: {
+    cap: number
+    used: number
+    remaining: number | null
+    available: boolean
+  }
 }
 
 export type VendorPlanUsage = {

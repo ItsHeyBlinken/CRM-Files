@@ -4,6 +4,7 @@ import { VendorPlanService } from '../services/vendorPlanService'
 import {
   createBillingPortalSession,
   createProSubscriptionCheckout,
+  getFoundingProAvailability,
   getStripePublishableKey,
   isStripeBillingConfigured,
 } from '../services/stripeBillingService'
@@ -19,6 +20,12 @@ async function buildUsageResponse(vendorId: number) {
   const billing = await VendorSubscription.findByVendorId(vendorId)
   const billingConfigured = isStripeBillingConfigured()
   const hasActiveSubscription = isProSubscriptionStatus(billing?.subscriptionStatus)
+  const founding = await getFoundingProAvailability()
+
+  let checkoutTier: 'founding_pro' | 'standard' | null = null
+  if (billingConfigured && usage.plan !== 'pro') {
+    checkoutTier = founding.available ? 'founding_pro' : 'standard'
+  }
 
   return {
     ...usage,
@@ -28,6 +35,8 @@ async function buildUsageResponse(vendorId: number) {
       canManage: Boolean(billing?.stripeCustomerId && hasActiveSubscription),
       subscriptionStatus: billing?.subscriptionStatus ?? null,
       stripePublishableKey: billingConfigured ? getStripePublishableKey() : null,
+      checkoutTier,
+      foundingPro: founding,
     },
   }
 }
@@ -53,7 +62,14 @@ router.post('/checkout', async (req: AuthRequest, res: Response): Promise<void> 
       switch (error.message) {
         case 'STRIPE_BILLING_NOT_CONFIGURED':
           res.status(503).json({
-            error: 'Pro billing is not configured. Add STRIPE_SECRET_KEY and PRO_STRIPE_PRICE_ID.',
+            error:
+              'Pro billing is not configured. Add STRIPE_SECRET_KEY and PRO_STRIPE_PRICE_ID (and optionally FOUNDING_PRO_STRIPE_PRICE_ID).',
+          })
+          return
+        case 'FOUNDING_CAP_REACHED':
+          res.status(503).json({
+            error:
+              'Founding Pro spots are full. Add PRO_STRIPE_PRICE_ID for standard pricing.',
           })
           return
         case 'ALREADY_PRO':

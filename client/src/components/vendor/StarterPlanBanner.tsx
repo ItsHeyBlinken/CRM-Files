@@ -76,6 +76,13 @@ const StarterPlanBanner: React.FC<StarterPlanBannerProps> = ({
               You&apos;ve hit a Starter limit. Upgrade to Pro for unlimited projects and quotes.
             </p>
           )}
+          {usage.billing?.checkoutTier === 'founding_pro' &&
+            usage.billing.foundingPro?.remaining != null && (
+              <p className="mt-2 text-sm">
+                Founding Pro pricing — {usage.billing.foundingPro.remaining} of{' '}
+                {usage.billing.foundingPro.cap} spots left at the locked rate.
+              </p>
+            )}
           {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
         </div>
         {billingConfigured ? (
@@ -85,7 +92,11 @@ const StarterPlanBanner: React.FC<StarterPlanBannerProps> = ({
             disabled={loading}
             className="inline-flex shrink-0 items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition disabled:opacity-60"
           >
-            {loading ? 'Redirecting…' : 'Upgrade to Pro'}
+            {loading
+              ? 'Redirecting…'
+              : usage.billing?.checkoutTier === 'founding_pro'
+                ? 'Upgrade to Founding Pro'
+                : 'Upgrade to Pro'}
           </button>
         ) : (
           <Link
