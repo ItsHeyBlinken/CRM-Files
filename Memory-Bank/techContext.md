@@ -149,6 +149,8 @@ FRONTEND_URL=http://localhost:5173
 
 **Client invoice card pay:** Vendors paste their own Stripe Payment Link in payment settings — no `STRIPE_CONNECT_CLIENT_ID` required.
 
+**DB column (migration `013`):** `vendor_payment_settings.stripe_payment_link` — validated server-side as `https://*.stripe.com`.
+
 ### Installation Commands
 ```bash
 # Install root dependencies
