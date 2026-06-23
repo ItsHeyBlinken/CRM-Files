@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import DepositPendingNotice from '../components/quotes/DepositPendingNotice'
-import QuoteClientAgreementNotice from '../components/quotes/QuoteClientAgreementNotice'
 import QuoteContractSignPanel from '../components/quotes/QuoteContractSignPanel'
 import QuoteContractViewPanel from '../components/quotes/QuoteContractViewPanel'
 import QuoteDocument from '../components/quotes/QuoteDocument'
+import QuoteNextStepsNotice from '../components/quotes/QuoteNextStepsNotice'
 import SaveQuotePdfButton from '../components/quotes/SaveQuotePdfButton'
-import { QUOTE_CONTRACT_VIEW_ONLY_NOTE } from '../constants/clientAgreement'
+import {
+  QUOTE_ACCEPTED_NEXT_STEPS,
+  QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE,
+  QUOTE_ACCEPTED_NO_CONTRACT_NEXT_STEPS,
+  QUOTE_CONTRACT_VIEW_ONLY_NOTE,
+} from '../constants/clientAgreement'
 import { acceptQuote, declineQuote, fetchPublicQuote } from '../services/quoteService'
 import type { PublicQuote } from '../types/quote'
 import { formatUsDate } from '../utils/calendarHelpers'
@@ -15,7 +20,7 @@ const statusMessage: Record<PublicQuote['status'], string> = {
   draft: 'This quote is not ready yet.',
   sent: '',
   accepted:
-    'You accepted this quote. Review and sign the contract below when you are ready.',
+    'You accepted this quote. Review and sign the contract below when you are ready, then watch your email for a deposit invoice and client portal invite.',
   declined: 'You declined this quote.',
   expired: 'This quote has expired.',
   converted: 'This quote was accepted and your vendor has started your project.',
@@ -110,6 +115,10 @@ const AcceptQuote: React.FC = () => {
     (quote.status === 'accepted' || quote.status === 'converted')
   const showDepositNotice =
     !!contract && contractSigned && (quote.status === 'accepted' || quote.status === 'converted')
+  const showAcceptedNextSteps =
+    !!contract &&
+    !contractSigned &&
+    (quote.status === 'accepted' || quote.status === 'converted')
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -181,11 +190,15 @@ const AcceptQuote: React.FC = () => {
           </section>
         )}
 
-        {showDepositNotice && <DepositPendingNotice />}
+        {showAcceptedNextSteps && (
+          <QuoteNextStepsNotice
+            headline={QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE}
+            steps={QUOTE_ACCEPTED_NEXT_STEPS}
+            tone="indigo"
+          />
+        )}
 
-        <div className="no-print">
-          <QuoteClientAgreementNotice variant="client" />
-        </div>
+        {showDepositNotice && <DepositPendingNotice />}
 
         {error && (
           <div className="no-print rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
@@ -225,9 +238,11 @@ const AcceptQuote: React.FC = () => {
         )}
 
         {quote.status === 'accepted' && !contract && (
-          <div className="no-print rounded-lg bg-indigo-50 border border-indigo-100 p-4 text-center text-sm text-indigo-900">
-            {statusMessage.accepted} Your vendor will follow up about your deposit invoice.
-          </div>
+          <QuoteNextStepsNotice
+            headline={QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE}
+            steps={QUOTE_ACCEPTED_NO_CONTRACT_NEXT_STEPS}
+            tone="indigo"
+          />
         )}
 
         <p className="no-print text-center text-xs text-gray-400">
