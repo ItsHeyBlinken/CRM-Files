@@ -53,6 +53,14 @@ export async function sendProjectInvoice(projectId: number, invoiceId: number): 
   return response.data.invoice
 }
 
+export async function createAndSendProjectInvoice(
+  projectId: number,
+  input: CreateInvoiceInput
+): Promise<Invoice> {
+  const created = await createProjectInvoice(projectId, input)
+  return sendProjectInvoice(projectId, created.id)
+}
+
 export async function markProjectInvoicePaid(
   projectId: number,
   invoiceId: number,

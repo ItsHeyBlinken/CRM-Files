@@ -1,6 +1,7 @@
 import { getPool } from '../config/database'
 import { VendorPlanService } from '../services/vendorPlanService'
 import { Project } from './Project'
+import { ProjectPaymentSettings } from './ProjectPaymentSettings'
 import { QuoteContract, type IQuoteContractSummary } from './QuoteContract'
 import { formatDateOnly } from '../utils/dateOnly'
 
@@ -428,6 +429,15 @@ export class QuoteModel {
     )
 
     await QuoteContract.copyToProject(quoteId, project.id, vendorId)
+
+    await ProjectPaymentSettings.upsertForVendor(project.id, vendorId, {
+      projectTotal: quote.totalAmount,
+      paymentPlanType: 'deposit_and_balance',
+      depositType: 'percentage',
+      depositValue: 25,
+      secondPaymentDueDaysBeforeEvent: null,
+      finalPaymentDueDaysBeforeEvent: 30,
+    })
 
     const updated = await this.findByIdForVendor(quoteId, vendorId)
     if (!updated) {

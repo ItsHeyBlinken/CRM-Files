@@ -3,28 +3,17 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { uploadProjectContract } from '../services/contractService'
 import {
-  createProjectInvoice,
-  deleteProjectInvoice,
-  markProjectInvoicePaid,
-  sendProjectInvoice,
-} from '../services/invoiceService'
-import {
   createProjectInvite,
   fetchVendorProject,
-  updateProjectPaymentSettings,
   updateVendorProject,
   type InviteResult,
 } from '../services/projectService'
 import { fetchVendorOnboarding } from '../services/onboardingService'
 import PipelineStepper from '../components/vendor/PipelineStepper'
-import type { Invoice, ProjectStatus, VendorProjectDetail } from '../types/portal'
+import ProjectInvoiceSection from '../components/vendor/ProjectInvoiceSection'
+import type { ProjectStatus, VendorProjectDetail } from '../types/portal'
 import { getProjectPipelineSteps } from '../utils/projectPipeline'
 import toast from 'react-hot-toast'
-import {
-  formatCurrency,
-  getInvoiceDisplayLabel,
-  getInvoiceStatusLabel,
-} from '../utils/portalHelpers'
 import { formatUsDate } from '../utils/calendarHelpers'
 
 function getApiError(err: unknown, fallback: string): string {
@@ -40,13 +29,6 @@ const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
   { value: 'complete', label: 'Complete' },
   { value: 'cancelled', label: 'Cancelled' },
 ]
-
-function shiftDays(date: string, daysBefore: number | null): string {
-  if (!date || daysBefore == null) return ''
-  const target = new Date(`${date}T12:00:00`)
-  target.setDate(target.getDate() - daysBefore)
-  return target.toISOString().slice(0, 10)
-}
 
 const VendorProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -66,26 +48,7 @@ const VendorProjectDetail: React.FC = () => {
   const [contractTitle, setContractTitle] = useState('Photography Agreement')
   const [contractFile, setContractFile] = useState<File | null>(null)
 
-  const [invoiceTitle, setInvoiceTitle] = useState('')
-  const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [invoiceAmount, setInvoiceAmount] = useState('')
-  const [invoiceDueDate, setInvoiceDueDate] = useState('')
-  const [invoiceDescription, setInvoiceDescription] = useState('')
-  const [invoiceKind, setInvoiceKind] = useState<Invoice['invoiceKind']>('custom')
-  const [isDateHoldingDeposit, setIsDateHoldingDeposit] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState(true)
-  const [savingPaymentSetup, setSavingPaymentSetup] = useState(false)
-  const [paymentSetupForm, setPaymentSetupForm] = useState({
-    projectTotal: '',
-    paymentPlanType: 'pay_in_full' as
-      | 'pay_in_full'
-      | 'deposit_and_balance'
-      | 'split_payments',
-    depositType: 'percentage' as 'fixed' | 'percentage',
-    depositValue: '',
-    secondPaymentDueDaysBeforeEvent: '',
-    finalPaymentDueDaysBeforeEvent: '',
-  })
   const [editingOverview, setEditingOverview] = useState(false)
   const [overviewForm, setOverviewForm] = useState({
     title: '',
@@ -116,22 +79,6 @@ const VendorProjectDetail: React.FC = () => {
       if (data.contracts[0]?.title) {
         setContractTitle(data.contracts[0].title)
       }
-      setPaymentSetupForm({
-        projectTotal:
-          data.paymentSettings.projectTotal != null ? String(data.paymentSettings.projectTotal) : '',
-        paymentPlanType: data.paymentSettings.paymentPlanType,
-        depositType: data.paymentSettings.depositType ?? 'percentage',
-        depositValue:
-          data.paymentSettings.depositValue != null ? String(data.paymentSettings.depositValue) : '',
-        secondPaymentDueDaysBeforeEvent:
-          data.paymentSettings.secondPaymentDueDaysBeforeEvent != null
-            ? String(data.paymentSettings.secondPaymentDueDaysBeforeEvent)
-            : '',
-        finalPaymentDueDaysBeforeEvent:
-          data.paymentSettings.finalPaymentDueDaysBeforeEvent != null
-            ? String(data.paymentSettings.finalPaymentDueDaysBeforeEvent)
-            : '',
-      })
     } catch (err: unknown) {
       setError(getApiError(err, 'Failed to load project'))
       setDetail(null)
@@ -244,180 +191,6 @@ const VendorProjectDetail: React.FC = () => {
     }
   }
 
-  const handleCreateInvoice = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!invoiceTitle.trim() || !invoiceAmount.trim()) return
-
-    const amount = Number(invoiceAmount)
-    if (Number.isNaN(amount) || amount < 0) {
-      setError('Enter a valid amount')
-      return
-    }
-
-    setSubmitting(true)
-    setError('')
-
-    try {
-      await createProjectInvoice(projectId, {
-        title: invoiceTitle.trim(),
-        invoiceNumber: invoiceNumber.trim() || undefined,
-        description: invoiceDescription.trim() || undefined,
-        amount,
-        dueDate: invoiceDueDate || undefined,
-        invoiceKind,
-        isDateHoldingDeposit,
-      })
-      setInvoiceTitle('')
-      setInvoiceNumber('')
-      setInvoiceAmount('')
-      setInvoiceDueDate('')
-      setInvoiceDescription('')
-      setInvoiceKind('custom')
-      setIsDateHoldingDeposit(false)
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to create invoice'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleSavePaymentSetup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSavingPaymentSetup(true)
-    setError('')
-
-    try {
-      await updateProjectPaymentSettings(projectId, {
-        projectTotal: paymentSetupForm.projectTotal ? Number(paymentSetupForm.projectTotal) : null,
-        paymentPlanType: paymentSetupForm.paymentPlanType,
-        depositType:
-          paymentSetupForm.paymentPlanType === 'pay_in_full'
-            ? null
-            : paymentSetupForm.depositType,
-        depositValue:
-          paymentSetupForm.paymentPlanType === 'pay_in_full' || !paymentSetupForm.depositValue
-            ? null
-            : Number(paymentSetupForm.depositValue),
-        secondPaymentDueDaysBeforeEvent: paymentSetupForm.secondPaymentDueDaysBeforeEvent
-          ? Number(paymentSetupForm.secondPaymentDueDaysBeforeEvent)
-          : null,
-        finalPaymentDueDaysBeforeEvent: paymentSetupForm.finalPaymentDueDaysBeforeEvent
-          ? Number(paymentSetupForm.finalPaymentDueDaysBeforeEvent)
-          : null,
-      })
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to save payment setup'))
-    } finally {
-      setSavingPaymentSetup(false)
-    }
-  }
-
-  const applyInvoicePreset = (kind: Invoice['invoiceKind']) => {
-    if (!detail) return
-
-    const { paymentSettings, paymentSummary, project, invoices } = detail
-    const projectTotal = paymentSettings.projectTotal ?? 0
-    const createdAmount = invoices
-      .filter((invoice) => invoice.status !== 'cancelled')
-      .reduce((sum, invoice) => sum + invoice.amount, 0)
-    const remainingCreated = Math.max(0, Number((projectTotal - createdAmount).toFixed(2)))
-    const depositAmount =
-      paymentSettings.depositType === 'fixed'
-        ? Number(paymentSettings.depositValue ?? 0)
-        : paymentSettings.depositType === 'percentage' && paymentSettings.depositValue != null
-          ? Number(((projectTotal * paymentSettings.depositValue) / 100).toFixed(2))
-          : 0
-
-    setInvoiceKind(kind)
-
-    switch (kind) {
-      case 'deposit':
-        setInvoiceTitle('Deposit to hold your date')
-        setInvoiceAmount(depositAmount > 0 ? String(depositAmount) : '')
-        setInvoiceDescription('Deposit due to hold the event date.')
-        setInvoiceDueDate('')
-        setIsDateHoldingDeposit(true)
-        break
-      case 'payment':
-        setInvoiceTitle('Payment')
-        setInvoiceAmount(remainingCreated > 0 ? String(remainingCreated) : '')
-        setInvoiceDescription('Scheduled payment toward your event balance.')
-        setInvoiceDueDate(shiftDays(project.eventDate ?? '', paymentSettings.secondPaymentDueDaysBeforeEvent))
-        setIsDateHoldingDeposit(false)
-        break
-      case 'final':
-        setInvoiceTitle('Final payment')
-        setInvoiceAmount(
-          paymentSummary.amountOutstanding > 0 ? String(paymentSummary.amountOutstanding) : ''
-        )
-        setInvoiceDescription('Final balance due before the event.')
-        setInvoiceDueDate(shiftDays(project.eventDate ?? '', paymentSettings.finalPaymentDueDaysBeforeEvent))
-        setIsDateHoldingDeposit(false)
-        break
-      case 'custom':
-        setInvoiceTitle(`${project.title} invoice`)
-        setInvoiceAmount(remainingCreated > 0 ? String(remainingCreated) : '')
-        setInvoiceDescription('')
-        setInvoiceDueDate('')
-        setIsDateHoldingDeposit(false)
-        break
-      default: {
-        const exhaustiveCheck: never = kind
-        return exhaustiveCheck
-      }
-    }
-  }
-
-  const handleSendInvoice = async (invoiceId: number) => {
-    if (!hasPaymentMethod) {
-      setError(
-        'Set up how clients pay you before sending an invoice. Go to Payments in your dashboard.'
-      )
-      return
-    }
-
-    setSubmitting(true)
-    setError('')
-    try {
-      await sendProjectInvoice(projectId, invoiceId)
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to send invoice'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleMarkInvoicePaid = async (invoiceId: number) => {
-    setSubmitting(true)
-    setError('')
-    try {
-      await markProjectInvoicePaid(projectId, invoiceId)
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to mark invoice paid'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleDeleteInvoice = async (invoiceId: number) => {
-    if (!window.confirm('Delete this invoice?')) return
-
-    setSubmitting(true)
-    setError('')
-    try {
-      await deleteProjectInvoice(projectId, invoiceId)
-      await loadDetail()
-    } catch (err: unknown) {
-      setError(getApiError(err, 'Failed to delete invoice'))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   const getInviteFullUrl = (path: string) => `${window.location.origin}${path}`
 
   const copyInviteLink = () => {
@@ -461,8 +234,7 @@ const VendorProjectDetail: React.FC = () => {
     )
   }
 
-  const { project, linkedClient, paymentSummary, contracts, milestones, invoices } =
-    detail
+  const { project, linkedClient, contracts, milestones } = detail
 
   const isContractFileMissing = (
     contract: (typeof contracts)[number]
@@ -880,363 +652,12 @@ const VendorProjectDetail: React.FC = () => {
           </section>
         )}
 
-        <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="font-medium text-gray-900 mb-4">Invoices</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Create invoices for this project. Send them to your client when ready — they appear on
-            the Payments tab in the client portal.{' '}
-            <Link to="/dashboard/payments" className="text-indigo-600 hover:text-indigo-500">
-              Set up payment methods
-            </Link>
-          </p>
-
-          <form
-            onSubmit={handleSavePaymentSetup}
-            className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Payment setup</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Set the project total once, then use guided invoice presets for deposit, payment,
-                  or final balance.
-                </p>
-              </div>
-              <button
-                type="submit"
-                disabled={savingPaymentSetup}
-                className="px-3 py-2 text-xs text-white bg-indigo-600 rounded-md disabled:opacity-50"
-              >
-                {savingPaymentSetup ? 'Saving...' : 'Save payment setup'}
-              </button>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <label className="block text-sm">
-                <span className="text-gray-700">Project total (USD)</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={paymentSetupForm.projectTotal}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({ ...current, projectTotal: e.target.value }))
-                  }
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="text-gray-700">Payment structure</span>
-                <select
-                  value={paymentSetupForm.paymentPlanType}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({
-                      ...current,
-                      paymentPlanType: e.target.value as
-                        | 'pay_in_full'
-                        | 'deposit_and_balance'
-                        | 'split_payments',
-                    }))
-                  }
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="pay_in_full">Pay in full</option>
-                  <option value="deposit_and_balance">Deposit + final balance</option>
-                  <option value="split_payments">Split payments</option>
-                </select>
-              </label>
-
-              <label className="block text-sm">
-                <span className="text-gray-700">Deposit type</span>
-                <select
-                  value={paymentSetupForm.depositType}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({
-                      ...current,
-                      depositType: e.target.value as 'fixed' | 'percentage',
-                    }))
-                  }
-                  disabled={paymentSetupForm.paymentPlanType === 'pay_in_full'}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
-                >
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed amount</option>
-                </select>
-              </label>
-
-              <label className="block text-sm">
-                <span className="text-gray-700">
-                  Deposit value
-                  {paymentSetupForm.depositType === 'percentage' ? ' (%)' : ' (USD)'}
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={paymentSetupForm.depositValue}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({ ...current, depositValue: e.target.value }))
-                  }
-                  disabled={paymentSetupForm.paymentPlanType === 'pay_in_full'}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="text-gray-700">2nd payment days before event</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={paymentSetupForm.secondPaymentDueDaysBeforeEvent}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({
-                      ...current,
-                      secondPaymentDueDaysBeforeEvent: e.target.value,
-                    }))
-                  }
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="text-gray-700">Final payment days before event</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={paymentSetupForm.finalPaymentDueDaysBeforeEvent}
-                  onChange={(e) =>
-                    setPaymentSetupForm((current) => ({
-                      ...current,
-                      finalPaymentDueDaysBeforeEvent: e.target.value,
-                    }))
-                  }
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-md bg-white border border-gray-200 p-3">
-                <p className="text-xs font-medium text-gray-500">Deposit</p>
-                <p className="mt-1 text-sm text-gray-900 capitalize">
-                  {paymentSummary.depositStatus.replace('_', ' ')}
-                </p>
-              </div>
-              <div className="rounded-md bg-white border border-gray-200 p-3">
-                <p className="text-xs font-medium text-gray-500">Amount paid</p>
-                <p className="mt-1 text-sm text-gray-900">
-                  {formatCurrency(paymentSummary.amountPaid)}
-                </p>
-              </div>
-              <div className="rounded-md bg-white border border-gray-200 p-3">
-                <p className="text-xs font-medium text-gray-500">Amount remaining</p>
-                <p className="mt-1 text-sm text-gray-900">
-                  {formatCurrency(paymentSummary.amountOutstanding)}
-                </p>
-              </div>
-            </div>
-          </form>
-
-          <div className="mb-6">
-            <p className="text-sm font-medium text-gray-900">Create next invoice</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => applyInvoicePreset('deposit')}
-                className="px-3 py-2 text-xs text-indigo-700 bg-indigo-50 rounded-md"
-              >
-                Deposit
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInvoicePreset('payment')}
-                className="px-3 py-2 text-xs text-indigo-700 bg-indigo-50 rounded-md"
-              >
-                Payment
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInvoicePreset('final')}
-                className="px-3 py-2 text-xs text-indigo-700 bg-indigo-50 rounded-md"
-              >
-                Final payment
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInvoicePreset('custom')}
-                className="px-3 py-2 text-xs text-gray-700 bg-gray-100 rounded-md"
-              >
-                Custom
-              </button>
-            </div>
-            {paymentSummary.nextSuggestedInvoiceKind && (
-              <p className="mt-2 text-xs text-gray-600">
-                Suggested next step: <strong>{paymentSummary.nextSuggestedInvoiceKind}</strong>
-              </p>
-            )}
-          </div>
-
-          {invoices.length > 0 && (
-            <ul className="space-y-3 mb-6">
-              {invoices.map((invoice) => (
-                <li
-                  key={invoice.id}
-                  className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 text-sm border border-gray-100 rounded-md p-4"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{invoice.title}</p>
-                    <p className="text-xs text-indigo-700 mt-1">
-                      {getInvoiceDisplayLabel(invoice)}
-                    </p>
-                    {invoice.invoiceNumber && (
-                      <p className="text-xs text-gray-500">{invoice.invoiceNumber}</p>
-                    )}
-                    <p className="text-gray-600 mt-1">
-                      {formatCurrency(invoice.amount, invoice.currency)}
-                    </p>
-                    {invoice.dueDate && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Due {formatUsDate(invoice.dueDate)}
-                      </p>
-                    )}
-                    {invoice.clientPaymentClaimedAt && invoice.status !== 'paid' && (
-                      <p className="text-xs text-amber-700 mt-1">
-                        Client reported payment sent — confirm and mark paid
-                      </p>
-                    )}
-                    {invoice.status === 'paid' && invoice.paidAt && (
-                      <p className="text-xs text-green-700 mt-1">
-                        Paid {formatUsDate(invoice.paidAt)}
-                        {invoice.paymentMethod ? ` via ${invoice.paymentMethod}` : ''}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <span className="text-xs font-medium text-gray-500">
-                      {getInvoiceStatusLabel(invoice.status)}
-                    </span>
-                    {invoice.status === 'draft' && (
-                      <>
-                        <button
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => handleSendInvoice(invoice.id)}
-                          className="px-2 py-1 text-xs text-white bg-indigo-600 rounded disabled:opacity-50"
-                        >
-                          Send to client
-                        </button>
-                        <button
-                          type="button"
-                          disabled={submitting}
-                          onClick={() => handleDeleteInvoice(invoice.id)}
-                          className="px-2 py-1 text-xs text-red-700 bg-red-50 rounded disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                    {(invoice.status === 'sent' || invoice.status === 'overdue') && (
-                      <button
-                        type="button"
-                        disabled={submitting}
-                        onClick={() => handleMarkInvoicePaid(invoice.id)}
-                        className="px-2 py-1 text-xs text-green-800 bg-green-50 rounded disabled:opacity-50"
-                      >
-                        Mark paid
-                      </button>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <form onSubmit={handleCreateInvoice} className="space-y-4 border-t border-gray-100 pt-4">
-            <p className="text-sm font-medium text-gray-900">Add invoice</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="text-gray-700">Title</span>
-                <input
-                  required
-                  placeholder="e.g. Retainer"
-                  value={invoiceTitle}
-                  onChange={(e) => setInvoiceTitle(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="text-gray-700">Invoice type</span>
-                <select
-                  value={invoiceKind}
-                  onChange={(e) => setInvoiceKind(e.target.value as Invoice['invoiceKind'])}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="custom">Custom</option>
-                  <option value="deposit">Deposit</option>
-                  <option value="payment">Payment</option>
-                  <option value="final">Final payment</option>
-                </select>
-              </label>
-              <label className="block text-sm">
-                <span className="text-gray-700">Invoice # (optional)</span>
-                <input
-                  placeholder="e.g. INV-002"
-                  value={invoiceNumber}
-                  onChange={(e) => setInvoiceNumber(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="text-gray-700">Amount (USD)</span>
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={invoiceAmount}
-                  onChange={(e) => setInvoiceAmount(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="text-gray-700">Due date (optional)</span>
-                <input
-                  type="date"
-                  value={invoiceDueDate}
-                  onChange={(e) => setInvoiceDueDate(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </label>
-            </div>
-            <label className="block text-sm">
-              <span className="text-gray-700">Description (optional)</span>
-              <textarea
-                placeholder="e.g. 50% retainer due at booking"
-                value={invoiceDescription}
-                onChange={(e) => setInvoiceDescription(e.target.value)}
-                rows={2}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={isDateHoldingDeposit}
-                onChange={(e) => setIsDateHoldingDeposit(e.target.checked)}
-              />
-              Mark this as the date-holding deposit
-            </label>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-            >
-              {submitting ? 'Saving...' : 'Create draft invoice'}
-            </button>
-          </form>
-        </section>
+                <ProjectInvoiceSection
+          projectId={projectId}
+          detail={detail}
+          hasPaymentMethod={hasPaymentMethod}
+          onUpdated={loadDetail}
+        />
 
         <div className="flex gap-3">
           <button

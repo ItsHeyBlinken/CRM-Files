@@ -625,6 +625,7 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] Rounded logo frame + cyan/blue/purple marketing theme on landing/login (matches logo palette)
 - [x] Marketing pages switched to **light background** (slate/cyan gradient, white cards, dark text) — June 20, 2026
 - [x] Client quote accept flow: clearer **next steps** after accept/sign — close window, vendor sends invoice + portal invite for deposit
+- [x] **Streamlined vendor invoice UX** — one-click send deposit/balance, 2-field setup, advanced plan collapsed; quote convert seeds project total + 25% deposit
 - [ ] Optional later: icon-only favicon crop, email template logo URL
 
 ### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
