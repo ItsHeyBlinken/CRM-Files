@@ -61,6 +61,10 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 
 **Re-seed / reset:** See `database/reset/README.md` — use `reset_keep_seed.sql` to clear clutter, or `wipe_and_reseed_dev.sql` for a full fresh seed.
 
+**Production go-live (empty DB, keep schema):** `database/reset/clear_all_data_keep_schema.sql` — wipes all rows (no test accounts restored). Back up first in pgAdmin; then register real vendor on live site. Does **not** delete `server/uploads/` files.
+
+**Maintain go-live script with migrations:** Whenever a new `NNN_*.sql` migration adds an application table, update `clear_all_data_keep_schema.sql` (TRUNCATE list + verification query). Checklist in `Memory-Bank/systemPatterns.md` and `Memory-Bank/activeContext.md` → Go-live wipe script.
+
 **After login — role redirect:**
 | Role | Route |
 |------|-------|
@@ -75,7 +79,7 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 | Area | Paths |
 |------|-------|
 | **Platform branding** | `client/src/constants/branding.ts`, `client/src/components/branding/AppName.tsx` |
-| Schema / seed | `database/001_schema_portalhub.sql` … `009_*`, `database/reset/` |
+| Schema / seed | `database/001_schema_portalhub.sql` … `013_*`, `database/reset/` |
 | Auth | `server/src/routes/auth.ts`, `client/src/pages/AcceptInvite.tsx` |
 | Vendor API | `server/src/routes/vendorProjects.ts`, `server/src/models/Project.ts` |
 | Vendor dashboard | `server/src/routes/vendorDashboard.ts`, `client/src/pages/VendorDashboard.tsx` |
@@ -228,14 +232,16 @@ npm run start        # Start production server
 
 ### Database Setup
 
-**Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` starting at `008`. The agent provides scripts and instructions — never executes migrations against the database.
+**Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` (next: **`014`**). The agent provides scripts and instructions — never executes migrations against the database.
+
+**After each new migration that adds tables:** update `database/reset/clear_all_data_keep_schema.sql` per Memory Bank (`systemPatterns.md` → Go-live data wipe).
 
 ```bash
 # PortalHub schema (pgAdmin: run database/001_schema_portalhub.sql, then 002–007)
 # Optional dev seed: database/reset/seed_portalhub_dev.sql
 ```
 
-**Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `deliverables`, `quotes`, `quote_line_items`
+**Current tables:** `users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `quotes`, `quote_line_items`, `quote_contracts`, `vendor_notifications` (+ runtime `user_sessions` if enabled)
 
 Legacy `client_event_access` removed — not used by PortalHub.
 

@@ -181,8 +181,28 @@
 | `012_vendor_stripe_billing.sql` | Pro subscription Stripe columns | ⬜ User applies |
 | `013_vendor_stripe_payment_link.sql` | `stripe_payment_link` on vendor settings | ⬜ User applies (this session) |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
-| `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
-| `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
+| `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ (update when schema adds tables) |
+| `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ (update when schema adds tables) |
+| **`reset/clear_all_data_keep_schema.sql`** | **Go-live: wipe ALL data, keep schema** | ✅ — **must stay in sync with 001–013+** |
+
+### Go-live wipe script — keep updated with migrations
+
+**File:** `database/reset/clear_all_data_keep_schema.sql`
+
+Production prep: removes every row from app tables; **does not** run or reset migrations. User will run this once the site goes live to clear UAT/test data from the production database.
+
+**Agent / developer checklist whenever a new numbered migration adds an application table:**
+
+1. Append table to `TRUNCATE TABLE` list in `clear_all_data_keep_schema.sql`
+2. Append verification count in the script’s final `SELECT`
+3. Update `database/README.md` if tables list changes materially
+4. Log in `progress.md`
+
+Tables currently covered (through **013**): `quote_line_items`, `quote_contracts`, `quotes`, `vendor_notifications`, `invoices`, `contracts`, `milestones`, `project_payment_settings`, `project_invites`, `project_clients`, `projects`, `vendor_payment_settings`, `vendor_profiles`, `users`, plus optional `user_sessions`.
+
+**Not in scope:** disk files under `server/uploads/` — user clears uploads volume separately at go-live.
+
+Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 
 ## Key Routes (current)
 

@@ -1043,3 +1043,4 @@
 {"level":"info","message":"🌐 API URL: http://localhost:3000/api","service":"crm-platform","timestamp":"2026-06-23 16:46:49"}
 {"level":"info","message":"🔌 Socket.io enabled for real-time communication","service":"crm-platform","timestamp":"2026-06-23 16:46:49"}
 {"level":"info","message":"📊 PostgreSQL database connected","service":"crm-platform","timestamp":"2026-06-23 16:46:49"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"crm-platform","timestamp":"2026-06-23 17:36:09"}

@@ -51,11 +51,30 @@
 - **Soft deletes**: Optional `deleted_at` for data retention
 
 ### Database migrations (manual, pgAdmin)
-- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `009_*` (next: **`010`**)
+- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `013_*` (next: **`014`**)
 - **Format:** `NNN_short_descriptive_name.sql` — zero-padded 3-digit prefix + snake_case suffix
 - **Order:** Run in numeric order; each file header states prerequisite migration(s)
 - **Reset/seed:** Unnumbered scripts in `database/reset/` (data only, not schema)
 - **User applies** all SQL in pgAdmin; agent writes scripts + updates `database/README.md`
+
+### Go-live data wipe (keep schema) — maintenance required
+
+**Script:** `database/reset/clear_all_data_keep_schema.sql`
+
+Use before production go-live to delete **all** application rows while leaving the current schema intact (does not re-run migrations 001–013).
+
+**When adding migration `NNN_*.sql` that creates a new application table** (or a table that will hold user/vendor/client data):
+
+1. Add the table to the `TRUNCATE TABLE ...` list in `clear_all_data_keep_schema.sql` (child tables before parents, or rely on `CASCADE` with the full list)
+2. Add a row to the verification `UNION ALL` block at the bottom of that script
+3. Update `database/README.md` reset table if workflow changes
+4. Note the change in `Memory-Bank/activeContext.md` migration/reset table and session log in `progress.md`
+
+**Do not** add dropped tables (e.g. `deliverables` removed in `010`). **`user_sessions`** stays in a separate optional block (runtime table, not from numbered migrations).
+
+**Also update when needed:** `reset_keep_seed.sql` and `wipe_and_reseed_dev.sql` if they reference removed tables or miss new ones (dev-only).
+
+See `Memory-Bank/techContext.md` → Database Setup for go-live workflow.
 
 ### Authentication & Authorization
 - **Roles**: `VENDOR`, `CLIENT`, `ADMIN`

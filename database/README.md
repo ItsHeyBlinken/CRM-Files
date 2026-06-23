@@ -23,6 +23,7 @@ NNN_short_descriptive_name.sql
 | **README** | Add the new file to the table below in numeric order |
 | **Additive** | Prefer `IF NOT EXISTS` / idempotent patterns; safe to run once |
 | **Not numbered** | Dev reset/seed scripts stay in `database/reset/` |
+| **Go-live wipe** | When adding migration `NNN`, update `reset/clear_all_data_keep_schema.sql` — see `Memory-Bank/systemPatterns.md` |
 
 Example for the next migration: `009_schema_vendor_subscriptions.sql`
 
@@ -49,6 +50,7 @@ Example for the next migration: `009_schema_vendor_subscriptions.sql`
 | **`reset/check_dev_seed.sql`** | Diagnose whether seed accounts and project exist |
 | **`reset/seed_portalhub_dev.sql`** | Optional dev seed — vendor + client test accounts, Miller Celebration |
 | **`reset/reset_keep_seed.sql`** | Delete test clutter; keep seed accounts + Miller Celebration |
+| **`reset/clear_all_data_keep_schema.sql`** | **Go-live prep:** delete ALL app data; schema unchanged (no seed restored) |
 | **`reset/wipe_and_reseed_dev.sql`** | Delete everything and restore fresh seed accounts |
 
 See **`reset/README.md`** for when to use each script.
