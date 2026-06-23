@@ -4,8 +4,10 @@
 **SmoothGig** — official product name (`smoothgig.com` available; register domain when ready). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta/email. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
 
 **Branding files:**
-- `client/src/constants/branding.ts` — `APP_NAME`, `APP_NAME_PARTS`, `APP_TAGLINE`, `APP_DOMAIN`
-- `client/src/components/branding/AppName.tsx` — two-part wordmark (accent on **Gig**)
+- `client/public/smoothgig-logo.png` — platform logo asset (favicon + marketing UI)
+- `client/src/constants/branding.ts` — `APP_NAME`, `APP_TAGLINE`, `PLATFORM_LOGO_SRC`
+- `client/src/components/branding/PlatformLogo.tsx` — logo image for landing, auth, onboarding
+- `client/src/components/branding/AppName.tsx` — text wordmark fallback (vendor shell when no business name)
 
 ## End Goal (Product North Star)
 

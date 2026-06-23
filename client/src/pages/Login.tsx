@@ -48,7 +48,7 @@ const Login: React.FC = () => {
     <MarketingAuthLayout
       title={
         <>
-          Sign in to <AppName accentClassName="text-violet-400" />
+          Sign in to <AppName accentClassName="text-blue-600" />
         </>
       }
       subtitle="Vendors and clients use the same sign-in page"
@@ -96,7 +96,7 @@ const Login: React.FC = () => {
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-slate-600">
           Event vendor?{' '}
           <Link to="/register" className="auth-link">
             Create a vendor account

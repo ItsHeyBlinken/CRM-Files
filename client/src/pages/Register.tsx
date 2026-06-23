@@ -84,7 +84,7 @@ const Register: React.FC = () => {
       title="Create your vendor account"
       subtitle={
         <>
-          <AppName className="font-semibold" accentClassName="font-semibold text-violet-400" /> —{' '}
+          <AppName className="font-semibold" accentClassName="font-semibold text-blue-600" /> —{' '}
           {APP_TAGLINE}
         </>
       }
@@ -221,7 +221,7 @@ const Register: React.FC = () => {
           {loading ? 'Creating account...' : 'Create account'}
         </button>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-slate-600">
           Already have an account?{' '}
           <Link to="/login" className="auth-link">
             Sign in

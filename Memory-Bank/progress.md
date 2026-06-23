@@ -617,6 +617,15 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [ ] User commit + deploy
 - [ ] E2E payments smoke test
 
+### Session: Platform logo (June 2026)
+- [x] Added `SmoothGig-Logo.png` → `client/public/smoothgig-logo.png`
+- [x] `PlatformLogo` component — landing header/footer, login/register auth layout, onboarding
+- [x] Favicon + og/twitter image in `index.html`
+- [x] Tagline aligned to logo copy: "Book gigs. Grow business. Deliver smoothly."
+- [x] Rounded logo frame + cyan/blue/purple marketing theme on landing/login (matches logo palette)
+- [x] Marketing pages switched to **light background** (slate/cyan gradient, white cards, dark text) — June 20, 2026
+- [ ] Optional later: icon-only favicon crop, email template logo URL
+
 ### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
 - [ ] Migration `014`: `invoices.stripe_payment_link` (optional per invoice)
 - [ ] Vendor UI: paste URL on invoice create/send; helper copy amount + Stripe Dashboard link
