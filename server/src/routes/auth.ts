@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { Request, Response } from 'express'
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { optionalAuth, AuthRequest } from '../middleware/auth'
+import { authLoginLimiter } from '../middleware/rateLimiters'
 import { User } from '../models/User'
 import { ProjectInvite } from '../models/ProjectInvite'
 import { Project } from '../models/Project'
@@ -42,7 +43,7 @@ router.get('/me', optionalAuth, async (req: AuthRequest, res: Response): Promise
 })
 
 // POST /api/auth/login
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+router.post('/login', authLoginLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body
 
@@ -90,7 +91,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 })
 
 // POST /api/auth/register
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+router.post('/register', authLoginLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, phone, company, jobTitle } = req.body
 
@@ -268,7 +269,7 @@ router.get('/invite/:token', async (req: Request, res: Response): Promise<void> 
 })
 
 // POST /api/auth/register/client — client signup via invite token
-router.post('/register/client', async (req: Request, res: Response): Promise<void> => {
+router.post('/register/client', authLoginLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { token, email, password, firstName, lastName, phone } = req.body
 

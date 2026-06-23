@@ -11,7 +11,6 @@ const compression_1 = __importDefault(require("compression"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
-const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const path_1 = __importDefault(require("path"));
@@ -20,6 +19,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const database_1 = require("./config/database");
 const errorHandler_1 = require("./middleware/errorHandler");
 const notFound_1 = require("./middleware/notFound");
+const rateLimiters_1 = require("./middleware/rateLimiters");
 const logger_1 = require("./utils/logger");
 const socketService_1 = require("./services/socketService");
 const realtimeNotifications_1 = require("./services/realtimeNotifications");
@@ -125,16 +125,7 @@ function setupMiddleware() {
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     }));
-    const limiter = (0, express_rate_limit_1.default)({
-        windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'),
-        max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'),
-        message: {
-            error: 'Too many requests from this IP, please try again later.',
-        },
-        standardHeaders: true,
-        legacyHeaders: false,
-    });
-    app.use('/api/', limiter);
+    app.use('/api/', rateLimiters_1.generalApiLimiter);
     app.use('/api/webhooks', express_1.default.raw({ type: 'application/json' }), stripeWebhook_1.default);
     app.use(express_1.default.json({ limit: '10mb' }));
     app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));

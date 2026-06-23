@@ -1,4 +1,5 @@
 import React from 'react'
+import VendorLogoAvatar from '../branding/VendorLogoAvatar'
 
 interface ClientPortalHeaderProps {
   vendorBusinessName: string
@@ -22,20 +23,12 @@ const ClientPortalHeader: React.FC<ClientPortalHeaderProps> = ({
     <div className="max-w-lg mx-auto px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {vendorLogoUrl ? (
-            <img
-              src={vendorLogoUrl}
-              alt=""
-              className="h-11 w-11 rounded-xl object-cover border border-gray-200 shrink-0"
-            />
-          ) : (
-            <div
-              className="h-11 w-11 rounded-xl flex items-center justify-center text-white text-sm font-semibold shrink-0"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {vendorBusinessName.slice(0, 1).toUpperCase()}
-            </div>
-          )}
+          <VendorLogoAvatar
+            logoUrl={vendorLogoUrl}
+            label={vendorBusinessName}
+            accentColor={primaryColor}
+            className="h-11 w-11 rounded-xl"
+          />
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-gray-900 truncate">{vendorBusinessName}</h1>
             {vendorTagline && (

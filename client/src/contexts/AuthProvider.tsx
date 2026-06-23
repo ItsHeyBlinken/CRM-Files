@@ -72,7 +72,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       throw new Error('Invalid response from server')
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string } } }
+      const err = error as { response?: { status?: number; data?: { error?: string } } }
+      if (err.response?.status === 429) {
+        throw new Error('Too many requests. Please wait a few minutes, then try again.')
+      }
       const errorMessage = err.response?.data?.error || 'Login failed. Please try again.'
       throw new Error(errorMessage)
     }

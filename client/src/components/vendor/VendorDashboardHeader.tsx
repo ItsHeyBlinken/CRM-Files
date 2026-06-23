@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import AppName from '../branding/AppName'
+import VendorLogoAvatar from '../branding/VendorLogoAvatar'
 import { APP_NAME } from '../../constants/branding'
 import { useVendorBranding } from './VendorBrandingProvider'
 import VendorNotificationBell from './VendorNotificationBell'
@@ -45,20 +46,11 @@ const VendorDashboardHeader: React.FC<VendorDashboardHeaderProps> = ({
       <div className={`${maxWidthClass} mx-auto px-4 py-4 flex items-center justify-between gap-4`}>
         <div className="min-w-0">
           <div className="flex items-center gap-3">
-            {profile?.logoUrl ? (
-              <img
-                src={profile.logoUrl}
-                alt=""
-                className="h-10 w-10 rounded-xl object-cover border border-gray-200"
-              />
-            ) : (
-              <div
-                className="h-10 w-10 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
-                style={{ backgroundColor: accentColor }}
-              >
-                {displayTitle.slice(0, 1).toUpperCase()}
-              </div>
-            )}
+            <VendorLogoAvatar
+              logoUrl={profile?.logoUrl ?? null}
+              label={displayTitle}
+              accentColor={accentColor}
+            />
             <div className="min-w-0">
               <h1 className="text-xl font-semibold text-gray-900 truncate">
                 {showPlatformWordmark ? (

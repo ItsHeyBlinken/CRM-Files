@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const auth_1 = require("../middleware/auth");
+const rateLimiters_1 = require("../middleware/rateLimiters");
 const User_1 = require("../models/User");
 const ProjectInvite_1 = require("../models/ProjectInvite");
 const Project_1 = require("../models/Project");
@@ -35,7 +36,7 @@ router.get('/me', auth_1.optionalAuth, async (req, res) => {
         res.status(500).json({ error: 'Failed to get user data' });
     }
 });
-router.post('/login', async (req, res) => {
+router.post('/login', rateLimiters_1.authLoginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -68,7 +69,7 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Login failed' });
     }
 });
-router.post('/register', async (req, res) => {
+router.post('/register', rateLimiters_1.authLoginLimiter, async (req, res) => {
     try {
         const { email, password, firstName, lastName, phone, company, jobTitle } = req.body;
         if (!email || !password || !firstName || !lastName) {
@@ -209,7 +210,7 @@ router.get('/invite/:token', async (req, res) => {
         res.status(500).json({ error: 'Failed to load invite' });
     }
 });
-router.post('/register/client', async (req, res) => {
+router.post('/register/client', rateLimiters_1.authLoginLimiter, async (req, res) => {
     try {
         const { token, email, password, firstName, lastName, phone } = req.body;
         if (!token || !email || !password || !firstName || !lastName) {

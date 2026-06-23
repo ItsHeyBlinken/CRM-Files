@@ -29,7 +29,6 @@ import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
-import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
 import path from 'path'
@@ -39,6 +38,7 @@ import dotenv from 'dotenv'
 import { connectDB, getPool } from './config/database'
 import { errorHandler } from './middleware/errorHandler'
 import { notFound } from './middleware/notFound'
+import { generalApiLimiter } from './middleware/rateLimiters'
 import { logger } from './utils/logger'
 import { socketHandler } from './services/socketService'
 import { initRealtimeNotifications } from './services/realtimeNotifications'
@@ -185,19 +185,8 @@ function setupMiddleware() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }))
 
-  // Rate limiting
-  // Note: trustProxy is automatically handled by Express's 'trust proxy' setting above
-  const limiter = rateLimit({
-    windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000'), // 15 minutes
-    max: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100'), // limit each IP to 100 requests per windowMs
-    message: {
-      error: 'Too many requests from this IP, please try again later.',
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-
-  app.use('/api/', limiter)
+  // Rate limiting — generous defaults; auth login has a separate stricter limiter
+  app.use('/api/', generalApiLimiter)
 
   // Stripe webhook needs raw body — register before JSON parser
   app.use('/api/webhooks', express.raw({ type: 'application/json' }), stripeWebhookRoutes)
