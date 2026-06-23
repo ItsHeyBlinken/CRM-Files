@@ -128,6 +128,8 @@ Branded portal      →  Your brand        →  Included all tiers
 
 **Client invoice card pay:** Vendor-hosted Stripe Payment Link — SmoothGig does not create Checkout sessions for client invoices.
 
+**Roadmap (approved, not built):** **Path B+** — optional per-invoice Stripe pay URL + vendor send UX (amount copy, Stripe helper). Keeps **no Connect**; improves amount accuracy vs single vendor default link. Spec: `activeContext.md` → Planned: Path B+.
+
 ---
 
 ## Landing page pricing copy (ready to use)

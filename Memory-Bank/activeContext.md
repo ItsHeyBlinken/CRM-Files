@@ -114,6 +114,8 @@
 - Pro subscription billing (Stripe Billing) — see `012`, `stripeBillingService.ts`
 - Webhook `/api/webhooks/stripe` — subscription checkout + lifecycle only (not client invoices)
 
+**Known gap (Path B today):** Vendor default Payment Link is **not** tied to a specific SmoothGig invoice amount. Client sees correct amount in portal but Stripe link may be generic/fixed. **Planned fix:** per-invoice Stripe pay URL — see [Planned: Path B+ per-invoice Stripe pay](#planned-path-b-per-invoice-stripe-pay-no-connect).
+
 **Guided invoice workflow (built — SQL `008` applied):**
 - Project-level payment setup stores project total + payment structure (`pay_in_full`, `deposit_and_balance`, `split_payments`)
 - Vendors can save deposit defaults and due-day guidance on project detail
@@ -225,7 +227,7 @@
 - **Signed contract view (new tab):** authenticated blob fetch + `URL.createObjectURL` (not iframe)
 - **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
 - Stripe webhook: raw body at `/api/webhooks/stripe` — **Pro subscriptions only** (not client invoice pay)
-- **Client card pay:** vendor `stripe_payment_link` validated as `https://*.stripe.com` URL; no platform Stripe keys required for client invoices
+- **Client card pay:** vendor `stripe_payment_link` on settings (default) + **planned** per-invoice URL (`014`); validated as `https://*.stripe.com`; no Connect
 - **Git commits / push:** user only
 - **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next new migration: `014`)
 
@@ -233,9 +235,42 @@
 
 | Feature | Why | Target |
 |---------|-----|--------|
+| **Path B+ — per-invoice Stripe pay URL** | Easy vendor UX **without** platform Connect; correct amount on Stripe per bill | See section below — **user approved to implement later** |
 | **Vendor calendar personal entries** | Off-book gigs, payment reminders, blocked days | Future migration + calendar CRUD |
 | Platform subscription (Phase 3e) | Vendor → platform billing | Built in code — needs `011`/`012` + deploy |
 | Invoice due dates on calendar | Optional overlay | Post-MVP |
+
+## Planned: Path B+ per-invoice Stripe pay (no Connect)
+
+**Decision (June 20, 2026):** User wants vendor-friendly Stripe pay **without** enabling Stripe Connect on the platform. Rejected for now: Connect OAuth / in-portal Checkout (requires platform Connect). **Approved for later:** per-invoice pay links + vendor UX helpers.
+
+### Problem (current Path B)
+- SmoothGig invoice = source of truth for amount, due date, status, client UX
+- Vendor-level `stripe_payment_link` = one generic URL; **not** synced to each invoice amount
+- Vendor may need a separate Stripe Payment Link/Invoice in Dashboard per amount anyway
+
+### Target UX (Path B+)
+1. Vendor creates/sends invoice in SmoothGig (unchanged)
+2. Vendor creates matching Payment Link or Stripe Invoice in **their** Dashboard (~1 min)
+3. Vendor pastes that URL **on the SmoothGig invoice** (new optional field) — or at send time
+4. Client portal **Pay with card** opens **invoice-specific** URL if set; else vendor default from payment settings
+5. Client **I've sent payment** → vendor marks paid (unchanged)
+
+### Implementation sketch (when built)
+| Layer | Work |
+|-------|------|
+| **DB** | Migration `014`: `invoices.stripe_payment_link TEXT` (nullable); reuse `stripePaymentLink.ts` validation |
+| **API** | Include on invoice create/update/send; expose in portal payload per open invoice |
+| **Vendor UI** | Invoice form / send modal: optional Stripe pay URL; helper: show amount, copy `$X.XX`, link to Stripe Payment Links docs |
+| **Client UI** | `handlePayWithCard` uses `invoice.stripePaymentLink ?? paymentOptions.stripePaymentLink` |
+| **Copy** | Clarify: SmoothGig invoice = bill in app; Stripe URL = where card is charged; no Connect required |
+
+### Explicitly not in scope for Path B+
+- Auto-generating Stripe checkout for invoice amount (requires **Connect** or vendor secret key — out of scope)
+- Platform webhooks marking invoices paid from Stripe (vendor confirms manually unless Connect returns)
+
+### Alternative deferred (only if vendor UX still too heavy)
+- **Connect OAuth** — one-time platform Connect setup; vendors link existing accounts; SmoothGig creates Checkout per invoice with correct amount. User prefers to avoid Connect for now.
 
 ## Session Log (landing page — vendor marketing)
 
@@ -310,6 +345,14 @@
 - [ ] Git commit + deploy
 - [ ] E2E: vendor Payment Link → client pay flow → mark paid
 
+## Session Log (June 20, 2026 — Path B+ planning)
+
+- [x] User confirmed tradeoff: easy vendor UX **without** platform Connect
+- [x] **Approved for later:** per-invoice Stripe pay URL on SmoothGig invoices + vendor helper UI (copy amount, paste link at send)
+- [x] Client pay order: invoice-specific URL → fallback vendor default from payment settings
+- [x] Deferred alternative: Connect OAuth only if per-invoice manual Stripe step still too heavy
+- [x] Documented in Memory Bank (`activeContext.md` Planned Features, `progress.md`, `monetization.md`, `techContext.md`)
+
 ## Session Log (June 20, 2026 — vendor-hosted Stripe)
 
 - [x] **Path B:** Removed Stripe Connect + in-portal Checkout for client invoices
@@ -357,6 +400,7 @@
 - [x] Migrations `008` + `009` applied in pgAdmin
 
 ## Open Questions (Deferred)
+- **Path B+ per-invoice Stripe URL** — approved for later implementation (see Planned Features in this file); not Connect
 - Pre-fill business name from register `company` in onboarding
 - Transactional email provider for invites and quotes (vs mailto MVP)
 - Enforce “booked client” status in DB vs informational UX only

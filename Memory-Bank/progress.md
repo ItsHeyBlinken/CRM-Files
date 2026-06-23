@@ -616,3 +616,10 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [ ] User applies migration **`013`** in pgAdmin
 - [ ] User commit + deploy
 - [ ] E2E payments smoke test
+
+### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
+- [ ] Migration `014`: `invoices.stripe_payment_link` (optional per invoice)
+- [ ] Vendor UI: paste URL on invoice create/send; helper copy amount + Stripe Dashboard link
+- [ ] Client portal: pay button prefers invoice URL, fallback to vendor default from settings
+- [ ] **No Connect** — vendor still creates Payment Link/Invoice in their Stripe Dashboard
+- [ ] Full spec in `activeContext.md` → **Planned: Path B+ per-invoice Stripe pay**
