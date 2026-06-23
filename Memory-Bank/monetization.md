@@ -20,7 +20,7 @@
 | **Quotes** | 3 per month | Unlimited |
 | **Client portal** | ✅ Full (1 project) | ✅ Unlimited clients |
 | **Contracts + e-sign** | ✅ | ✅ |
-| **Invoices + P2P / Stripe Connect** | ✅ | ✅ |
+| **Invoices + P2P / Stripe Payment Link** | ✅ | ✅ |
 | **Branding** (logo, colors, tagline) | ✅ | ✅ |
 | **Calendar, notifications, email** | ✅ | ✅ |
 | **Team seats** | 1 (owner) | 1 (multi-seat = future tier) |
@@ -51,12 +51,12 @@ Annual savings vs monthly: Founding ~$29/yr off; Standard ~$49/yr off.
 |----------|----------|--------|
 | **SmoothGig subscription** | Vendor | $19–29/mo or annual equivalent (above) |
 | **SmoothGig platform fee on client payments** | — | **None — ever** |
-| **Stripe card processing** (optional Connect) | Vendor (via Stripe) | **Standard Stripe transaction fees only** when vendor links Stripe and client pays by card |
+| **Stripe card processing** (optional — vendor’s own Payment Link) | Vendor (via their Stripe) | **Standard Stripe transaction fees only** — SmoothGig does not process client card payments |
 | **P2P** (Venmo, Zelle, etc.) | — | No SmoothGig fee; no Stripe fee |
 
 **Messaging:** “We don’t take a cut of your client payments. If you use Stripe for card pay, you pay Stripe’s processing fee — not an extra SmoothGig fee.”
 
-**Product implication:** Stripe Connect must use **direct charges** or equivalent where application fees are **not** applied. Subscription revenue is **Stripe Billing only**.
+**Product implication:** Client card pay uses the **vendor’s Stripe Payment Link** (off-platform). SmoothGig subscription revenue is **Stripe Billing only** — no Connect required on the platform account.
 
 ---
 
@@ -105,7 +105,7 @@ Branded portal      →  Your brand        →  Included all tiers
 |---|----------|--------------|
 | 1 | Who pays SmoothGig? | **Vendor subscription only** |
 | 2 | Platform fee on client payments? | **No — permanent** |
-| 3 | Stripe card fees? | **Stripe standard only** (vendor’s Connect account) |
+| 3 | Stripe card fees? | **Stripe standard only** (vendor’s own Stripe account) |
 | 4 | Pricing model | **Freemium Starter + Pro** |
 | 5 | Free tier | **Yes** — 1 active project, 3 quotes/mo |
 | 6 | Founding Pro | **$19/mo, $199/yr** — first **50** subs, **lifetime lock** while active |
@@ -126,7 +126,7 @@ Branded portal      →  Your brand        →  Included all tiers
 
 **Schema prep:** `plan` (`starter` \| `pro`), `plan_tier` (`founding_pro` \| `standard`), `subscription_status`, `stripe_customer_id`, `stripe_subscription_id`, `founding_pro_locked_at`.
 
-**Stripe Connect:** No `application_fee_amount` on Checkout Sessions for client invoice pay.
+**Client invoice card pay:** Vendor-hosted Stripe Payment Link — SmoothGig does not create Checkout sessions for client invoices.
 
 ---
 

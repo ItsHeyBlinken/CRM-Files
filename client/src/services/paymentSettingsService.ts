@@ -2,9 +2,7 @@ import api from './api'
 
 export interface VendorPaymentSettings {
   vendorId: number
-  stripeAccountId: string | null
-  stripeChargesEnabled: boolean
-  stripeOnboardingComplete: boolean
+  stripePaymentLink: string | null
   venmoHandle: string | null
   zelleHandle: string | null
   cashappHandle: string | null
@@ -15,7 +13,6 @@ export interface VendorPaymentSettings {
 
 export interface PaymentSettingsResponse {
   settings: VendorPaymentSettings
-  stripeConfigured: boolean
 }
 
 export interface UpdatePaymentSettingsInput {
@@ -24,6 +21,7 @@ export interface UpdatePaymentSettingsInput {
   cashappHandle?: string | null
   paypalHandle?: string | null
   paymentInstructions?: string | null
+  stripePaymentLink?: string | null
 }
 
 export async function fetchPaymentSettings(): Promise<PaymentSettingsResponse> {
@@ -36,14 +34,4 @@ export async function updatePaymentSettings(
 ): Promise<VendorPaymentSettings> {
   const response = await api.put('/vendor/payment-settings', input)
   return response.data.settings
-}
-
-export async function startStripeConnect(returnPath?: string): Promise<string> {
-  const response = await api.post('/vendor/payment-settings/stripe/connect', { returnPath })
-  return response.data.url
-}
-
-export async function refreshStripeConnectStatus(): Promise<PaymentSettingsResponse> {
-  const response = await api.post('/vendor/payment-settings/stripe/refresh')
-  return { settings: response.data.settings, stripeConfigured: true }
 }

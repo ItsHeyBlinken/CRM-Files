@@ -2,6 +2,16 @@
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
 
+## Handoff — June 20, 2026 (vendor-hosted Stripe — Path B)
+
+- [x] No Stripe Connect for client payments — vendors paste Payment Link URL
+- [x] Run migration `013_vendor_stripe_payment_link.sql` in pgAdmin before deploy
+
+## Handoff — June 20, 2026 (Stripe Connect OAuth)
+
+- [x] Vendors link **existing** Stripe accounts via Connect OAuth (replaces Express account creation)
+- [x] Register OAuth redirect URI in Stripe Dashboard; set `STRIPE_CONNECT_CLIENT_ID` (+ optional `API_PUBLIC_URL` locally)
+
 ## Handoff — June 20, 2026 (end of session)
 
 **User stepped away after committing US date format.** Session also shipped quote-contract reliability fixes, CSP iframe fix, and mobile quote layout (may need separate commit/deploy if not yet pushed).
@@ -378,7 +388,7 @@
 ### Next session priorities
 1. Run pending SQL → E2E quote+contract+project path
 2. E2E payments path (optional Stripe dev keys)
-3. Stripe Connect OAuth (“link existing account”) — discussed, not built
+3. Stripe Connect OAuth — ✅ built (link existing Stripe account)
 4. Onboarding polish (pre-fill business name from register)
 5. Phase 3e vendor subscription billing
 

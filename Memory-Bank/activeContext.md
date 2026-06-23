@@ -48,7 +48,7 @@
 2. **Commit + deploy** any UAT fixes
 3. **E2E — payments path** (deposit invoice, P2P claim, optional Stripe Checkout)
 4. **Volume persistence test** — redeploy and confirm `uploads/contracts/` PDFs still load
-5. **Stripe Connect UX** — OAuth “link existing account” vs Express-only
+5. **Stripe (client pay)** — vendor-hosted Payment Link only; no platform Connect
 6. **Phase 3e:** Platform vendor subscription billing (pre-launch)
 7. **Future:** Vendor calendar personal entries — migration `011` (deferred)
 
@@ -89,7 +89,7 @@
 | **Portal contract iframe (auth via `access_token` query on GET)** | ✅ Built + verified prod |
 | Project contract re-upload when PDF missing on disk | ✅ Built |
 | Mobile-responsive quote document layout | ✅ Built |
-| Stripe Connect **OAuth** (link existing Stripe account) | 📋 Discussed — not built |
+| Stripe Payment Link (vendor-hosted card pay) | ✅ Built (June 20, 2026) |
 | Monetization (vendor subscription) | ✅ Model confirmed — see `monetization.md` |
 
 ## Payment Architecture (Agreed)
@@ -98,10 +98,10 @@
 
 | Flow | Who pays whom | Mechanism | Status |
 |------|---------------|-----------|--------|
-| **Client → Vendor** | Client pays vendor for invoices | Stripe Connect (card) + P2P handles | ✅ Built (Express Connect today) |
+| **Client → Vendor** | Client pays vendor for invoices | Vendor Stripe link + P2P handles | ✅ Built (vendor-hosted Stripe link) |
 | **Vendor → platform** | Vendor pays SmoothGig subscription | Stripe Billing | 📋 Phase 3e — pricing confirmed in `monetization.md` |
 
-**Fee policy (confirmed):** SmoothGig charges **no platform fee** on client payments. Vendors pay **subscription only**. Card processing = **Stripe standard fees** on vendor Connect account only.
+**Fee policy (confirmed):** SmoothGig charges **no platform fee** on client payments. Vendors pay **subscription only**. Card processing = **Stripe standard fees on the vendor's own Stripe account** (SmoothGig does not process client card payments).
 
 **Client invoice payments (built):**
 - Vendor configures handles + Stripe at onboarding and `/dashboard/payments`
@@ -224,7 +224,7 @@
 | Feature | Why | Target |
 |---------|-----|--------|
 | **Vendor calendar personal entries** | Ease of use — vendors need one place for gigs *and* personal reminders (payments due, off-book work, blocked days) | Migration `011` + calendar CRUD UI |
-| Stripe Connect OAuth | Link existing Stripe account | TBD |
+| Stripe Connect OAuth | Link existing Stripe account | ✅ Built |
 | Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
 | Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `011` |
 
@@ -279,6 +279,22 @@
 - [x] Removed deliverable API routes; **`010` — user dropped `deliverables` table in pgAdmin** (was empty)
 - [x] Client portal tabs: Home / Documents / Payments only
 
+## Session Log (June 20, 2026 — vendor-hosted Stripe)
+
+- [x] **Path B:** Removed Stripe Connect + in-portal Checkout for client invoices
+- [x] Vendors paste Stripe Payment Link URL in payment settings / onboarding
+- [x] Client portal opens vendor link in new tab; claim-sent flow for vendor confirmation
+- [x] Migration `013_vendor_stripe_payment_link.sql` — user applies in pgAdmin
+- [x] Platform Stripe env vars needed **only** for Pro subscription billing
+
+## Session Log (June 20, 2026 — Stripe Connect OAuth)
+
+- [x] Replaced Express account creation with **Stripe Connect OAuth** — vendors link existing Stripe accounts
+- [x] `POST /stripe/connect` returns OAuth authorize URL (`stripe_landing=login`)
+- [x] `GET /stripe/oauth/callback` — public route exchanges code, saves `stripe_user_id`, redirects to payments/onboarding
+- [x] Env: `STRIPE_CONNECT_CLIENT_ID`; optional `API_PUBLIC_URL` for OAuth redirect host
+- [x] UI copy: “Connect existing Stripe account” on `/dashboard/payments` and onboarding
+
 ## Session Log (June 20, 2026 — end of session)
 
 ### Quote / contract reliability
@@ -308,7 +324,6 @@
 - [x] Migrations `008` + `009` applied in pgAdmin
 
 ## Open Questions (Deferred)
-- **Stripe Connect:** OAuth “link existing account” vs Express-only — implement next?
 - Pre-fill business name from register `company` in onboarding
 - Transactional email provider for invites and quotes (vs mailto MVP)
 - Enforce “booked client” status in DB vs informational UX only

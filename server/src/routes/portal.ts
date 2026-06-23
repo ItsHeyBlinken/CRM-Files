@@ -3,7 +3,6 @@ import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { Project } from '../models/Project'
 import { Contract } from '../models/Contract'
 import { Invoice } from '../models/Invoice'
-import { createInvoiceCheckoutSession, isStripeConfigured } from '../services/stripeService'
 import { notifyInvoicePaymentClaimed } from '../services/notificationService'
 import { logger } from '../utils/logger'
 
@@ -178,62 +177,6 @@ router.post('/contracts/:id/acknowledge', async (req: AuthRequest, res: Response
     }
 
     res.status(500).json({ error: 'Failed to sign contract' })
-  }
-})
-
-// POST /api/portal/invoices/:id/checkout
-router.post('/invoices/:id/checkout', async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    if (!isStripeConfigured()) {
-      res.status(503).json({ error: 'Card payments are not available right now' })
-      return
-    }
-
-    const invoice = await Invoice.findByIdForClient(
-      Number(req.params['id']),
-      Number(req.user.id)
-    )
-
-    if (!invoice) {
-      res.status(404).json({ error: 'Invoice not found' })
-      return
-    }
-
-    const portalProject = await Project.findClientProject(Number(req.user.id))
-    if (!portalProject || portalProject.project.id !== invoice.projectId) {
-      res.status(404).json({ error: 'Invoice not found' })
-      return
-    }
-
-    const url = await createInvoiceCheckoutSession(
-      invoice,
-      portalProject.project.vendorId,
-      Number(req.user.id)
-    )
-
-    res.json({ url })
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      switch (error.message) {
-        case 'STRIPE_NOT_CONFIGURED':
-          res.status(503).json({ error: 'Card payments are not available right now' })
-          return
-        case 'STRIPE_NOT_READY':
-          res.status(409).json({
-            error: 'Your vendor has not finished card payment setup yet. Try another payment method.',
-          })
-          return
-        case 'INVOICE_NOT_PAYABLE':
-          res.status(409).json({ error: 'This invoice is not available for payment' })
-          return
-        case 'AMOUNT_TOO_SMALL':
-          res.status(400).json({ error: 'This invoice amount is too small for card processing' })
-          return
-      }
-    }
-
-    logger.error('Invoice checkout error:', error)
-    res.status(500).json({ error: 'Failed to start payment' })
   }
 })
 

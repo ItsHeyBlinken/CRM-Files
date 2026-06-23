@@ -1,10 +1,9 @@
 import { getPool } from '../config/database'
+import { normalizeStripePaymentLink, parseStripePaymentLinkInput } from '../utils/stripePaymentLink'
 
 export interface IVendorPaymentSettings {
   vendorId: number
-  stripeAccountId: string | null
-  stripeChargesEnabled: boolean
-  stripeOnboardingComplete: boolean
+  stripePaymentLink: string | null
   venmoHandle: string | null
   zelleHandle: string | null
   cashappHandle: string | null
@@ -19,10 +18,12 @@ export interface IVendorPaymentSettingsUpdate {
   cashappHandle?: string | null
   paypalHandle?: string | null
   paymentInstructions?: string | null
+  stripePaymentLink?: string | null
 }
 
 export interface IClientPaymentOptions {
   stripeEnabled: boolean
+  stripePaymentLink: string | null
   venmoHandle: string | null
   zelleHandle: string | null
   cashappHandle: string | null
@@ -32,9 +33,7 @@ export interface IClientPaymentOptions {
 
 function mapRow(row: {
   vendor_id: number
-  stripe_account_id: string | null
-  stripe_charges_enabled: boolean
-  stripe_onboarding_complete: boolean
+  stripe_payment_link?: string | null
   venmo_handle: string | null
   zelle_handle: string | null
   cashapp_handle: string | null
@@ -44,9 +43,7 @@ function mapRow(row: {
 }): IVendorPaymentSettings {
   return {
     vendorId: row.vendor_id,
-    stripeAccountId: row.stripe_account_id,
-    stripeChargesEnabled: Boolean(row.stripe_charges_enabled),
-    stripeOnboardingComplete: Boolean(row.stripe_onboarding_complete),
+    stripePaymentLink: row.stripe_payment_link ?? null,
     venmoHandle: row.venmo_handle,
     zelleHandle: row.zelle_handle,
     cashappHandle: row.cashapp_handle,
@@ -58,7 +55,7 @@ function mapRow(row: {
 
 export function hasAnyClientPaymentMethod(settings: IVendorPaymentSettings): boolean {
   return Boolean(
-    settings.stripeChargesEnabled ||
+    normalizeStripePaymentLink(settings.stripePaymentLink) ||
       settings.venmoHandle ||
       settings.zelleHandle ||
       settings.cashappHandle ||
@@ -103,8 +100,7 @@ export class VendorPaymentSettingsModel {
     const result = await pool.query(
       `
       SELECT
-        vps.stripe_account_id,
-        vps.stripe_charges_enabled,
+        vps.stripe_payment_link,
         vps.venmo_handle,
         vps.zelle_handle,
         vps.cashapp_handle,
@@ -120,6 +116,7 @@ export class VendorPaymentSettingsModel {
     if (result.rows.length === 0) {
       return {
         stripeEnabled: false,
+        stripePaymentLink: null,
         venmoHandle: null,
         zelleHandle: null,
         cashappHandle: null,
@@ -129,8 +126,11 @@ export class VendorPaymentSettingsModel {
     }
 
     const row = result.rows[0]
+    const stripePaymentLink = normalizeStripePaymentLink(row.stripe_payment_link ?? null)
+
     return {
-      stripeEnabled: Boolean(row.stripe_charges_enabled && row.stripe_account_id),
+      stripeEnabled: Boolean(stripePaymentLink),
+      stripePaymentLink,
       venmoHandle: row.venmo_handle ?? null,
       zelleHandle: row.zelle_handle ?? null,
       cashappHandle: row.cashapp_handle ?? null,
@@ -139,7 +139,7 @@ export class VendorPaymentSettingsModel {
     }
   }
 
-  static async updateP2PSettings(
+  static async updateSettings(
     vendorId: number,
     data: IVendorPaymentSettingsUpdate
   ): Promise<IVendorPaymentSettings> {
@@ -165,6 +165,13 @@ export class VendorPaymentSettingsModel {
     if (data.paymentInstructions !== undefined) {
       setField('payment_instructions', normalizeHandle(data.paymentInstructions))
     }
+    if (data.stripePaymentLink !== undefined) {
+      const parsed = parseStripePaymentLinkInput(data.stripePaymentLink)
+      if (!parsed.ok) {
+        throw new Error('INVALID_STRIPE_PAYMENT_LINK')
+      }
+      setField('stripe_payment_link', parsed.link)
+    }
 
     if (fields.length === 0) {
       return this.findByVendorId(vendorId)
@@ -183,39 +190,6 @@ export class VendorPaymentSettingsModel {
       values
     )
 
-    return mapRow(result.rows[0])
-  }
-
-  static async setStripeAccountId(vendorId: number, accountId: string): Promise<void> {
-    await this.findByVendorId(vendorId)
-    const pool = getPool()
-    await pool.query(
-      `
-      UPDATE vendor_payment_settings
-      SET stripe_account_id = $2, updated_at = NOW()
-      WHERE vendor_id = $1
-      `,
-      [vendorId, accountId]
-    )
-  }
-
-  static async updateStripeStatus(
-    vendorId: number,
-    chargesEnabled: boolean,
-    onboardingComplete: boolean
-  ): Promise<IVendorPaymentSettings> {
-    const pool = getPool()
-    const result = await pool.query(
-      `
-      UPDATE vendor_payment_settings
-      SET stripe_charges_enabled = $2,
-          stripe_onboarding_complete = $3,
-          updated_at = NOW()
-      WHERE vendor_id = $1
-      RETURNING *
-      `,
-      [vendorId, chargesEnabled, onboardingComplete]
-    )
     return mapRow(result.rows[0])
   }
 

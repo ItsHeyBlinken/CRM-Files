@@ -41,7 +41,7 @@ Event vendors and their clients lose time and trust when project work is scatter
 ### Vendor User Flows
 
 **Onboarding** *(shipped)*
-- Register as vendor → `/dashboard/onboarding` (business name → P2P payments → optional Stripe Connect)
+- Register as vendor → `/dashboard/onboarding` (business name → P2P payments → optional Stripe Payment Link)
 - `VendorOnboardingGate` blocks dashboard until `payment_setup_complete`
 - `/dashboard/payments` remains available for later edits
 
@@ -74,7 +74,7 @@ Event vendors and their clients lose time and trust when project work is scatter
 - Vendor marks P2P payments paid after confirmation
 
 **Payment settings**
-- `/dashboard/payments` — P2P handles + Stripe Connect Express onboarding
+- `/dashboard/payments` — P2P handles + optional Stripe Payment Link URL
 - Moving into **vendor signup onboarding** (planned)
 
 **Deliverables**

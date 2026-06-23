@@ -138,7 +138,7 @@ SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=SmoothGig <noreply@smoothgig.com>
 
-# Stripe — Connect (client invoice pay) + Billing (vendor Pro subscription)
+# Stripe — vendor Pro subscription billing only (no Connect for client invoice pay)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -146,6 +146,8 @@ PRO_STRIPE_PRICE_ID=price_...          # Standard Pro ($29/mo) — used after fo
 FOUNDING_PRO_STRIPE_PRICE_ID=price_...  # Founding Pro ($19/mo) — first 50 active subs
 FRONTEND_URL=http://localhost:5173
 ```
+
+**Client invoice card pay:** Vendors paste their own Stripe Payment Link in payment settings — no `STRIPE_CONNECT_CLIENT_ID` required.
 
 ### Installation Commands
 ```bash

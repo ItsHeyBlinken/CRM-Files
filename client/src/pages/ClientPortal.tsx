@@ -4,10 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import ClientPortalHeader from '../components/portal/ClientPortalHeader'
 import ContractSignPanel from '../components/portal/ContractSignPanel'
 import { fetchContractPdfBlob } from '../services/contractService'
-import {
-  claimInvoicePaymentSent,
-  startInvoiceCheckout,
-} from '../services/portalPaymentService'
+import { claimInvoicePaymentSent } from '../services/portalPaymentService'
 import { fetchClientPortal } from '../services/projectService'
 import type { ClientPortalData, Invoice, PortalTab } from '../types/portal'
 import {
@@ -36,7 +33,6 @@ const ClientPortal: React.FC = () => {
   const [paidInvoiceTitle, setPaidInvoiceTitle] = useState<string | null>(null)
   const [reportedInvoiceTitle, setReportedInvoiceTitle] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState('')
-  const [payingInvoiceId, setPayingInvoiceId] = useState<number | null>(null)
   const [claimingInvoiceId, setClaimingInvoiceId] = useState<number | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const [viewingContractId, setViewingContractId] = useState<number | null>(null)
@@ -148,20 +144,14 @@ const ClientPortal: React.FC = () => {
     }
   }
 
-  const handlePayWithCard = async (invoice: Invoice) => {
+  const handlePayWithCard = () => {
     setPaymentError('')
-    setPayingInvoiceId(invoice.id)
-
-    try {
-      const url = await startInvoiceCheckout(invoice.id)
-      window.location.href = url
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Could not start card payment'
-      setPaymentError(message)
-      setPayingInvoiceId(null)
+    const url = data?.paymentOptions.stripePaymentLink
+    if (!url) {
+      setPaymentError('Card payments are not set up yet. Try another payment method.')
+      return
     }
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   const handleClaimSent = async (invoice: Invoice) => {
@@ -465,15 +455,20 @@ const ClientPortal: React.FC = () => {
               {isPayable && (
                 <div className="mt-4 space-y-4 border-t border-gray-100 pt-4">
                   {options.stripeEnabled && (
-                    <button
-                      type="button"
-                      onClick={() => handlePayWithCard(invoice)}
-                      disabled={payingInvoiceId === invoice.id}
-                      className="w-full rounded-xl py-3.5 text-base font-semibold text-white disabled:opacity-50 shadow-sm"
-                      style={{ backgroundColor: accent }}
-                    >
-                      {payingInvoiceId === invoice.id ? 'Opening checkout...' : 'Pay with card'}
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={handlePayWithCard}
+                        className="w-full rounded-xl py-3.5 text-base font-semibold text-white shadow-sm"
+                        style={{ backgroundColor: accent }}
+                      >
+                        Pay with card (Stripe)
+                      </button>
+                      <p className="text-xs text-gray-500 text-center">
+                        Opens your vendor&apos;s Stripe page in a new tab. After paying, notify them
+                        below.
+                      </p>
+                    </div>
                   )}
 
                   {hasP2P && (
@@ -520,31 +515,33 @@ const ClientPortal: React.FC = () => {
                           />
                         )}
                       </div>
-                      {!invoice.clientPaymentClaimedAt ? (
-                        <button
-                          type="button"
-                          onClick={() => handleClaimSent(invoice)}
-                          disabled={claimingInvoiceId === invoice.id}
-                          className="w-full rounded-xl py-3.5 text-base font-semibold text-white disabled:opacity-50 shadow-sm"
-                          style={{ backgroundColor: accent }}
-                        >
-                          {claimingInvoiceId === invoice.id
-                            ? 'Saving...'
-                            : "I've sent payment — notify vendor"}
-                        </button>
-                      ) : (
-                        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center">
-                          <p className="text-sm font-semibold text-amber-900">
-                            Payment reported — waiting for vendor
-                          </p>
-                          <p className="mt-1 text-xs text-amber-800">
-                            We&apos;ll update this page when {data.vendorBusinessName} confirms
-                            receipt.
-                          </p>
-                        </div>
-                      )}
                     </div>
                   )}
+
+                  {(options.stripeEnabled || hasP2P) &&
+                    (!invoice.clientPaymentClaimedAt ? (
+                      <button
+                        type="button"
+                        onClick={() => handleClaimSent(invoice)}
+                        disabled={claimingInvoiceId === invoice.id}
+                        className="w-full rounded-xl py-3.5 text-base font-semibold text-white disabled:opacity-50 shadow-sm"
+                        style={{ backgroundColor: accent }}
+                      >
+                        {claimingInvoiceId === invoice.id
+                          ? 'Saving...'
+                          : "I've sent payment — notify vendor"}
+                      </button>
+                    ) : (
+                      <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-center">
+                        <p className="text-sm font-semibold text-amber-900">
+                          Payment reported — waiting for vendor
+                        </p>
+                        <p className="mt-1 text-xs text-amber-800">
+                          We&apos;ll update this page when {data.vendorBusinessName} confirms
+                          receipt.
+                        </p>
+                      </div>
+                    ))}
 
                   {!options.stripeEnabled && !hasP2P && (
                     <p className="text-sm text-gray-500">

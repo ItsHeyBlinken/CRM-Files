@@ -1,11 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import AppName from '../components/branding/AppName'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { completeVendorOnboarding, fetchVendorOnboarding } from '../services/onboardingService'
-import {
-  refreshStripeConnectStatus,
-  startStripeConnect,
-} from '../services/paymentSettingsService'
 
 type OnboardingStep = 'business' | 'payments' | 'stripe'
 
@@ -13,14 +9,13 @@ const STEPS: OnboardingStep[] = ['business', 'payments', 'stripe']
 
 const VendorOnboarding: React.FC = () => {
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
   const [step, setStep] = useState<OnboardingStep>('business')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [stripeConnected, setStripeConnected] = useState(false)
 
   const [businessName, setBusinessName] = useState('')
   const [form, setForm] = useState({
+    stripePaymentLink: '',
     venmoHandle: '',
     zelleHandle: '',
     cashappHandle: '',
@@ -36,7 +31,12 @@ const VendorOnboarding: React.FC = () => {
       if (data.status.businessName) {
         setBusinessName(data.status.businessName)
       }
-      setStripeConnected(data.status.settings.stripeChargesEnabled)
+      if (data.status.settings.stripePaymentLink) {
+        setForm((f) => ({
+          ...f,
+          stripePaymentLink: data.status.settings.stripePaymentLink ?? '',
+        }))
+      }
     } catch {
       /* optional preload */
     }
@@ -46,34 +46,14 @@ const VendorOnboarding: React.FC = () => {
     loadInitial()
   }, [loadInitial])
 
-  const handleStripeRefresh = useCallback(async () => {
-    setSubmitting(true)
-    setError('')
-
-    try {
-      const data = await refreshStripeConnectStatus()
-      setStripeConnected(data.settings.stripeChargesEnabled)
-    } catch {
-      setError('Could not refresh Stripe status')
-    } finally {
-      setSubmitting(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (searchParams.get('stripe') === 'return') {
-      setStep('stripe')
-      void handleStripeRefresh()
-      setSearchParams({})
-    }
-  }, [searchParams, setSearchParams, handleStripeRefresh])
-
   const hasAnyP2P = Boolean(
     form.venmoHandle.trim() ||
       form.zelleHandle.trim() ||
       form.cashappHandle.trim() ||
       form.paypalHandle.trim()
   )
+
+  const hasStripeLink = Boolean(form.stripePaymentLink.trim())
 
   const finishOnboarding = async (skipPaymentSetup: boolean) => {
     setSubmitting(true)
@@ -82,6 +62,7 @@ const VendorOnboarding: React.FC = () => {
     try {
       await completeVendorOnboarding({
         businessName: businessName.trim(),
+        stripePaymentLink: form.stripePaymentLink.trim() || null,
         venmoHandle: form.venmoHandle.trim() || null,
         zelleHandle: form.zelleHandle.trim() || null,
         cashappHandle: form.cashappHandle.trim() || null,
@@ -96,22 +77,6 @@ const VendorOnboarding: React.FC = () => {
         'Failed to save setup'
       setError(message)
     } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleStripeConnect = async () => {
-    setSubmitting(true)
-    setError('')
-
-    try {
-      const url = await startStripeConnect('/dashboard/onboarding')
-      window.location.href = url
-    } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to start Stripe setup'
-      setError(message)
       setSubmitting(false)
     }
   }
@@ -228,7 +193,7 @@ const VendorOnboarding: React.FC = () => {
             </label>
 
             <div className="flex flex-col gap-2 pt-2">
-              {hasAnyP2P && (
+              {(hasAnyP2P || hasStripeLink) && (
                 <button
                   type="button"
                   disabled={submitting}
@@ -240,7 +205,7 @@ const VendorOnboarding: React.FC = () => {
               )}
               <button
                 type="button"
-                disabled={submitting || !hasAnyP2P}
+                disabled={submitting}
                 onClick={() => setStep('stripe')}
                 className="w-full py-3 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md disabled:opacity-50"
               >
@@ -269,33 +234,19 @@ const VendorOnboarding: React.FC = () => {
           <section className="bg-white rounded-lg shadow p-6 space-y-4">
             <h2 className="font-medium text-gray-900">Accept card payments (optional)</h2>
             <p className="text-sm text-gray-600">
-              Connect Stripe so clients can pay invoices with a card. Funds go to your Stripe
-              account. Skip this if you only use Venmo, Zelle, etc.
+              Paste a Payment Link from your Stripe Dashboard. Clients open your link to pay — we
+              never access your Stripe account. Skip this if you only use Venmo, Zelle, etc.
             </p>
 
-            {stripeConnected ? (
-              <div className="rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-800">
-                Card payments are active.
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleStripeConnect}
-                disabled={submitting}
-                className="w-full py-3 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md disabled:opacity-50"
-              >
-                Connect with Stripe
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleStripeRefresh}
-              disabled={submitting}
-              className="w-full py-2 text-sm text-indigo-600 disabled:opacity-50"
-            >
-              Refresh Stripe status
-            </button>
+            <label className="block text-sm">
+              <span className="text-gray-700">Stripe Payment Link URL</span>
+              <input
+                value={form.stripePaymentLink}
+                onChange={(e) => setForm((f) => ({ ...f, stripePaymentLink: e.target.value }))}
+                placeholder="https://buy.stripe.com/..."
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </label>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
               <button

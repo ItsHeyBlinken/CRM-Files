@@ -95,7 +95,7 @@
 |--------|---------|
 | **User** | Auth; role VENDOR or CLIENT |
 | **VendorProfile** | Business name, logo, brand colors |
-| **VendorPaymentSettings** | Stripe Connect account, P2P handles (venmo, zelle, cashapp, paypal) |
+| **VendorPaymentSettings** | Stripe Payment Link URL, P2P handles (venmo, zelle, cashapp, paypal) |
 | **ProjectPaymentSettings** | Per-project payment setup: total, deposit defaults, staged payment guidance |
 | **Project** | Event/booking; status, date, location |
 | **ProjectClient** | Links client user to project |
@@ -123,18 +123,16 @@
 - `GET/PUT /profile` (vendor branding) — logo upload, colors, tagline (`vendorProfile.ts`)
 
 - `GET/POST /projects/:id/invoices` — create, send, mark paid, delete
-- `GET/PUT /api/vendor/payment-settings` — P2P handles + Stripe Connect status
-- `POST /api/vendor/payment-settings/stripe/connect` — onboarding link
+- `GET/PUT /api/vendor/payment-settings` — P2P handles + optional Stripe Payment Link URL
 
 ### Client Routes (prefix `/api/portal/`)
 - `GET /project` — aggregated portal payload (includes `paymentOptions`)
 - `GET /contracts/:id/file`, `POST /contracts/:id/acknowledge`
 - `GET /deliverables/:id/file` — authenticated download
-- `POST /invoices/:id/checkout` — Stripe Checkout URL
-- `POST /invoices/:id/claim-sent` — client P2P payment reported
+- `POST /invoices/:id/claim-sent` — client P2P / off-platform Stripe payment reported
 
 ### Webhooks
-- `POST /api/webhooks/stripe` — `checkout.session.completed` marks invoice paid
+- `POST /api/webhooks/stripe` — Pro subscription checkout + subscription lifecycle (not client invoice pay)
 
 ### Quote Routes *(built)*
 - `GET/POST /api/vendor/quotes` — create with optional contract multipart upload

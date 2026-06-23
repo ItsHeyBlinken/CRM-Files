@@ -16,7 +16,7 @@ NNN_short_descriptive_name.sql
 
 | Rule | Detail |
 |------|--------|
-| **Next number** | `013` (then `014`, `015`, …) |
+| **Next number** | `014` (then `015`, `016`, …) |
 | **Prefix** | Zero-padded: `008`, not `8` |
 | **Suffix** | Short snake_case description of what the migration does |
 | **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
@@ -40,6 +40,7 @@ Example for the next migration: `009_schema_vendor_subscriptions.sql`
 | 010 | **`010_drop_deliverables.sql`** | Drop unused `deliverables` table (feature removed from app) |
 | 011 | **`011_vendor_plan.sql`** | `vendor_profiles.plan` column (`starter` \| `pro`) for free-tier gating |
 | 012 | **`012_vendor_stripe_billing.sql`** | Stripe customer/subscription columns on `vendor_profiles` |
+| 013 | **`013_vendor_stripe_payment_link.sql`** | Vendor-hosted Stripe Payment Link URL (no platform Connect) |
 
 ### Dev reset & seed (`reset/`)
 

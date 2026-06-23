@@ -29,6 +29,7 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
       cashappHandle,
       paypalHandle,
       paymentInstructions,
+      stripePaymentLink,
       skipPaymentSetup,
     } = req.body
 
@@ -39,6 +40,7 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
       cashappHandle,
       paypalHandle,
       paymentInstructions,
+      stripePaymentLink,
       skipPaymentSetup,
     })
 
@@ -51,7 +53,13 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
           return
         case 'PAYMENT_METHOD_REQUIRED':
           res.status(400).json({
-            error: 'Add at least one payment method, connect Stripe, or choose “Set up later”',
+            error: 'Add at least one payment method, add a Stripe link, or choose “Set up later”',
+          })
+          return
+        case 'INVALID_STRIPE_PAYMENT_LINK':
+          res.status(400).json({
+            error:
+              'Stripe link must be a valid https URL on stripe.com (e.g. a Payment Link from your Stripe Dashboard).',
           })
           return
       }

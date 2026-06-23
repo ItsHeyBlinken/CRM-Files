@@ -21,6 +21,7 @@ function buildPortalData(): ClientPortalData {
     primaryColor: '#2563eb',
     paymentOptions: {
       stripeEnabled: true,
+      stripePaymentLink: 'https://buy.stripe.com/test',
       venmoHandle: null,
       zelleHandle: null,
       cashappHandle: null,

@@ -36,7 +36,7 @@ export class VendorOnboardingModel {
       businessName,
       paymentSetupComplete,
       hasPaymentMethod,
-      stripeConfigured: Boolean(process.env['STRIPE_SECRET_KEY']),
+      stripeConfigured: false,
       settings,
     }
   }
@@ -82,6 +82,7 @@ export class VendorOnboardingModel {
       cashappHandle?: string | null
       paypalHandle?: string | null
       paymentInstructions?: string | null
+      stripePaymentLink?: string | null
       skipPaymentSetup?: boolean
     }
   ): Promise<IVendorOnboardingStatus> {
@@ -99,7 +100,7 @@ export class VendorOnboardingModel {
       [vendorId, businessName]
     )
 
-    const settings = await VendorPaymentSettings.updateP2PSettings(vendorId, {
+    const settings = await VendorPaymentSettings.updateSettings(vendorId, {
       ...(data.venmoHandle !== undefined && { venmoHandle: data.venmoHandle }),
       ...(data.zelleHandle !== undefined && { zelleHandle: data.zelleHandle }),
       ...(data.cashappHandle !== undefined && { cashappHandle: data.cashappHandle }),
@@ -107,6 +108,7 @@ export class VendorOnboardingModel {
       ...(data.paymentInstructions !== undefined && {
         paymentInstructions: data.paymentInstructions,
       }),
+      ...(data.stripePaymentLink !== undefined && { stripePaymentLink: data.stripePaymentLink }),
     })
 
     const hasPaymentMethod = hasAnyClientPaymentMethod(settings)

@@ -23,6 +23,7 @@ export interface OnboardingResponse {
 
 export interface CompleteOnboardingInput {
   businessName: string
+  stripePaymentLink?: string | null
   venmoHandle?: string | null
   zelleHandle?: string | null
   cashappHandle?: string | null

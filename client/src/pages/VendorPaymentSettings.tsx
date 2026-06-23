@@ -1,27 +1,23 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { APP_NAME } from '../constants/branding'
-import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import {
   fetchPaymentSettings,
-  refreshStripeConnectStatus,
-  startStripeConnect,
   updatePaymentSettings,
   type VendorPaymentSettings as PaymentSettings,
 } from '../services/paymentSettingsService'
 
 const VendorPaymentSettingsPage: React.FC = () => {
   const { user, logout } = useAuth()
-  const [searchParams, setSearchParams] = useSearchParams()
   const [settings, setSettings] = useState<PaymentSettings | null>(null)
-  const [stripeConfigured, setStripeConfigured] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
   const [form, setForm] = useState({
+    stripePaymentLink: '',
     venmoHandle: '',
     zelleHandle: '',
     cashappHandle: '',
@@ -34,8 +30,8 @@ const VendorPaymentSettingsPage: React.FC = () => {
       setError('')
       const data = await fetchPaymentSettings()
       setSettings(data.settings)
-      setStripeConfigured(data.stripeConfigured)
       setForm({
+        stripePaymentLink: data.settings.stripePaymentLink ?? '',
         venmoHandle: data.settings.venmoHandle ?? '',
         zelleHandle: data.settings.zelleHandle ?? '',
         cashappHandle: data.settings.cashappHandle ?? '',
@@ -53,34 +49,7 @@ const VendorPaymentSettingsPage: React.FC = () => {
     loadSettings()
   }, [loadSettings])
 
-  useEffect(() => {
-    const stripeParam = searchParams.get('stripe')
-    if (stripeParam !== 'return' && stripeParam !== 'refresh') {
-      return
-    }
-
-    const refresh = async () => {
-      setSubmitting(true)
-      try {
-        const data = await refreshStripeConnectStatus()
-        setSettings(data.settings)
-        setSuccess(
-          data.settings.stripeChargesEnabled
-            ? 'Card payments are active — clients can pay invoices in the portal.'
-            : 'Stripe setup saved. Finish any remaining steps in Stripe to accept card payments.'
-        )
-      } catch {
-        setError('Could not refresh Stripe status')
-      } finally {
-        setSubmitting(false)
-        setSearchParams({})
-      }
-    }
-
-    refresh()
-  }, [searchParams, setSearchParams])
-
-  const handleSaveP2P = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
     setError('')
@@ -88,6 +57,7 @@ const VendorPaymentSettingsPage: React.FC = () => {
 
     try {
       const updated = await updatePaymentSettings({
+        stripePaymentLink: form.stripePaymentLink.trim() || null,
         venmoHandle: form.venmoHandle.trim() || null,
         zelleHandle: form.zelleHandle.trim() || null,
         cashappHandle: form.cashappHandle.trim() || null,
@@ -95,27 +65,13 @@ const VendorPaymentSettingsPage: React.FC = () => {
         paymentInstructions: form.paymentInstructions.trim() || null,
       })
       setSettings(updated)
-      setSuccess('Payment handles saved.')
-    } catch {
-      setError('Failed to save payment settings')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleStripeConnect = async () => {
-    setSubmitting(true)
-    setError('')
-    setSuccess('')
-
-    try {
-      const url = await startStripeConnect()
-      window.location.href = url
+      setSuccess('Payment settings saved.')
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to start Stripe setup'
+        'Failed to save payment settings'
       setError(message)
+    } finally {
       setSubmitting(false)
     }
   }
@@ -144,48 +100,43 @@ const VendorPaymentSettingsPage: React.FC = () => {
           <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{success}</div>
         )}
 
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="font-medium text-gray-900">Accept card payments (Stripe Connect)</h2>
-          <p className="text-sm text-gray-600">
-            Connect Stripe so clients can pay invoices with a card in their portal. Funds go to your
-            Stripe account — {APP_NAME} does not take a platform fee at launch.
-          </p>
-
-          {settings?.stripeChargesEnabled ? (
-            <div className="rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-800">
-              Card payments are active for your account.
-            </div>
-          ) : settings?.stripeOnboardingComplete ? (
-            <div className="rounded-md bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-              Stripe setup is in progress. Complete any remaining steps to accept cards.
-            </div>
-          ) : null}
-
-          {!stripeConfigured ? (
-            <p className="text-sm text-gray-500">
-              Card payments require STRIPE_SECRET_KEY on the server. P2P handles below still work
-              without Stripe.
+        <form onSubmit={handleSave} className="space-y-6">
+          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+            <h2 className="font-medium text-gray-900">Stripe (optional)</h2>
+            <p className="text-sm text-gray-600">
+              If you already use Stripe, paste a Payment Link from your Stripe Dashboard. Clients
+              open your link to pay by card — {APP_NAME} never touches your Stripe account or
+              card processing.
             </p>
-          ) : (
-            <button
-              type="button"
-              onClick={handleStripeConnect}
-              disabled={submitting}
-              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-            >
-              {settings?.stripeAccountId ? 'Continue Stripe setup' : 'Connect with Stripe'}
-            </button>
-          )}
-        </section>
+            <p className="text-sm text-gray-500">
+              In Stripe: Products → Payment links → create a link (you can update the amount per
+              invoice on your side). Mark invoices paid here after you confirm payment.
+            </p>
 
-        <section className="bg-white rounded-lg shadow p-6">
-          <h2 className="font-medium text-gray-900">Manual payment handles</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            Shown to clients on unpaid invoices as clickable links (Venmo, Cash App, PayPal) plus
-            copy buttons. You mark invoices paid after confirming payment.
-          </p>
+            {settings?.stripePaymentLink ? (
+              <div className="rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-800">
+                Card payments are available to clients via your Stripe link.
+              </div>
+            ) : null}
 
-          <form onSubmit={handleSaveP2P} className="mt-4 space-y-4">
+            <label className="block text-sm">
+              <span className="text-gray-700">Stripe Payment Link URL</span>
+              <input
+                value={form.stripePaymentLink}
+                onChange={(e) => setForm((f) => ({ ...f, stripePaymentLink: e.target.value }))}
+                placeholder="https://buy.stripe.com/..."
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </label>
+          </section>
+
+          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+            <h2 className="font-medium text-gray-900">Manual payment handles</h2>
+            <p className="text-sm text-gray-600">
+              Shown to clients on unpaid invoices as clickable links (Venmo, Cash App, PayPal) plus
+              copy buttons. You mark invoices paid after confirming payment.
+            </p>
+
             <label className="block text-sm">
               <span className="text-gray-700">Venmo @handle</span>
               <input
@@ -232,15 +183,16 @@ const VendorPaymentSettingsPage: React.FC = () => {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </label>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
-            >
-              {submitting ? 'Saving...' : 'Save handles'}
-            </button>
-          </form>
-        </section>
+          </section>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+          >
+            {submitting ? 'Saving...' : 'Save payment settings'}
+          </button>
+        </form>
       </main>
     </div>
   )

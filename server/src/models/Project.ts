@@ -91,6 +91,7 @@ export interface IInvoice {
 
 export interface IClientPaymentOptions {
   stripeEnabled: boolean
+  stripePaymentLink: string | null
   venmoHandle: string | null
   zelleHandle: string | null
   cashappHandle: string | null

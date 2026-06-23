@@ -71,6 +71,7 @@ export interface Invoice {
 
 export interface ClientPaymentOptions {
   stripeEnabled: boolean
+  stripePaymentLink: string | null
   venmoHandle: string | null
   zelleHandle: string | null
   cashappHandle: string | null
