@@ -24,33 +24,33 @@
 
 ## Current Work Focus
 
-**Session (June 20, 2026).** Public landing + auth visual refresh done. **Starter plan gating** implemented in code (1 active project, 3 quotes/month) — requires migration `011`. Stripe Billing still pending for paid upgrades.
+**Session end (June 20, 2026 — night).** **Client card pay = Path B (vendor-hosted Stripe Payment Link).** Stripe Connect and in-portal Checkout were removed. Vendors paste their own Payment Link; clients open it in a new tab; vendor confirms payment in app. **Migration `013`** adds `stripe_payment_link` column — user to apply in pgAdmin before deploy.
 
-**Next up:** User runs migration `011` in pgAdmin; deploy; family UAT; Stripe Billing when ready.
+**Also in codebase (prior sessions, may need commit/deploy):** Starter plan gating (`011`), Stripe Billing for Pro (`012`), landing/auth refresh, family UAT doc.
 
-**Deferred for later (user confirmed):** Vendor calendar **personal entries** — migration `011` (see Planned Features).
+**Next up:** Apply migration `013` → commit + deploy → E2E payments path (P2P + Stripe link) → family UAT.
 
-**Deferred for later (user confirmed):** Apply `MarketingAuthLayout` to client **invite registration** (`AcceptInvite.tsx`) — intentionally left on gray layout for now.
+**Deferred for later (user confirmed):** Vendor calendar **personal entries** — future migration (not `011`; plan uses separate calendar migration). Apply `MarketingAuthLayout` to `AcceptInvite.tsx`.
 
 ## When You Return — Start Here
 
-1. **Family UAT** — send `docs/family-uat-guide.md` with live logins + quote/invite links filled in; collect screenshots/notes
-2. **Triage UAT feedback** — mobile UX, 3-second test, payment flow clarity
-3. **Commit pending work** if not yet committed (portal branding, contract re-upload, iframe auth, UAT doc)
-4. **Production uploads volume** — confirmed at **`/app/server/uploads`**; re-upload fixes missing `contracts/` tree; verify PDF survives redeploy
-5. **E2E — full vendor path** (quote → accept → sign → convert → invite → portal sign) — largely validated on prod project #6
-6. **E2E — payments path** — deposit invoice, P2P claim, optional Stripe Checkout
-7. **Launch prep:** Register **smoothgig.com**, favicon/logo, trademark check
+1. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`)
+2. **Commit + deploy** Stripe Path B changes (if not yet committed)
+3. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
+4. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
+5. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
+6. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
+7. **Launch prep:** Register **smoothgig.com**, favicon/logo
 
 ## Next Session — Priority Order
 
-1. **Family UAT results** — fix blockers from wife/MIL feedback (especially mobile client portal)
-2. **Commit + deploy** any UAT fixes
-3. **E2E — payments path** (deposit invoice, P2P claim, optional Stripe Checkout)
-4. **Volume persistence test** — redeploy and confirm `uploads/contracts/` PDFs still load
-5. **Stripe (client pay)** — vendor-hosted Payment Link only; no platform Connect
-6. **Phase 3e:** Platform vendor subscription billing (pre-launch)
-7. **Future:** Vendor calendar personal entries — migration `011` (deferred)
+1. **Migration `013`** in pgAdmin + deploy
+2. **E2E payments** — Stripe Payment Link + P2P + claim-sent + vendor mark paid
+3. **Family UAT results** — fix blockers (especially mobile client portal)
+4. **Commit** any uncommitted session work
+5. **Pro billing smoke test** — migrations `011`/`012`, Checkout upgrade, plan limits
+6. **Volume persistence test** — redeploy; confirm `uploads/contracts/` PDFs load
+7. **Future:** Vendor calendar personal entries (separate migration)
 
 ## MVP Status
 
@@ -103,10 +103,16 @@
 
 **Fee policy (confirmed):** SmoothGig charges **no platform fee** on client payments. Vendors pay **subscription only**. Card processing = **Stripe standard fees on the vendor's own Stripe account** (SmoothGig does not process client card payments).
 
-**Client invoice payments (built):**
-- Vendor configures handles + Stripe at onboarding and `/dashboard/payments`
-- Vendor creates/sends invoices on project detail
-- Client pays via card (Checkout) or P2P; “I've sent payment” → vendor marks paid; Home redirect + polling
+**Client invoice payments (built — Path B):**
+- Vendor pastes **Stripe Payment Link** (from their own Stripe Dashboard) at onboarding or `/dashboard/payments`
+- Vendor also configures P2P handles (Venmo, Zelle, etc.)
+- Client portal: **Pay with card (Stripe)** opens vendor link in new tab; **I've sent payment** notifies vendor
+- Vendor marks invoice paid after confirming receipt (same as P2P)
+- **SmoothGig does not use Stripe Connect** for client pay — no platform involvement in vendor card processing
+
+**Platform Stripe (SmoothGig account only):**
+- Pro subscription billing (Stripe Billing) — see `012`, `stripeBillingService.ts`
+- Webhook `/api/webhooks/stripe` — subscription checkout + lifecycle only (not client invoices)
 
 **Guided invoice workflow (built — SQL `008` applied):**
 - Project-level payment setup stores project total + payment structure (`pay_in_full`, `deposit_and_balance`, `split_payments`)
@@ -137,7 +143,7 @@
 - Pipeline progress steppers on quote detail and project detail
 - `/dashboard/settings` for logo, colors, tagline; branded vendor header shell
 
-**Key files:** `Invoice.ts`, `VendorPaymentSettings.ts`, `stripeService.ts`, `VendorOnboarding.tsx`, `VendorPaymentSettings.tsx`, `ClientPortal.tsx`, `p2pPaymentLinks.ts`
+**Key files:** `VendorPaymentSettings.ts`, `stripePaymentLink.ts` (URL validation), `VendorPaymentSettings.tsx`, `VendorOnboarding.tsx`, `ClientPortal.tsx`, `portalPaymentService.ts`, `p2pPaymentLinks.ts`, `stripeService.ts` (subscriptions webhook only)
 
 ## Quote → Client Agreement Flow (Built)
 
@@ -167,6 +173,9 @@
 | `008_project_payment_settings.sql` | Project payment setup + invoice kind metadata | ✅ |
 | `009_vendor_notifications.sql` | In-app vendor notifications | ✅ |
 | `010_drop_deliverables.sql` | Drop unused deliverables table | ✅ |
+| `011_vendor_plan.sql` | `vendor_profiles.plan` (starter/pro gating) | ⬜ User applies |
+| `012_vendor_stripe_billing.sql` | Pro subscription Stripe columns | ⬜ User applies |
+| `013_vendor_stripe_payment_link.sql` | `stripe_payment_link` on vendor settings | ⬜ User applies (this session) |
 | `reset/seed_portalhub_dev.sql` | Dev test accounts (Miller Celebration) | ✅ (optional) |
 | `reset/reset_keep_seed.sql` | Clear test data, keep seed | ✅ |
 | `reset/wipe_and_reseed_dev.sql` | Full wipe + fresh seed | ✅ |
@@ -178,14 +187,14 @@
 | `/` | Public | **Marketing landing** (vendors); logged-in users redirect to role home |
 | `/login` | Public | Shared sign-in |
 | `/register` | Public | Vendor signup → onboarding |
-| `/dashboard/onboarding` | VENDOR | Business → P2P → optional Stripe |
+| `/dashboard/onboarding` | VENDOR | Business → P2P → optional Stripe Payment Link |
 | `/dashboard` | VENDOR | Projects + checklist |
 | `/dashboard/projects/:id` | VENDOR | Project detail + **edit overview** |
 | `/dashboard/quotes` | VENDOR | Quote list + create (optional contract) |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, convert to project |
 | `/dashboard/calendar` | VENDOR | Month/agenda view of booked + tentative events |
 | `/dashboard/settings` | VENDOR | Branding, logo, colors, business profile |
-| `/dashboard/payments` | VENDOR | Stripe Connect + P2P handles |
+| `/dashboard/payments` | VENDOR | P2P handles + optional Stripe Payment Link URL |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
 | `/quote/:token` | Public | Quote review, accept, view/sign contract |
@@ -203,8 +212,8 @@
 | **Client relationship** | Not a booked client until: **accept quote + sign contract/T&C + pay deposit** |
 | **Quote + contract** | Optional attachment at quote create; view-only until accept; then e-sign on quote link |
 | After contract sign on quote | Informational deposit notice; vendor follows up with invoice |
-| Vendor onboarding | Payment setup at signup (P2P required path; Stripe optional) |
-| Payments (MVP) | Stripe Connect Express + P2P; **0% SmoothGig platform fee (permanent)** |
+| Vendor onboarding | Payment setup at signup (P2P and/or Stripe link; can skip) |
+| Payments (MVP) | Vendor-hosted Stripe Payment Link + P2P; **0% SmoothGig platform fee (permanent)**; **no Stripe Connect** |
 | One client per project (MVP) | Enforced in API + UI |
 
 ## Active Technical Decisions
@@ -215,18 +224,18 @@
 - **Portal contract PDF iframe:** same-origin `/api/portal/contracts/:id/file?access_token=JWT` — iframes cannot send `Authorization` header; `protect` middleware accepts query token on **GET only**; helmet `frameSrc: ['self']` (no blob URLs)
 - **Signed contract view (new tab):** authenticated blob fetch + `URL.createObjectURL` (not iframe)
 - **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
-- Stripe webhook: raw body at `/api/webhooks/stripe`
+- Stripe webhook: raw body at `/api/webhooks/stripe` — **Pro subscriptions only** (not client invoice pay)
+- **Client card pay:** vendor `stripe_payment_link` validated as `https://*.stripe.com` URL; no platform Stripe keys required for client invoices
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next: `011`)
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next new migration: `014`)
 
 ## Planned Features (Post-MVP / Later)
 
 | Feature | Why | Target |
 |---------|-----|--------|
-| **Vendor calendar personal entries** | Ease of use — vendors need one place for gigs *and* personal reminders (payments due, off-book work, blocked days) | Migration `011` + calendar CRUD UI |
-| Stripe Connect OAuth | Link existing Stripe account | ✅ Built |
-| Platform subscription (Phase 3e) | Vendor → platform billing | Pre-launch |
-| Invoice due dates on calendar | Optional overlay from existing invoices | Could ship with or after `011` |
+| **Vendor calendar personal entries** | Off-book gigs, payment reminders, blocked days | Future migration + calendar CRUD |
+| Platform subscription (Phase 3e) | Vendor → platform billing | Built in code — needs `011`/`012` + deploy |
+| Invoice due dates on calendar | Optional overlay | Post-MVP |
 
 ## Session Log (landing page — vendor marketing)
 
@@ -235,7 +244,7 @@
 - [x] **No SmoothGig platform fees** on client payments — subscription revenue only
 - [x] **Founding Pro:** $19/mo · $199/yr — first **50** subscribers, **price locked for life** while subscribed
 - [x] **Standard Pro:** $29/mo · $299/yr — after founding cap
-- [x] Card pay: Stripe standard processing fees only (vendor Connect)
+- [x] Card pay: Stripe standard processing fees on **vendor's own Stripe** (SmoothGig never processes client cards)
 - [x] Document locked in `monetization.md`
 
 ## Session Log (landing page — vendor marketing)
@@ -279,6 +288,28 @@
 - [x] Removed deliverable API routes; **`010` — user dropped `deliverables` table in pgAdmin** (was empty)
 - [x] Client portal tabs: Home / Documents / Payments only
 
+## Session Log (June 20, 2026 — night: Stripe Path B, session end)
+
+### Product decision
+- [x] User chose **Path B** — SmoothGig stays out of vendor Stripe accounts; no Stripe Connect for client pay
+- [x] Rationale: platform only needs Stripe for **Pro subscriptions**; client card pay = vendor's own Payment Link
+
+### Implementation
+- [x] Migration **`013_vendor_stripe_payment_link.sql`** — `vendor_payment_settings.stripe_payment_link`
+- [x] Server: `VendorPaymentSettings.updateSettings()` + `stripePaymentLink.ts` URL validation (`https://*.stripe.com`)
+- [x] Removed: Connect OAuth routes, `POST /api/portal/invoices/:id/checkout`, invoice checkout in `stripeService.ts`
+- [x] Client: `/dashboard/payments` + onboarding — paste Payment Link URL; portal opens link in new tab
+- [x] Client portal: claim-sent available for Stripe + P2P; vendor marks paid manually
+- [x] Memory Bank + `monetization.md` updated — no Connect requirement
+
+### Superseded (same day, reverted)
+- Stripe Connect OAuth + Express onboarding — built briefly, **removed** when Path B chosen
+
+### Pending (user)
+- [ ] Apply migration **`013`** in pgAdmin
+- [ ] Git commit + deploy
+- [ ] E2E: vendor Payment Link → client pay flow → mark paid
+
 ## Session Log (June 20, 2026 — vendor-hosted Stripe)
 
 - [x] **Path B:** Removed Stripe Connect + in-portal Checkout for client invoices
@@ -287,7 +318,9 @@
 - [x] Migration `013_vendor_stripe_payment_link.sql` — user applies in pgAdmin
 - [x] Platform Stripe env vars needed **only** for Pro subscription billing
 
-## Session Log (June 20, 2026 — Stripe Connect OAuth)
+## Session Log (June 20, 2026 — Stripe Connect OAuth) — SUPERSEDED
+
+> **Do not use.** Replaced by Path B (vendor Payment Link). Connect code removed same session.
 
 - [x] Replaced Express account creation with **Stripe Connect OAuth** — vendors link existing Stripe accounts
 - [x] `POST /stripe/connect` returns OAuth authorize URL (`stripe_landing=login`)

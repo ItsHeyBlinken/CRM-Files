@@ -2,15 +2,38 @@
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
 
+## Handoff — June 20, 2026 (night — session end)
+
+**Stripe client pay = Path B (vendor-hosted Payment Link).** User confirmed SmoothGig should not use Stripe Connect for client invoices.
+
+### Shipped this session
+- [x] Product decision: Path B — vendors paste Stripe Payment Link; clients pay off-platform
+- [x] Removed Stripe Connect OAuth, Express onboarding, in-portal Checkout, invoice webhook handling
+- [x] Migration `013_vendor_stripe_payment_link.sql`
+- [x] Vendor UI: payment settings + onboarding — Payment Link URL field
+- [x] Client portal: open vendor Stripe link; claim-sent for vendor confirmation
+- [x] Platform Stripe keys used **only** for Pro subscription billing (`011`/`012`)
+
+### Before next dev session
+- [ ] Apply migration **`013`** in pgAdmin
+- [ ] Commit + deploy (user commits manually)
+- [ ] E2E payments: Payment Link + P2P + claim-sent + vendor mark paid
+
+### Suggested commit message
+```
+Use vendor-hosted Stripe Payment Links instead of platform Connect for client pay.
+```
+
+---
+
 ## Handoff — June 20, 2026 (vendor-hosted Stripe — Path B)
 
 - [x] No Stripe Connect for client payments — vendors paste Payment Link URL
 - [x] Run migration `013_vendor_stripe_payment_link.sql` in pgAdmin before deploy
 
-## Handoff — June 20, 2026 (Stripe Connect OAuth)
+## Handoff — June 20, 2026 (Stripe Connect OAuth) — SUPERSEDED
 
-- [x] Vendors link **existing** Stripe accounts via Connect OAuth (replaces Express account creation)
-- [x] Register OAuth redirect URI in Stripe Dashboard; set `STRIPE_CONNECT_CLIENT_ID` (+ optional `API_PUBLIC_URL` locally)
+> Connect OAuth was built then **removed** same day when user chose Path B. Do not enable Connect or `STRIPE_CONNECT_CLIENT_ID`.
 
 ## Handoff — June 20, 2026 (end of session)
 
@@ -22,7 +45,7 @@
 - Re-upload quote contracts lost to ephemeral storage
 - Confirm migrations `002`–`007` if any quote/contract flow fails (`008` + `009` applied)
 
-**Next session:** Deploy smoke → E2E vendor path → E2E payments → Stripe Connect OAuth decision.
+**Next session:** Apply migration `013` → commit/deploy → E2E payments (Payment Link + P2P) → family UAT.
 
 ## What Works
 
@@ -314,8 +337,8 @@
 ### Session: Payments Phase 3a–3c (June 2026)
 - [x] `database/schema_payments_addition.sql` — vendor_payment_settings + invoice payment columns
 - [x] **3a** — Invoice model + vendor CRUD on project detail (create draft, send, mark paid, delete)
-- [x] **3b** — `/dashboard/payments` — Stripe Connect onboarding + P2P handle settings
-- [x] **3c** — Client Payments tab: Stripe Checkout, P2P display, "I've sent payment", success banner on Home
+- [x] **3b** — `/dashboard/payments` — P2P handles + optional Stripe Payment Link URL (Path B; no Connect)
+- [x] **3c** — Client Payments tab: vendor Stripe link (new tab), P2P display, "I've sent payment", success banner on Home
 - [x] Webhook route `/api/webhooks/stripe` for checkout.session.completed
 - [x] User applied `schema_payments_addition.sql` in pgAdmin
 - [ ] Stripe test keys + webhook configured for end-to-end card pay test
@@ -388,7 +411,7 @@
 ### Next session priorities
 1. Run pending SQL → E2E quote+contract+project path
 2. E2E payments path (optional Stripe dev keys)
-3. Stripe Connect OAuth — ✅ built (link existing Stripe account)
+3. ~~Stripe Connect OAuth~~ — **Path B chosen** (vendor Payment Link; Connect removed)
 4. Onboarding polish (pre-fill business name from register)
 5. Phase 3e vendor subscription billing
 
@@ -491,7 +514,7 @@
 1. Production smoke (dates, quote PDF iframe, contract after redeploy)
 2. E2E — new vendor: quote + contract → accept → sign → convert → invite → portal
 3. E2E — payments: deposit invoice, P2P, optional Stripe
-4. Stripe Connect OAuth vs Express — decide
+4. ~~Stripe Connect OAuth vs Express~~ — **Resolved:** Path B (vendor Payment Link)
 5. Register smoothgig.com + favicon/logo
 6. Phase 3e vendor subscription (pre-launch)
 7. Calendar personal entries — migration `011` (deferred)
@@ -534,7 +557,7 @@
 1. Family UAT feedback → fixes
 2. Payments E2E (deposit, P2P, Stripe)
 3. Volume survives redeploy confirmation
-4. Stripe Connect OAuth decision
+4. ~~Stripe Connect OAuth decision~~ — **Resolved:** Path B
 5. Register smoothgig.com + launch polish
 
 ### Session: Pricing model confirmed (June 2026)
@@ -581,3 +604,15 @@
 - [x] **`docs/family-uat-guide.md`** for wife/MIL testing on live site
 - [ ] Family UAT execution + feedback triage
 - [ ] User commit when ready
+
+### Session: Stripe Path B — vendor Payment Link (June 20, 2026 — night)
+- [x] Discussed Connect vs vendor-hosted Stripe; user chose **Path B** (no platform Connect)
+- [x] Migration **`013_vendor_stripe_payment_link.sql`**
+- [x] Removed Connect OAuth, Express onboarding, `POST /portal/invoices/:id/checkout`, invoice pay in webhooks
+- [x] `server/src/utils/stripePaymentLink.ts` — validate `https://*.stripe.com` URLs
+- [x] Vendor: `/dashboard/payments`, onboarding — paste Payment Link
+- [x] Client portal: open vendor link; claim-sent for Stripe + P2P
+- [x] Memory Bank + `monetization.md` updated
+- [ ] User applies migration **`013`** in pgAdmin
+- [ ] User commit + deploy
+- [ ] E2E payments smoke test
