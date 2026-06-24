@@ -1,11 +1,13 @@
 import React from 'react'
 import VendorLogoAvatar from '../branding/VendorLogoAvatar'
+import { vendorBrandGradientStyle } from '../../utils/portalBranding'
 
 interface ClientPortalHeaderProps {
   vendorBusinessName: string
   vendorLogoUrl: string | null
   vendorTagline: string | null
   primaryColor: string
+  secondaryColor: string
   clientLabel: string
   onSignOut: () => void
 }
@@ -15,11 +17,12 @@ const ClientPortalHeader: React.FC<ClientPortalHeaderProps> = ({
   vendorLogoUrl,
   vendorTagline,
   primaryColor,
+  secondaryColor,
   clientLabel,
   onSignOut,
 }) => (
   <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-    <div className="h-0.5" style={{ backgroundColor: primaryColor }} />
+    <div className="h-1" style={vendorBrandGradientStyle(primaryColor, secondaryColor)} />
     <div className="max-w-lg mx-auto px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">

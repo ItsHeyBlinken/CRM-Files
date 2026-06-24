@@ -341,7 +341,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
         </div>
       )}
 
-      <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-5 space-y-5">
+      <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/60 p-5 space-y-5">
         <div>
           <p className="text-sm font-semibold text-gray-900">1. Project total & deposit</p>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -388,7 +388,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
                 type="button"
                 disabled={submitting}
                 onClick={() => handleQuickSend('deposit')}
-                className="px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 Send deposit invoice ({formatCurrency(depositPreset.amount)})
               </button>
@@ -403,7 +403,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
                 type="button"
                 disabled={submitting}
                 onClick={() => handleQuickSend('final')}
-                className="px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 Send invoice ({formatCurrency(balancePreset.amount)})
               </button>
@@ -413,7 +413,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
                 type="button"
                 disabled={submitting}
                 onClick={() => handleQuickSend('final')}
-                className="px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 Send balance invoice ({formatCurrency(balancePreset.amount)})
               </button>
@@ -427,7 +427,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
               type="button"
               disabled={submitting || !hasPaymentMethod}
               onClick={() => setShowCustom((current) => !current)}
-              className="px-4 py-2.5 text-sm font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 disabled:opacity-50"
+              className="vendor-btn-outline"
             >
               {showCustom ? 'Hide custom amount' : 'Other amount…'}
             </button>
@@ -460,7 +460,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                  className="vendor-btn-primary w-full sm:w-auto"
                 >
                   {submitting ? 'Sending…' : 'Send'}
                 </button>
@@ -495,7 +495,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
         <button
           type="button"
           onClick={() => setShowAdvanced((current) => !current)}
-          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          className="text-sm font-medium vendor-link"
         >
           {showAdvanced ? 'Hide advanced payment plan' : 'Advanced payment plan'}
         </button>
@@ -622,7 +622,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
               >
                 <div>
                   <p className="font-medium text-gray-900">{invoice.title}</p>
-                  <p className="text-xs text-indigo-700 mt-1">{getInvoiceDisplayLabel(invoice)}</p>
+                  <p className="text-xs text-blue-700 mt-1">{getInvoiceDisplayLabel(invoice)}</p>
                   {invoice.invoiceNumber && (
                     <p className="text-xs text-gray-500">{invoice.invoiceNumber}</p>
                   )}
@@ -656,7 +656,7 @@ const ProjectInvoiceSection: React.FC<ProjectInvoiceSectionProps> = ({
                         type="button"
                         disabled={submitting}
                         onClick={() => handleSendDraft(invoice.id)}
-                        className="px-2 py-1 text-xs text-white bg-indigo-600 rounded disabled:opacity-50"
+                        className="vendor-btn-primary px-2 py-1 text-xs"
                       >
                         Send to client
                       </button>

@@ -21,6 +21,7 @@ import {
   getStatusLabel,
   portalTabLabel,
 } from '../utils/portalHelpers'
+import { vendorBrandGradientStyle } from '../utils/portalBranding'
 import { formatUsDate } from '../utils/calendarHelpers'
 
 const ClientPortal: React.FC = () => {
@@ -179,6 +180,7 @@ const ClientPortal: React.FC = () => {
   }
 
   const accent = data?.primaryColor || '#2563eb'
+  const secondaryAccent = data?.secondaryColor || '#1e40af'
   const nextAction = data ? getNextAction(data) : null
 
   const tabs: PortalTab[] = ['home', 'documents', 'payments']
@@ -257,7 +259,7 @@ const ClientPortal: React.FC = () => {
             type="button"
             onClick={() => setActiveTab(nextAction.tab)}
             className="w-full rounded-2xl p-5 text-left text-white shadow-sm transition hover:opacity-95"
-            style={{ backgroundColor: accent }}
+            style={vendorBrandGradientStyle(accent, secondaryAccent)}
           >
             <p className="text-sm font-medium opacity-90">What's next</p>
             <p className="mt-1 text-lg font-semibold">{nextAction.label}</p>
@@ -606,6 +608,7 @@ const ClientPortal: React.FC = () => {
         vendorLogoUrl={data.vendorLogoUrl}
         vendorTagline={data.vendorTagline}
         primaryColor={accent}
+        secondaryColor={secondaryAccent}
         clientLabel={data.project.clientDisplayName || user?.firstName || 'Your portal'}
         onSignOut={() => logout()}
       />

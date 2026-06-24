@@ -8,8 +8,8 @@ interface PipelineStepperProps {
 
 const PipelineStepper: React.FC<PipelineStepperProps> = ({ steps, title = 'Progress' }) => {
   return (
-    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-      <h2 className="text-sm font-medium text-gray-900">{title}</h2>
+    <section className="vendor-card p-5">
+      <h2 className="text-sm font-medium text-slate-900">{title}</h2>
       <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((step, index) => {
           const isComplete = step.state === 'complete'
@@ -21,12 +21,12 @@ const PipelineStepper: React.FC<PipelineStepperProps> = ({ steps, title = 'Progr
               key={step.key}
               className={`rounded-xl border px-4 py-3 ${
                 isCurrent
-                  ? 'border-indigo-300 bg-indigo-50'
+                  ? 'border-blue-300 bg-blue-50/80'
                   : isComplete
                     ? 'border-green-200 bg-green-50'
                     : isSkipped
-                      ? 'border-gray-200 bg-gray-50 opacity-70'
-                      : 'border-gray-200 bg-white'
+                      ? 'border-slate-200 bg-slate-50 opacity-70'
+                      : 'border-slate-200 bg-white'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -35,8 +35,8 @@ const PipelineStepper: React.FC<PipelineStepperProps> = ({ steps, title = 'Progr
                     isComplete
                       ? 'bg-green-600 text-white'
                       : isCurrent
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
+                        ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white'
+                        : 'bg-slate-200 text-slate-600'
                   }`}
                 >
                   {isComplete ? '✓' : index + 1}

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { fetchVendorOnboarding } from '../../services/onboardingService'
 import { VendorBrandingProvider } from './VendorBrandingProvider'
+import VendorDashboardShell, { VendorPageLoader } from './VendorDashboardShell'
 
 const VendorOnboardingGate: React.FC = () => {
   const location = useLocation()
@@ -21,11 +22,7 @@ const VendorOnboardingGate: React.FC = () => {
   }, [loadStatus, location.pathname])
 
   if (needsOnboarding === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
-      </div>
-    )
+    return <VendorPageLoader />
   }
 
   const onOnboardingPage = location.pathname === '/dashboard/onboarding'
@@ -40,7 +37,9 @@ const VendorOnboardingGate: React.FC = () => {
 
   return (
     <VendorBrandingProvider>
-      <Outlet />
+      <VendorDashboardShell>
+        <Outlet />
+      </VendorDashboardShell>
     </VendorBrandingProvider>
   )
 }

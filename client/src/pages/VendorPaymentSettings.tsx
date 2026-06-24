@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { APP_NAME } from '../constants/branding'
 import { useAuth } from '../contexts/AuthContext'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import { VendorInlineLoader } from '../components/vendor/VendorDashboardShell'
 import {
   fetchPaymentSettings,
   updatePaymentSettings,
@@ -77,31 +78,32 @@ const VendorPaymentSettingsPage: React.FC = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
-      </div>
-    )
+    return <VendorInlineLoader />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <VendorDashboardHeader
         active="payments"
-        title="Payment settings"
         maxWidthClass="max-w-3xl"
         userEmail={user?.email}
         onLogout={() => logout()}
       />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Payment settings</h2>
+          <p className="text-sm text-slate-600 mt-1">
+            How clients pay you through their portal.
+          </p>
+        </div>
         {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
         {success && (
           <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{success}</div>
         )}
 
         <form onSubmit={handleSave} className="space-y-6">
-          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+          <section className="vendor-card p-6 space-y-4">
             <h2 className="font-medium text-gray-900">Stripe (optional)</h2>
             <p className="text-sm text-gray-600">
               If you already use Stripe, paste a Payment Link from your Stripe Dashboard. Clients
@@ -130,7 +132,7 @@ const VendorPaymentSettingsPage: React.FC = () => {
             </label>
           </section>
 
-          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+          <section className="vendor-card p-6 space-y-4">
             <h2 className="font-medium text-gray-900">Manual payment handles</h2>
             <p className="text-sm text-gray-600">
               Shown to clients on unpaid invoices as clickable links (Venmo, Cash App, PayPal) plus
@@ -188,7 +190,7 @@ const VendorPaymentSettingsPage: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+            className="vendor-btn-primary"
           >
             {submitting ? 'Saving...' : 'Save payment settings'}
           </button>

@@ -98,7 +98,7 @@ const VendorNotificationBell: React.FC = () => {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-indigo-600"
+        className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-600"
         aria-label="Notifications"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -123,7 +123,7 @@ const VendorNotificationBell: React.FC = () => {
               <button
                 type="button"
                 onClick={() => void handleMarkAllRead()}
-                className="text-xs text-indigo-600 hover:text-indigo-500"
+                className="text-xs vendor-link"
               >
                 Mark all read
               </button>
@@ -159,7 +159,7 @@ const VendorNotificationBell: React.FC = () => {
             )}
           </div>
           <div className="border-t border-gray-100 px-4 py-2">
-            <Link to="/dashboard" className="text-xs text-indigo-600 hover:text-indigo-500">
+            <Link to="/dashboard" className="text-xs vendor-link">
               View dashboard
             </Link>
           </div>

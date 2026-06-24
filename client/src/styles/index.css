@@ -443,6 +443,47 @@
   .auth-error {
     @apply rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 text-center;
   }
+
+  /* Vendor dashboard (platform SmoothGig theme) */
+  .vendor-spinner {
+    @apply animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-blue-600;
+  }
+
+  .vendor-link {
+    @apply font-medium text-blue-600 hover:text-purple-600 transition;
+  }
+
+  .vendor-card {
+    @apply landing-glow-card marketing-surface rounded-2xl;
+  }
+
+  .vendor-header {
+    @apply sticky top-0 z-20 border-b marketing-header-border marketing-header-bg backdrop-blur-md;
+  }
+
+  .vendor-nav-active {
+    @apply font-semibold landing-gradient-text;
+  }
+
+  .vendor-nav-link {
+    @apply text-slate-500 hover:text-blue-600 transition;
+  }
+
+  .vendor-btn-primary {
+    @apply marketing-cta-solid px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .vendor-btn-outline {
+    @apply marketing-cta-outline px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .vendor-hero-banner {
+    @apply rounded-2xl p-6 text-white shadow-lg landing-glow-card bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600;
+  }
+
+  .vendor-checkbox {
+    @apply h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-purple-500/20;
+  }
 }
 
 /* Custom animations */

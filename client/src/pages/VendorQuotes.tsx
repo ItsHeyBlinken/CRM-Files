@@ -129,7 +129,7 @@ const VendorQuotes: React.FC = () => {
   const atQuoteLimit = planUsage?.limits.quotesThisMonth.atLimit === true
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <VendorDashboardHeader
         active="quotes"
         userEmail={user?.email}
@@ -150,7 +150,7 @@ const VendorQuotes: React.FC = () => {
             type="button"
             onClick={() => setShowCreate(true)}
             disabled={atQuoteLimit}
-            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="vendor-btn-primary disabled:cursor-not-allowed"
           >
             New quote
           </button>
@@ -163,7 +163,7 @@ const VendorQuotes: React.FC = () => {
         <QuoteClientAgreementNotice variant="vendor" />
 
         {showCreate && (
-          <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 space-y-4">
+          <form onSubmit={handleCreate} className="vendor-card p-6 space-y-4">
             <h3 className="font-medium text-gray-900">Create quote</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <input
@@ -215,7 +215,7 @@ const VendorQuotes: React.FC = () => {
                 <button
                   type="button"
                   onClick={addLineItem}
-                  className="text-sm text-indigo-600 hover:text-indigo-500"
+                  className="text-sm vendor-link"
                 >
                   + Add item
                 </button>
@@ -304,7 +304,7 @@ const VendorQuotes: React.FC = () => {
                       contractFile: e.target.checked ? createForm.contractFile : null,
                     })
                   }
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                  className="mt-1 vendor-checkbox"
                 />
                 <span>
                   <span className="block text-sm font-medium text-gray-900">
@@ -365,7 +365,7 @@ const VendorQuotes: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 {submitting ? 'Creating...' : 'Create & get link'}
               </button>
@@ -380,7 +380,7 @@ const VendorQuotes: React.FC = () => {
           </form>
         )}
 
-        <section className="bg-white rounded-lg shadow overflow-hidden">
+        <section className="vendor-card overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="font-medium text-gray-900">Your quotes</h3>
           </div>
@@ -397,7 +397,7 @@ const VendorQuotes: React.FC = () => {
                 <li key={quote.id}>
                   <Link
                     to={`/dashboard/quotes/${quote.id}`}
-                    className="block px-6 py-4 hover:bg-gray-50 transition"
+                    className="block px-6 py-4 hover:bg-slate-50/80 transition"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div>
@@ -411,7 +411,7 @@ const VendorQuotes: React.FC = () => {
                         <p className="font-medium text-gray-900">
                           {formatMoney(quote.totalAmount, quote.currency)}
                         </p>
-                        <p className="text-xs text-indigo-600 font-medium">View quote →</p>
+                        <p className="text-xs vendor-link">View quote →</p>
                       </div>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">{statusLabel[quote.status]}</p>

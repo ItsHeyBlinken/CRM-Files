@@ -92,7 +92,7 @@ Event vendors and their clients lose time and trust when project work is scatter
 - View and sign contract (e-sign with audit trail)
 - **Pay invoices** — full-width Pay with card + P2P options; redirect to Home after pay/report
 - Download deliverables
-- Portal styled with vendor branding (logo, colors, business name)
+- Portal styled with **vendor** branding (logo, primary + secondary colors, business name) — vendor dashboard uses **SmoothGig** platform chrome
 
 ### User Experience Goals
 - **Vendor dashboard**: **Primary product focus** — streamline business processes (inquiry → quote → project → contract → invoice → delivery); efficient, connected workflows; density acceptable if it saves steps

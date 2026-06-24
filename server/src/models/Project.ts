@@ -112,6 +112,7 @@ export interface IClientPortalProject {
   vendorLogoUrl: string | null
   vendorTagline: string | null
   primaryColor: string
+  secondaryColor: string
   paymentOptions: IClientPaymentOptions
   paymentSettings: IProjectPaymentSettings
   paymentSummary: ProjectPaymentSummary
@@ -418,7 +419,8 @@ export class ProjectModel {
         COALESCE(vp.business_name, u.first_name || ' ' || u.last_name) AS vendor_business_name,
         vp.logo_url,
         vp.tagline AS vendor_tagline,
-        COALESCE(vp.primary_color, '#2563eb') AS primary_color
+        COALESCE(vp.primary_color, '#2563eb') AS primary_color,
+        COALESCE(vp.secondary_color, '#1e40af') AS secondary_color
       FROM project_clients pc
       INNER JOIN projects p ON p.id = pc.project_id
       INNER JOIN users u ON u.id = p.vendor_id
@@ -480,6 +482,7 @@ export class ProjectModel {
       vendorLogoUrl: row.logo_url ?? null,
       vendorTagline: row.vendor_tagline ?? null,
       primaryColor: row.primary_color,
+      secondaryColor: row.secondary_color,
       paymentOptions,
       paymentSettings,
       paymentSummary,

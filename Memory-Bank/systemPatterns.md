@@ -105,7 +105,10 @@ See `Memory-Bank/techContext.md` → Database Setup for go-live workflow.
 1. **Route groups by role**: Separate layouts for dashboard vs portal
 2. **AuthContext**: User, role, login/logout, post-login redirect
 3. **Protected routes**: Role guard + project scope where needed
-4. **Vendor branding context**: Portal reads vendor profile for theme/logo; platform name uses `AppName` wordmark (**Smooth** + **Gig**)
+4. **Dual branding**:
+   - **Platform theme** — landing, auth, vendor dashboard (`VendorDashboardShell`, `marketing-*` + `vendor-*` CSS, `PlatformLogo` in header)
+   - **Vendor theme** — client portal only; loaded from portal API (`primaryColor`, `secondaryColor`, logo, tagline); `portalBranding.ts` for gradients
+   - **Settings** — `ClientPortalPreview` shows vendor colors; does not restyle vendor dashboard
 5. **Date display**: All user-visible dates use `formatUsDate()` / `formatUsDateTime()` from `calendarHelpers.ts` (**MM-DD-YYYY**); API and DB remain **YYYY-MM-DD** date keys
 
 ## Core Entities (New Model)
@@ -113,7 +116,7 @@ See `Memory-Bank/techContext.md` → Database Setup for go-live workflow.
 | Entity | Purpose |
 |--------|---------|
 | **User** | Auth; role VENDOR or CLIENT |
-| **VendorProfile** | Business name, logo, brand colors |
+| **VendorProfile** | Business name, logo, brand colors (`primary_color`, `secondary_color`) — **client portal only** |
 | **VendorPaymentSettings** | Stripe Payment Link URL, P2P handles (venmo, zelle, cashapp, paypal) |
 | **ProjectPaymentSettings** | Per-project payment setup: total, deposit defaults, staged payment guidance |
 | **Project** | Event/booking; status, date, location |
@@ -139,13 +142,13 @@ See `Memory-Bank/techContext.md` → Database Setup for go-live workflow.
 - `POST /projects/:id/invite`
 - `GET/POST /projects/:id/contracts` — PDF upload; one contract per project (MVP)
 - `GET/POST /projects/:id/deliverables` — multi-file upload
-- `GET/PUT /profile` (vendor branding) — logo upload, colors, tagline (`vendorProfile.ts`)
+- `GET/PUT /profile` (vendor branding) — logo upload, colors, tagline (`vendorProfile.ts`); colors apply to **client portal**, not vendor dashboard chrome
 
 - `GET/POST /projects/:id/invoices` — create, send, mark paid, delete
 - `GET/PUT /api/vendor/payment-settings` — P2P handles + optional Stripe Payment Link URL
 
 ### Client Routes (prefix `/api/portal/`)
-- `GET /project` — aggregated portal payload (includes `paymentOptions`)
+- `GET /project` — aggregated portal payload (includes `paymentOptions`, `primaryColor`, `secondaryColor`, vendor logo/tagline)
 - `GET /contracts/:id/file`, `POST /contracts/:id/acknowledge`
 - `GET /deliverables/:id/file` — authenticated download
 - `POST /invoices/:id/claim-sent` — client P2P / off-platform Stripe payment reported

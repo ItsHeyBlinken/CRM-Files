@@ -448,7 +448,7 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] P2 — Notifications: `009_vendor_notifications.sql`, bell dropdown, Socket.io push, hooks on quote/invite/payment events
 - [x] P3 — Transactional email: nodemailer service; send quote / invite / invoice when SMTP configured; UI send buttons
 - [x] P4 — Pipeline steppers on quote detail and project detail
-- [x] P5 — `/dashboard/settings` branding page, logo upload, branded vendor header with accent colors
+- [x] P5 — `/dashboard/settings` client portal branding page, logo upload, colors, live preview (vendor dashboard uses platform theme, not vendor colors)
 - [x] User ran `008` + `009` SQL in pgAdmin
 
 ### Session: Product rebrand to SmoothGig (June 20, 2026)
@@ -629,6 +629,17 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] `database/reset/clear_all_data_keep_schema.sql` — go-live wipe (all data, keep schema)
 - [x] Memory Bank: go-live wipe script maintenance checklist documented (`systemPatterns`, `activeContext`, `techContext`) — update script when migration `014+` adds tables
 - [ ] Optional later: icon-only favicon crop, email template logo URL
+
+### Session: Vendor dashboard platform theme + client portal branding (June 20, 2026 — complete, user approved)
+- [x] **Vendor dashboard** — SmoothGig platform theme (`VendorDashboardShell`, `vendor-*` CSS utilities, `PlatformLogo` + business name in header Option A)
+- [x] Decoupled vendor `primaryColor` from vendor admin UI (`VendorBrandingProvider` no longer sets global `--vendor-accent`)
+- [x] **Client portal** — `secondaryColor` from API; gradient header stripe + "What's next" card (primary → secondary)
+- [x] Settings: clarified copy ("client portal only"), `ClientPortalPreview` live swatch, platform-styled save button
+- [x] Updated vendor pages/components (dashboard, quotes, calendar, payments, settings, onboarding, project/quote detail, pipeline, invoices, notification bell, starter banner)
+- [x] Server: `Project.findClientProject()` returns `secondaryColor` from `vendor_profiles.secondary_color`
+- [x] Client + server build/typecheck pass; `portalHelpers.test.ts` updated
+- [x] Memory Bank updated (`activeContext`, `progress`, `systemPatterns`, `techContext`)
+- [ ] User git commit when ready — suggested message: `Apply platform theme to vendor dashboard; wire client portal secondary color`
 
 ### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
 - [ ] Migration `014`: `invoices.stripe_payment_link` (optional per invoice)

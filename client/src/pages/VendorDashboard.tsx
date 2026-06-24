@@ -7,7 +7,6 @@ import { fetchVendorDashboardSummary } from '../services/dashboardService'
 import { fetchVendorOnboarding, type VendorChecklist } from '../services/onboardingService'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import StarterPlanBanner from '../components/vendor/StarterPlanBanner'
-import { useVendorBranding } from '../components/vendor/VendorBrandingProvider'
 import { fetchVendorPlanUsage } from '../services/planService'
 import { getApiErrorMessage } from '../utils/apiErrors'
 import { formatCalendarDate, formatUsDate } from '../utils/calendarHelpers'
@@ -19,7 +18,6 @@ const VendorDashboard: React.FC = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { accentColor } = useVendorBranding()
   const [projects, setProjects] = useState<Project[]>([])
   const [summary, setSummary] = useState<VendorDashboardSummary | null>(null)
   const [checklist, setChecklist] = useState<VendorChecklist | null>(null)
@@ -112,7 +110,7 @@ const VendorDashboard: React.FC = () => {
   const atProjectLimit = planUsage?.limits.activeProjects.atLimit === true
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <VendorDashboardHeader
         active="projects"
         userEmail={user?.email}
@@ -122,10 +120,7 @@ const VendorDashboard: React.FC = () => {
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         <StarterPlanBanner usage={planUsage} focus="both" />
 
-        <section
-          className="rounded-2xl p-6 text-white shadow-sm"
-          style={{ backgroundColor: accentColor }}
-        >
+        <section className="vendor-hero-banner">
           <h2 className="text-2xl font-semibold">
             Welcome back{user?.firstName ? `, ${user.firstName}` : ''}
           </h2>
@@ -166,14 +161,14 @@ const VendorDashboard: React.FC = () => {
             </div>
 
             {summary.attention.length > 0 && (
-              <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h3 className="font-medium text-gray-900">Needs attention</h3>
+              <section className="vendor-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100">
+                  <h3 className="font-medium text-slate-900">Needs attention</h3>
                 </div>
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-slate-100">
                   {summary.attention.map((item) => (
                     <li key={item.id}>
-                      <Link to={item.linkPath} className="block px-6 py-4 hover:bg-gray-50 transition">
+                      <Link to={item.linkPath} className="block px-6 py-4 hover:bg-slate-50/80 transition">
                         <p className="font-medium text-gray-900">{item.title}</p>
                         <p className="text-sm text-gray-500">{item.subtitle}</p>
                       </Link>
@@ -184,17 +179,17 @@ const VendorDashboard: React.FC = () => {
             )}
 
             {summary.upcomingEvents.length > 0 && (
-              <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">Coming up</h3>
-                  <Link to="/dashboard/calendar" className="text-sm text-indigo-600 hover:text-indigo-500">
+              <section className="vendor-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-medium text-slate-900">Coming up</h3>
+                  <Link to="/dashboard/calendar" className="text-sm vendor-link">
                     Full calendar
                   </Link>
                 </div>
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-slate-100">
                   {summary.upcomingEvents.map((event) => (
                     <li key={event.id}>
-                      <Link to={event.linkPath} className="block px-6 py-4 hover:bg-gray-50 transition">
+                      <Link to={event.linkPath} className="block px-6 py-4 hover:bg-slate-50/80 transition">
                         <p className="font-medium text-gray-900">{event.title}</p>
                         <p className="text-sm text-gray-500">
                           {formatCalendarDate(event.eventDate)}
@@ -223,7 +218,7 @@ const VendorDashboard: React.FC = () => {
         )}
 
         {checklist && (!checklist.hasProject || !hasPaymentMethod || !checklist.hasLinkedClient) && (
-          <section className="bg-white rounded-lg shadow p-6">
+          <section className="vendor-card p-6">
             <h2 className="font-medium text-gray-900">Get started</h2>
             <ul className="mt-4 space-y-3">
               <ChecklistItem
@@ -253,7 +248,7 @@ const VendorDashboard: React.FC = () => {
         )}
 
         {showCreate && (
-          <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 space-y-4">
+          <form onSubmit={handleCreate} className="vendor-card p-6 space-y-4">
             <h3 className="font-medium text-gray-900">Create project</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <input
@@ -299,8 +294,7 @@ const VendorDashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 text-sm text-white rounded-md disabled:opacity-50"
-                style={{ backgroundColor: accentColor }}
+                className="vendor-btn-primary"
               >
                 {submitting ? 'Saving...' : 'Create project'}
               </button>
@@ -315,13 +309,13 @@ const VendorDashboard: React.FC = () => {
           </form>
         )}
 
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="font-medium text-gray-900">Your projects</h3>
+        <section className="vendor-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200">
+            <h3 className="font-medium text-slate-900">Your projects</h3>
           </div>
 
           {loading ? (
-            <p className="p-6 text-sm text-gray-500">Loading projects...</p>
+            <p className="p-6 text-sm text-slate-500">Loading projects...</p>
           ) : projects.length === 0 ? (
             <p className="p-6 text-sm text-gray-500">
               No projects yet. Create your first event project to get started.
@@ -332,7 +326,7 @@ const VendorDashboard: React.FC = () => {
                 <li key={project.id}>
                   <Link
                     to={`/dashboard/projects/${project.id}`}
-                    className="block px-6 py-4 hover:bg-gray-50 transition"
+                    className="block px-6 py-4 hover:bg-slate-50/80 transition"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div>
@@ -342,7 +336,7 @@ const VendorDashboard: React.FC = () => {
                           {project.eventDate ? ` · ${formatUsDate(project.eventDate)}` : ''}
                         </p>
                       </div>
-                      <span className="text-xs capitalize text-indigo-600 font-medium self-start sm:self-center">
+                      <span className="text-xs capitalize vendor-link self-start sm:self-center">
                         View project →
                       </span>
                     </div>
@@ -361,7 +355,7 @@ const VendorDashboard: React.FC = () => {
 }
 
 const StatCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-  <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+  <div className="vendor-card p-4">
     <p className="text-2xl font-semibold text-gray-900">{value}</p>
     <p className="mt-1 text-sm text-gray-500">{label}</p>
   </div>
@@ -390,12 +384,12 @@ const ChecklistItem: React.FC<{
       </div>
     </div>
     {!done && actionLabel && to && (
-      <Link to={to} className="text-indigo-600 font-medium shrink-0">
+      <Link to={to} className="vendor-link shrink-0">
         {actionLabel}
       </Link>
     )}
     {!done && actionLabel && onClick && (
-      <button type="button" onClick={onClick} className="text-indigo-600 font-medium shrink-0">
+      <button type="button" onClick={onClick} className="vendor-link shrink-0">
         {actionLabel}
       </button>
     )}

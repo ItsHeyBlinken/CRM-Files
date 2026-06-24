@@ -82,12 +82,12 @@ const VendorOnboarding: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div>
+      <header className="vendor-header">
         <div className="max-w-lg mx-auto px-4 py-6">
           <PlatformLogo heightClass="h-12" to={null} className="mx-auto" />
-          <h1 className="text-2xl font-semibold text-gray-900 mt-4">Set up your business</h1>
-          <p className="text-sm text-gray-600 mt-2">
+          <h1 className="text-2xl font-semibold text-slate-900 mt-4 text-center">Set up your business</h1>
+          <p className="text-sm text-slate-600 mt-2 text-center">
             Step {stepIndex + 1} of {STEPS.length} — takes about 2 minutes
           </p>
           <div className="mt-4 flex gap-2">
@@ -95,7 +95,9 @@ const VendorOnboarding: React.FC = () => {
               <div
                 key={s}
                 className={`h-1.5 flex-1 rounded-full ${
-                  i <= stepIndex ? 'bg-indigo-600' : 'bg-gray-200'
+                  i <= stepIndex
+                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
+                    : 'bg-slate-200'
                 }`}
               />
             ))}
@@ -105,11 +107,11 @@ const VendorOnboarding: React.FC = () => {
 
       <main className="max-w-lg mx-auto px-4 py-8">
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
 
         {step === 'business' && (
-          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+          <section className="vendor-card p-6 space-y-4">
             <h2 className="font-medium text-gray-900">Your business name</h2>
             <p className="text-sm text-gray-600">
               Clients see this on their portal — use your studio or brand name.
@@ -121,14 +123,14 @@ const VendorOnboarding: React.FC = () => {
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="e.g. Sam Photography"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
             <button
               type="button"
               disabled={!businessName.trim()}
               onClick={() => setStep('payments')}
-              className="w-full py-3 text-sm font-semibold text-white bg-indigo-600 rounded-md disabled:opacity-50"
+              className="auth-submit"
             >
               Continue
             </button>
@@ -136,7 +138,7 @@ const VendorOnboarding: React.FC = () => {
         )}
 
         {step === 'payments' && (
-          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+          <section className="vendor-card p-6 space-y-4">
             <h2 className="font-medium text-gray-900">How clients pay you</h2>
             <p className="text-sm text-gray-600">
               Add at least one method so clients can pay invoices in their portal. You can always
@@ -149,7 +151,7 @@ const VendorOnboarding: React.FC = () => {
                 value={form.venmoHandle}
                 onChange={(e) => setForm((f) => ({ ...f, venmoHandle: e.target.value }))}
                 placeholder="@your-venmo"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
             <label className="block text-sm">
@@ -158,7 +160,7 @@ const VendorOnboarding: React.FC = () => {
                 value={form.zelleHandle}
                 onChange={(e) => setForm((f) => ({ ...f, zelleHandle: e.target.value }))}
                 placeholder="you@email.com"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
             <label className="block text-sm">
@@ -167,7 +169,7 @@ const VendorOnboarding: React.FC = () => {
                 value={form.cashappHandle}
                 onChange={(e) => setForm((f) => ({ ...f, cashappHandle: e.target.value }))}
                 placeholder="$YourCashtag"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
             <label className="block text-sm">
@@ -176,7 +178,7 @@ const VendorOnboarding: React.FC = () => {
                 value={form.paypalHandle}
                 onChange={(e) => setForm((f) => ({ ...f, paypalHandle: e.target.value }))}
                 placeholder="paypal.me/you"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
             <label className="block text-sm">
@@ -186,7 +188,7 @@ const VendorOnboarding: React.FC = () => {
                 onChange={(e) => setForm((f) => ({ ...f, paymentInstructions: e.target.value }))}
                 rows={2}
                 placeholder="e.g. Include your name on Zelle"
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
 
@@ -196,7 +198,7 @@ const VendorOnboarding: React.FC = () => {
                   type="button"
                   disabled={submitting}
                   onClick={() => finishOnboarding(false)}
-                  className="w-full py-3 text-sm font-semibold text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                  className="auth-submit"
                 >
                   Finish with these payment methods
                 </button>
@@ -205,7 +207,7 @@ const VendorOnboarding: React.FC = () => {
                 type="button"
                 disabled={submitting}
                 onClick={() => setStep('stripe')}
-                className="w-full py-3 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md disabled:opacity-50"
+                className="w-full vendor-btn-outline py-3 text-sm font-semibold disabled:opacity-50"
               >
                 Also accept card payments (Stripe)
               </button>
@@ -220,7 +222,7 @@ const VendorOnboarding: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep('business')}
-                className="w-full py-2 text-sm text-indigo-600"
+                className="w-full py-2 text-sm vendor-link"
               >
                 Back
               </button>
@@ -229,7 +231,7 @@ const VendorOnboarding: React.FC = () => {
         )}
 
         {step === 'stripe' && (
-          <section className="bg-white rounded-lg shadow p-6 space-y-4">
+          <section className="vendor-card p-6 space-y-4">
             <h2 className="font-medium text-gray-900">Accept card payments (optional)</h2>
             <p className="text-sm text-gray-600">
               Paste a Payment Link from your Stripe Dashboard. Clients open your link to pay — we
@@ -242,7 +244,7 @@ const VendorOnboarding: React.FC = () => {
                 value={form.stripePaymentLink}
                 onChange={(e) => setForm((f) => ({ ...f, stripePaymentLink: e.target.value }))}
                 placeholder="https://buy.stripe.com/..."
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="auth-input"
               />
             </label>
 
@@ -251,7 +253,7 @@ const VendorOnboarding: React.FC = () => {
                 type="button"
                 disabled={submitting}
                 onClick={() => finishOnboarding(false)}
-                className="w-full py-3 text-sm font-semibold text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                className="auth-submit"
               >
                 {submitting ? 'Saving...' : 'Finish setup'}
               </button>
@@ -266,7 +268,7 @@ const VendorOnboarding: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep('payments')}
-                className="w-full py-2 text-sm text-indigo-600"
+                className="w-full py-2 text-sm vendor-link"
               >
                 Back
               </button>

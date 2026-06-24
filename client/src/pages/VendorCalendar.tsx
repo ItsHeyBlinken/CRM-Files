@@ -77,7 +77,7 @@ const VendorCalendar: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <VendorDashboardHeader
         active="calendar"
         userEmail={user?.email}
@@ -95,7 +95,7 @@ const VendorCalendar: React.FC = () => {
 
         {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
-        <section className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4">
+        <section className="vendor-card p-4 sm:p-6 space-y-4">
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             <span className="inline-flex items-center gap-2">
               <span className="h-3 w-8 rounded-sm vendor-calendar-event-project border" />
@@ -134,7 +134,7 @@ const VendorCalendar: React.FC = () => {
           )}
         </section>
 
-        <section className="bg-white rounded-lg shadow">
+        <section className="vendor-card">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="font-medium text-gray-900">Upcoming</h3>
           </div>
@@ -150,7 +150,7 @@ const VendorCalendar: React.FC = () => {
                 <li key={event.id}>
                   <Link
                     to={event.linkPath}
-                    className="block px-6 py-4 hover:bg-gray-50 transition"
+                    className="block px-6 py-4 hover:bg-slate-50/80 transition"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div>
@@ -160,7 +160,7 @@ const VendorCalendar: React.FC = () => {
                           {event.clientName ? ` · ${event.clientName}` : ''}
                         </p>
                       </div>
-                      <span className="text-xs font-medium text-indigo-600 self-start sm:self-center">
+                      <span className="text-xs font-medium vendor-link self-start sm:self-center">
                         {eventKindLabel(event.kind)} →
                       </span>
                     </div>

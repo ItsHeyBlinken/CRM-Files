@@ -19,6 +19,7 @@ function buildPortalData(): ClientPortalData {
     vendorLogoUrl: null,
     vendorTagline: 'Capturing your day, beautifully.',
     primaryColor: '#2563eb',
+    secondaryColor: '#1e40af',
     paymentOptions: {
       stripeEnabled: true,
       stripePaymentLink: 'https://buy.stripe.com/test',

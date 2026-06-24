@@ -11,6 +11,8 @@ import {
 import { fetchVendorOnboarding } from '../services/onboardingService'
 import PipelineStepper from '../components/vendor/PipelineStepper'
 import ProjectInvoiceSection from '../components/vendor/ProjectInvoiceSection'
+import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
+import { VendorInlineLoader } from '../components/vendor/VendorDashboardShell'
 import type { ProjectStatus, VendorProjectDetail } from '../types/portal'
 import { getProjectPipelineSteps } from '../utils/projectPipeline'
 import toast from 'react-hot-toast'
@@ -213,20 +215,16 @@ const VendorProjectDetail: React.FC = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
-      </div>
-    )
+    return <VendorInlineLoader />
   }
 
   if (!detail) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center">
-          <h2 className="text-lg font-medium text-gray-900">Project not found</h2>
-          <p className="mt-2 text-sm text-gray-600">{error}</p>
-          <Link to="/dashboard" className="mt-4 inline-block text-indigo-600 hover:text-indigo-500">
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
+        <div className="max-w-md w-full vendor-card p-6 text-center">
+          <h2 className="text-lg font-medium text-slate-900">Project not found</h2>
+          <p className="mt-2 text-sm text-slate-600">{error}</p>
+          <Link to="/dashboard" className="mt-4 inline-block vendor-link">
             Back to projects
           </Link>
         </div>
@@ -241,47 +239,27 @@ const VendorProjectDetail: React.FC = () => {
   ): boolean => contract.fileAvailable !== true
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <Link to="/dashboard" className="text-indigo-600 hover:text-indigo-500">
-                ← Projects
-              </Link>
-              <Link to="/dashboard/quotes" className="text-gray-500 hover:text-indigo-600">
-                Quotes
-              </Link>
-              <Link to="/dashboard/calendar" className="text-gray-500 hover:text-indigo-600">
-                Calendar
-              </Link>
-              <Link to="/dashboard/payments" className="text-gray-500 hover:text-indigo-600">
-                Payments
-              </Link>
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900 mt-1">{project.title}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">{user?.email}</span>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="text-sm text-indigo-600 hover:text-indigo-500"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+    <div>
+      <VendorDashboardHeader
+        active="projects"
+        userEmail={user?.email}
+        onLogout={() => logout()}
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <div>
+          <Link to="/dashboard" className="text-sm vendor-link">
+            ← All projects
+          </Link>
+          <h1 className="text-xl font-semibold text-slate-900 mt-1">{project.title}</h1>
+        </div>
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
 
         <PipelineStepper steps={getProjectPipelineSteps(detail)} title="Project progress" />
 
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
+        <section className="vendor-card p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3">
@@ -290,7 +268,7 @@ const VendorProjectDetail: React.FC = () => {
                   <button
                     type="button"
                     onClick={startEditingOverview}
-                    className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+                    className="text-sm vendor-link font-medium"
                   >
                     Edit overview
                   </button>
@@ -397,7 +375,7 @@ const VendorProjectDetail: React.FC = () => {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                      className="vendor-btn-primary"
                     >
                       {submitting ? 'Saving...' : 'Save overview'}
                     </button>
@@ -463,7 +441,7 @@ const VendorProjectDetail: React.FC = () => {
           </div>
         </section>
 
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
+        <section className="vendor-card p-6 space-y-4">
           <h2 className="font-medium text-gray-900">Client portal</h2>
           {linkedClient ? (
             <div className="rounded-md bg-green-50 p-4 text-sm text-green-900">
@@ -504,14 +482,14 @@ const VendorProjectDetail: React.FC = () => {
                     <button
                       type="button"
                       onClick={copyInviteLink}
-                      className="text-indigo-600 hover:text-indigo-500 font-medium"
+                      className="vendor-link font-medium"
                     >
                       Copy link
                     </button>
                     <button
                       type="button"
                       onClick={openInviteEmailDraft}
-                      className="text-indigo-600 hover:text-indigo-500 font-medium"
+                      className="vendor-link font-medium"
                     >
                       Open in email app
                     </button>
@@ -521,7 +499,7 @@ const VendorProjectDetail: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 {submitting ? 'Creating...' : 'Generate invite link'}
               </button>
@@ -529,7 +507,7 @@ const VendorProjectDetail: React.FC = () => {
           )}
         </section>
 
-        <section className="bg-white rounded-lg shadow p-6 space-y-4">
+        <section className="vendor-card p-6 space-y-4">
           <h2 className="font-medium text-gray-900">Contract</h2>
           {contracts.length > 0 ? (
             contracts.map((contract) => (
@@ -575,7 +553,7 @@ const VendorProjectDetail: React.FC = () => {
                     <button
                       type="submit"
                       disabled={submitting || !contractFile}
-                      className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                      className="vendor-btn-primary"
                     >
                       {submitting
                         ? 'Uploading...'
@@ -617,7 +595,7 @@ const VendorProjectDetail: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting || !contractFile}
-                className="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md disabled:opacity-50"
+                className="vendor-btn-primary"
               >
                 {submitting ? 'Uploading...' : 'Upload PDF'}
               </button>

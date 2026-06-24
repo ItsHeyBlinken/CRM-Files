@@ -1,13 +1,30 @@
 # Active Context: SmoothGig
 
 ## Product Name
-**SmoothGig** — official product name (`smoothgig.com` available; register domain when ready). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta/email. Vendor-facing branding (logo, colors, business name) is per-vendor inside the app. **Rejected:** Gigly (gigly.com taken, June 2026).
+**SmoothGig** — official product name (`smoothgig.com` available; register domain when ready). UI wordmark splits **Smooth** + **Gig** via `AppName` component; plain `APP_NAME` string for prose/meta/email.
+
+**Dual branding model (June 20, 2026 — confirmed):**
+
+| Surface | Branding |
+|---------|----------|
+| **Marketing** (landing, login, register) | SmoothGig platform — light slate/cyan gradient, `PlatformLogo`, `marketing-*` CSS |
+| **Vendor dashboard** (`/dashboard/*`) | Same platform theme — **not** vendor colors; header = `PlatformLogo` + vendor business name (text only) |
+| **Client portal** (`/portal`) | Per-vendor from `vendor_profiles` — logo, business name, tagline, primary + secondary colors |
+
+**Rejected:** Gigly (gigly.com taken, June 2026).
 
 **Branding files:**
 - `client/public/smoothgig-logo.png` — platform logo asset (favicon + marketing UI)
-- `client/src/constants/branding.ts` — `APP_NAME`, `APP_TAGLINE`, `PLATFORM_LOGO_SRC`
-- `client/src/components/branding/PlatformLogo.tsx` — logo image for landing, auth, onboarding
-- `client/src/components/branding/AppName.tsx` — text wordmark fallback (vendor shell when no business name)
+- `client/src/constants/branding.ts` — `APP_NAME`, `APP_TAGLINE`, `BRAND_COLORS`, `PLATFORM_LOGO_SRC`
+- `client/src/components/branding/PlatformLogo.tsx` — logo for landing, auth, onboarding, **vendor dashboard header**
+- `client/src/components/branding/AppName.tsx` — text wordmark (admin layout fallback)
+- `client/src/styles/index.css` — `marketing-*` (public/auth) + `vendor-*` (dashboard) utility classes
+- `client/src/components/vendor/VendorDashboardShell.tsx` — platform gradient background + orbs on all vendor routes
+- `client/src/components/vendor/VendorDashboardHeader.tsx` — platform nav chrome
+- `client/src/components/vendor/VendorBrandingProvider.tsx` — loads `vendor_profiles` for business name in header + settings refresh (does **not** apply vendor colors to dashboard)
+- `client/src/components/vendor/ClientPortalPreview.tsx` — live preview in Settings
+- `client/src/utils/portalBranding.ts` — `vendorBrandGradient()` for client portal gradients
+- `client/src/components/portal/ClientPortalHeader.tsx` — vendor logo + primary/secondary gradient stripe
 
 ## End Goal (Product North Star)
 
@@ -26,23 +43,22 @@
 
 ## Current Work Focus
 
-**Session end (June 20, 2026 — night).** **Client card pay = Path B (vendor-hosted Stripe Payment Link).** Stripe Connect and in-portal Checkout were removed. Vendors paste their own Payment Link; clients open it in a new tab; vendor confirms payment in app. **Migration `013`** adds `stripe_payment_link` column — user to apply in pgAdmin before deploy.
+**Session complete (June 20, 2026 — branding, user approved).** Vendor dashboard uses **SmoothGig platform theme**; client portal uses per-vendor primary + secondary colors, logo, and business name. Settings includes live client portal preview. No DB migration — `secondary_color` already on `vendor_profiles`; portal API now returns `secondaryColor`.
 
-**Also in codebase (prior sessions, may need commit/deploy):** Starter plan gating (`011`), Stripe Billing for Pro (`012`), landing/auth refresh, family UAT doc.
-
-**Next up:** Apply migration `013` → commit + deploy → E2E payments path (P2P + Stripe link) → family UAT.
+**Next up:** Commit branding + prior session work → apply migration `013` → deploy → E2E payments → family UAT.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — future migration (not `011`; plan uses separate calendar migration). Apply `MarketingAuthLayout` to `AcceptInvite.tsx`.
 
 ## When You Return — Start Here
 
-1. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`)
-2. **Commit + deploy** Stripe Path B changes (if not yet committed)
-3. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
-4. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
-5. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
-6. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
-7. **Launch prep:** Register **smoothgig.com**, favicon/logo
+1. **Git commit** — branding session + any uncommitted work (Stripe Path B, invoice UX, rate limits, go-live script)
+2. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`)
+3. **Deploy** and smoke-test vendor dashboard theme + client portal colors in Settings
+4. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
+5. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
+6. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
+7. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
+8. **Launch prep:** Register **smoothgig.com**, favicon/logo
 
 ## Next Session — Priority Order
 
@@ -63,7 +79,8 @@
 | Vendor project detail + **edit overview** | ✅ Done |
 | Client invite flow + duplicate-client guards | ✅ Done |
 | Client portal (Home / Documents / Payments) | ✅ Done |
-| Client portal vendor branding (logo, tagline) | ✅ Done |
+| Client portal vendor branding (logo, tagline, primary + secondary colors) | ✅ Done |
+| Vendor dashboard platform theme (SmoothGig chrome) | ✅ Done (June 20, 2026) |
 | Contract PDF upload + enhanced e-sign audit trail | ✅ Done |
 | Deliverable upload + client download | ❌ Removed (external gallery tools) |
 | Legacy CRM cleanup | ✅ Done (June 2026) |
@@ -78,7 +95,7 @@
 | In-app notifications + bell | ✅ Built (SQL `009`) |
 | Transactional email (SMTP) | ✅ Built (env-configured) |
 | Quote/project pipeline steppers | ✅ Built |
-| Vendor branding settings page | ✅ Built |
+| Vendor branding settings page (client portal only) | ✅ Built |
 | **SmoothGig platform rebrand + wordmark** | ✅ Built (June 2026) |
 | Client card pay + P2P (3c) | ✅ Built |
 | Vendor onboarding wizard + gate | ✅ Built |
@@ -145,7 +162,7 @@
 - Persistent notifications (`009`) + bell + realtime toasts via Socket.io
 - Transactional email for quotes, invites, invoices when `SMTP_HOST` + `SMTP_FROM` are set
 - Pipeline progress steppers on quote detail and project detail
-- `/dashboard/settings` for logo, colors, tagline; branded vendor header shell
+- `/dashboard/settings` — client portal branding only (logo, colors, tagline, business details); live preview; vendor dashboard stays platform-themed
 
 **Key files:** `VendorPaymentSettings.ts`, `stripePaymentLink.ts` (URL validation), `VendorPaymentSettings.tsx`, `VendorOnboarding.tsx`, `ClientPortal.tsx`, `portalPaymentService.ts`, `p2pPaymentLinks.ts`, `stripeService.ts` (subscriptions webhook only)
 
@@ -217,7 +234,7 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 | `/dashboard/quotes` | VENDOR | Quote list + create (optional contract) |
 | `/dashboard/quotes/:id` | VENDOR | Quote detail, convert to project |
 | `/dashboard/calendar` | VENDOR | Month/agenda view of booked + tentative events |
-| `/dashboard/settings` | VENDOR | Branding, logo, colors, business profile |
+| `/dashboard/settings` | VENDOR | Client portal branding — logo, primary/secondary colors, business profile, live preview |
 | `/dashboard/payments` | VENDOR | P2P handles + optional Stripe Payment Link URL |
 | `/portal` | CLIENT | Mobile-first client hub |
 | `/invite/:token` | Public | Client account creation |
@@ -330,6 +347,17 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 ### Client portal branding (same day, earlier)
 - [x] `ClientPortalHeader` — logo, business name, tagline, accent bar; API `vendorTagline`
 
+### Vendor dashboard platform theme + client portal colors (June 20, 2026 — bedtime, user approved)
+- [x] **Split branding:** vendor dashboard = SmoothGig platform theme; client portal = vendor `vendor_profiles` colors/logo
+- [x] `VendorDashboardShell` wraps all `/dashboard/*` routes (marketing gradient bg + orbs)
+- [x] `VendorDashboardHeader` — `PlatformLogo` + business name text (Option A); platform nav active state
+- [x] `vendor-*` CSS utilities in `index.css` — cards, links, CTAs, hero banner, spinner
+- [x] `VendorBrandingProvider` — profile fetch only; removed global `--vendor-accent` on dashboard
+- [x] **Client portal:** `secondaryColor` in API + types; gradient header stripe + "What's next" card via `portalBranding.ts`
+- [x] **Settings:** copy clarifies client-portal-only; `ClientPortalPreview` component
+- [x] Vendor pages/components restyled (dashboard, quotes, calendar, payments, onboarding, project/quote detail, pipeline, invoices, notification bell, starter banner)
+- [ ] User git commit when ready
+
 ### Family UAT
 - [x] Created **`docs/family-uat-guide.md`** — vendor + client checklists, email intro, placeholders for logins/links
 - [ ] User to fill placeholders and email wife/MIL for live testing on `plannercrm.bytesbyblinken.com`
@@ -409,9 +437,10 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 - [x] API/storage unchanged (`YYYY-MM-DD`)
 
 ### Client portal branding
-- [x] `ClientPortalHeader` — vendor logo (or accent initial), business name, tagline, accent top bar
+- [x] `ClientPortalHeader` — vendor logo (or accent initial), business name, tagline, primary→secondary gradient top bar
 - [x] Client name shown below branding; home card focuses on project title (no duplicate vendor name)
-- [x] API: `vendorTagline` from `vendor_profiles.tagline` in `Project.findClientProject()`
+- [x] API: `vendorTagline`, `primaryColor`, `secondaryColor` from `vendor_profiles` in `Project.findClientProject()`
+- [x] Primary = links/buttons; secondary = gradient accents ("What's next" card, header stripe)
 
 ### Deliverables removed
 - [x] Files tab, upload UI, deliverable API routes removed; contracts remain on Documents

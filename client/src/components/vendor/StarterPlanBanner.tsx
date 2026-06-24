@@ -141,7 +141,7 @@ export const ProPlanManageLink: React.FC<{
         type="button"
         onClick={() => void handleManage()}
         disabled={loading}
-        className="font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-60"
+        className="font-medium vendor-link disabled:opacity-60"
       >
         {loading ? 'Opening…' : 'Manage Pro subscription'}
       </button>

@@ -78,7 +78,10 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 
 | Area | Paths |
 |------|-------|
-| **Platform branding** | `client/src/constants/branding.ts`, `client/src/components/branding/AppName.tsx` |
+| **Platform branding** | `client/src/constants/branding.ts`, `client/src/components/branding/PlatformLogo.tsx`, `client/src/styles/index.css` (`marketing-*`, `vendor-*`) |
+| **Vendor dashboard shell** | `client/src/components/vendor/VendorDashboardShell.tsx`, `VendorDashboardHeader.tsx`, `VendorOnboardingGate.tsx` |
+| **Client portal branding** | `client/src/components/portal/ClientPortalHeader.tsx`, `client/src/utils/portalBranding.ts`, `client/src/components/vendor/ClientPortalPreview.tsx` |
+| **Vendor profile API** | `server/src/routes/vendorProfile.ts`, `client/src/pages/VendorSettings.tsx`, `VendorBrandingProvider.tsx` |
 | Schema / seed | `database/001_schema_portalhub.sql` … `013_*`, `database/reset/` |
 | Auth | `server/src/routes/auth.ts`, `client/src/pages/AcceptInvite.tsx` |
 | Vendor API | `server/src/routes/vendorProjects.ts`, `server/src/models/Project.ts` |
@@ -86,7 +89,7 @@ Seeded via `database/reset/seed_portalhub_dev.sql` (run after schema migrations)
 | Vendor calendar | `server/src/routes/vendorCalendar.ts`, `client/src/pages/VendorCalendar.tsx` |
 | Notifications | `server/src/routes/vendorNotifications.ts`, `client/src/components/vendor/VendorNotificationBell.tsx` |
 | Email | `server/src/services/emailService.ts` |
-| Vendor profile/branding | `server/src/routes/vendorProfile.ts`, `client/src/pages/VendorSettings.tsx` |
+| Vendor profile/branding | (see Client portal branding + Vendor profile API rows above) |
 | Contracts | `server/src/models/Contract.ts`, `client/src/services/contractService.ts` |
 | Deliverables | `server/src/models/Deliverable.ts`, `client/src/services/deliverableService.ts` |
 | Client portal | `server/src/routes/portal.ts`, `client/src/pages/ClientPortal.tsx` |
