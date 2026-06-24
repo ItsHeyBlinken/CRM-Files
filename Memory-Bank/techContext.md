@@ -233,6 +233,15 @@ npm run build        # Build both client and server
 npm run start        # Start production server
 ```
 
+### Production deployment (Coolify)
+
+- **Host:** Coolify on user's server; app at `plannercrm.bytesbyblinken.com` (or configured domain)
+- **Trigger:** New commits to the connected branch → **automatic redeploy** (user-configured; no separate manual deploy step)
+- **Implication:** `git commit` + push is enough to ship client + server code; verify deploy in Coolify UI if needed
+- **Still manual:** PostgreSQL migrations in pgAdmin (`database/NNN_*.sql`) — run **before** or when deploying code that depends on new schema
+- **Persistent files:** Volume mount at `/app/server/uploads` (contracts, quote PDFs, vendor logos) — survives container rebuilds
+- **Reverse proxy:** Express `trust proxy` enabled for Coolify/nginx
+
 ### Database Setup
 
 **Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` (next: **`014`**). The agent provides scripts and instructions — never executes migrations against the database.

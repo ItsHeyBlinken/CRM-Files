@@ -45,27 +45,26 @@
 
 **Session complete (June 20, 2026 — branding, user approved).** Vendor dashboard uses **SmoothGig platform theme**; client portal uses per-vendor primary + secondary colors, logo, and business name. Settings includes live client portal preview. No DB migration — `secondary_color` already on `vendor_profiles`; portal API now returns `secondaryColor`.
 
-**Next up:** Commit branding + prior session work → apply migration `013` → deploy → E2E payments → family UAT.
+**Next up:** Branding commit `8567e36` auto-deploys via Coolify on push → apply migration `013` in pgAdmin → smoke-test production → E2E payments → family UAT.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — future migration (not `011`; plan uses separate calendar migration). Apply `MarketingAuthLayout` to `AcceptInvite.tsx`.
 
 ## When You Return — Start Here
 
-1. **Git commit** — branding session + any uncommitted work (Stripe Path B, invoice UX, rate limits, go-live script)
-2. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`)
-3. **Deploy** and smoke-test vendor dashboard theme + client portal colors in Settings
-4. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
-5. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
-6. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
-7. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
-8. **Launch prep:** Register **smoothgig.com**, favicon/logo
+1. **Confirm Coolify deploy** finished for `8567e36` (auto on commit) — smoke-test vendor dashboard theme + client portal colors on live site
+2. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`) if not yet applied
+3. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
+4. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
+5. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
+6. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
+7. **Launch prep:** Register **smoothgig.com**, favicon/logo
 
 ## Next Session — Priority Order
 
-1. **Migration `013`** in pgAdmin + deploy
-2. **E2E payments** — Stripe Payment Link + P2P + claim-sent + vendor mark paid
-3. **Family UAT results** — fix blockers (especially mobile client portal)
-4. **Commit** any uncommitted session work
+1. **Confirm production** — Coolify auto-deploy from latest commit; spot-check branding on live site
+2. **Migration `013`** in pgAdmin if still pending
+3. **E2E payments** — Stripe Payment Link + P2P + claim-sent + vendor mark paid
+4. **Family UAT results** — fix blockers (especially mobile client portal)
 5. **Pro billing smoke test** — migrations `011`/`012`, Checkout upgrade, plan limits
 6. **Volume persistence test** — redeploy; confirm `uploads/contracts/` PDFs load
 7. **Future:** Vendor calendar personal entries (separate migration)
@@ -261,6 +260,7 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 - Monorepo: `client/`, `server/`, `database/`
 - File storage: `uploads/contracts/{projectId}/`, `uploads/quote-contracts/{quoteId}/` (legacy `uploads/deliverables/` may exist on disk but is unused)
 - **Production:** Mount persistent volume at `/app/server/uploads` (Coolify) — container disk is ephemeral without it
+- **Production deploy (Coolify):** Push/commit to tracked branch → **automatic redeploy** to production (no manual deploy step). Migrations still manual in pgAdmin before/alongside new code that needs schema changes.
 - Auth-scoped file download for portal contracts; quote contracts public via token URL
 - **Portal contract PDF iframe:** same-origin `/api/portal/contracts/:id/file?access_token=JWT` — iframes cannot send `Authorization` header; `protect` middleware accepts query token on **GET only**; helmet `frameSrc: ['self']` (no blob URLs)
 - **Signed contract view (new tab):** authenticated blob fetch + `URL.createObjectURL` (not iframe)
@@ -356,16 +356,17 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 - [x] **Client portal:** `secondaryColor` in API + types; gradient header stripe + "What's next" card via `portalBranding.ts`
 - [x] **Settings:** copy clarifies client-portal-only; `ClientPortalPreview` component
 - [x] Vendor pages/components restyled (dashboard, quotes, calendar, payments, onboarding, project/quote detail, pipeline, invoices, notification bell, starter banner)
-- [ ] User git commit when ready
+- [x] User git commit — `8567e36` "Implement dual branding for SmoothGig platform and vendor dashboards" (June 20, 2026, before bed)
+- [x] Coolify auto-redeploy on commit (production ships with push — no manual deploy)
 
 ### Family UAT
 - [x] Created **`docs/family-uat-guide.md`** — vendor + client checklists, email intro, placeholders for logins/links
 - [ ] User to fill placeholders and email wife/MIL for live testing on `plannercrm.bytesbyblinken.com`
 
 ### Pending user actions
-- [ ] Git commit pending session changes (user commits manually)
+- [ ] Confirm Coolify finished deploy of `8567e36`; smoke-test branding on production
 - [ ] Run family UAT; log feedback
-- [ ] Redeploy volume persistence test when convenient
+- [ ] Volume persistence test when convenient (uploads survive redeploy)
 
 ## Session Log (June 21, 2026 — remove deliverables)
 - [x] Removed vendor deliverables upload section and client portal **Files** tab

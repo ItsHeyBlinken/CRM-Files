@@ -56,6 +56,7 @@
 - **Order:** Run in numeric order; each file header states prerequisite migration(s)
 - **Reset/seed:** Unnumbered scripts in `database/reset/` (data only, not schema)
 - **User applies** all SQL in pgAdmin; agent writes scripts + updates `database/README.md`
+- **Code deploy:** Coolify auto-redeploy on git push — separate from migrations
 
 ### Go-live data wipe (keep schema) — maintenance required
 

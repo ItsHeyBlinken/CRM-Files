@@ -639,7 +639,8 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] Server: `Project.findClientProject()` returns `secondaryColor` from `vendor_profiles.secondary_color`
 - [x] Client + server build/typecheck pass; `portalHelpers.test.ts` updated
 - [x] Memory Bank updated (`activeContext`, `progress`, `systemPatterns`, `techContext`)
-- [ ] User git commit when ready — suggested message: `Apply platform theme to vendor dashboard; wire client portal secondary color`
+- [x] User git commit — `8567e36` "Implement dual branding for SmoothGig platform and vendor dashboards" (June 20, 2026, before bed)
+- [x] Production deploy — Coolify auto-redeploy on commit (user-configured)
 
 ### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
 - [ ] Migration `014`: `invoices.stripe_payment_link` (optional per invoice)
