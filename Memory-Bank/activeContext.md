@@ -43,31 +43,31 @@
 
 ## Current Work Focus
 
-**Session complete (June 20, 2026 — branding, user approved).** Vendor dashboard uses **SmoothGig platform theme**; client portal uses per-vendor primary + secondary colors, logo, and business name. Settings includes live client portal preview. No DB migration — `secondary_color` already on `vendor_profiles`; portal API now returns `secondaryColor`.
+**Session (July 9, 2026 — production smoke).** Migration `013` applied. Public production smoke on [plannercrm.bytesbyblinken.com](https://plannercrm.bytesbyblinken.com/) — landing, login, register, health OK; auth guard redirects `/dashboard` → login. **Authenticated smoke pending** (vendor dashboard theme, client portal, payments) — needs user login on production.
 
-**Next up:** Branding commit `8567e36` auto-deploys via Coolify on push → apply migration `013` in pgAdmin → smoke-test production → E2E payments → family UAT.
+**Prior (June 20, 2026 — branding):** Shipped and committed (`8567e36`); Coolify auto-deploy.
+
+**Next up:** User completes authenticated smoke checklist → E2E payments on production → family UAT when ready.
 
 **Deferred for later (user confirmed):** Vendor calendar **personal entries** — future migration (not `011`; plan uses separate calendar migration). Apply `MarketingAuthLayout` to `AcceptInvite.tsx`.
 
 ## When You Return — Start Here
 
-1. **Confirm Coolify deploy** finished for `8567e36` (auto on commit) — smoke-test vendor dashboard theme + client portal colors on live site
-2. **Apply migration `013`** in pgAdmin (`database/013_vendor_stripe_payment_link.sql`) if not yet applied
-3. **E2E — payments path** — vendor adds Payment Link + P2P handles → send invoice → client opens Stripe link + claim-sent → vendor marks paid
-4. **Family UAT** — `docs/family-uat-guide.md`; collect feedback on mobile client portal
-5. **Confirm migrations `011` + `012`** applied if testing Pro upgrade / plan limits
-6. **Production uploads volume** — `/app/server/uploads`; verify contract PDFs survive redeploy
-7. **Launch prep:** Register **smoothgig.com**, favicon/logo
+1. **Authenticated production smoke** — log in as vendor; confirm dashboard theme, Settings preview, client portal colors (checklist in session log July 9)
+2. **E2E payments** on production — Payment Link + P2P + claim-sent + mark paid
+3. **Family UAT** when ready — `docs/family-uat-guide.md`
+4. **Confirm migrations `011` + `012`** if testing Pro billing
+5. **Uploads volume** — contract PDFs survive redeploy
+6. **Launch prep:** Register **smoothgig.com**
 
 ## Next Session — Priority Order
 
-1. **Confirm production** — Coolify auto-deploy from latest commit; spot-check branding on live site
-2. **Migration `013`** in pgAdmin if still pending
-3. **E2E payments** — Stripe Payment Link + P2P + claim-sent + vendor mark paid
-4. **Family UAT results** — fix blockers (especially mobile client portal)
-5. **Pro billing smoke test** — migrations `011`/`012`, Checkout upgrade, plan limits
-6. **Volume persistence test** — redeploy; confirm `uploads/contracts/` PDFs load
-7. **Future:** Vendor calendar personal entries (separate migration)
+1. **Authenticated production smoke** (user login required)
+2. **E2E payments** on production
+3. **Family UAT results** — fix blockers (especially mobile client portal)
+4. **Pro billing smoke test** — migrations `011`/`012`, Checkout upgrade, plan limits
+5. **Volume persistence test** — redeploy; confirm `uploads/contracts/` PDFs load
+6. **Future:** Vendor calendar personal entries (separate migration)
 
 ## MVP Status
 
@@ -364,9 +364,23 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 - [ ] User to fill placeholders and email wife/MIL for live testing on `plannercrm.bytesbyblinken.com`
 
 ### Pending user actions
-- [ ] Confirm Coolify finished deploy of `8567e36`; smoke-test branding on production
-- [ ] Run family UAT; log feedback
-- [ ] Volume persistence test when convenient (uploads survive redeploy)
+- [ ] Authenticated smoke on production (vendor + client if accounts exist)
+- [ ] Run family UAT when ready; log feedback
+- [ ] Volume persistence test when convenient
+
+### Session: Production smoke — July 9, 2026
+- [x] Migration `013` applied (user confirmed)
+- [x] Public smoke [plannercrm.bytesbyblinken.com](https://plannercrm.bytesbyblinken.com/):
+  - Landing page loads — SmoothGig title, marketing copy, pricing, portal mockup
+  - Login page — marketing layout, gradient CTA, platform logo visible
+  - Register page — vendor signup form loads
+  - `/health` → `{"status":"OK","environment":"production"}`
+  - `/dashboard` → redirects to `/login` (auth guard OK)
+  - JS bundle `index-35f1744b.js` serves (matches branding deploy build)
+- [ ] Vendor dashboard platform theme (needs login)
+- [ ] Settings + client portal preview (needs login)
+- [ ] Client portal vendor colors (needs client login)
+- [ ] Payments settings / invoice flow (needs login)
 
 ## Session Log (June 21, 2026 — remove deliverables)
 - [x] Removed vendor deliverables upload section and client portal **Files** tab

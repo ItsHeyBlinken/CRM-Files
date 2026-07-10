@@ -15,9 +15,9 @@
 - [x] Platform Stripe keys used **only** for Pro subscription billing (`011`/`012`)
 
 ### Before next dev session
-- [ ] Apply migration **`013`** in pgAdmin
-- [ ] Commit + deploy (user commits manually)
-- [ ] E2E payments: Payment Link + P2P + claim-sent + vendor mark paid
+- [x] Apply migration **`013`** in pgAdmin (July 9, 2026)
+- [x] Public production smoke (July 9, 2026)
+- [ ] Authenticated smoke + E2E payments: Payment Link + P2P + claim-sent + vendor mark paid
 
 ### Suggested commit message
 ```
@@ -629,6 +629,12 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] `database/reset/clear_all_data_keep_schema.sql` — go-live wipe (all data, keep schema)
 - [x] Memory Bank: go-live wipe script maintenance checklist documented (`systemPatterns`, `activeContext`, `techContext`) — update script when migration `014+` adds tables
 - [ ] Optional later: icon-only favicon crop, email template logo URL
+
+### Session: Production smoke — July 9, 2026
+- [x] User applied migration `013` in pgAdmin
+- [x] Public production smoke on plannercrm.bytesbyblinken.com (landing, login, register, health, auth redirect)
+- [ ] Authenticated smoke + E2E payments (next)
+- [ ] Family UAT (when family available)
 
 ### Session: Vendor dashboard platform theme + client portal branding (June 20, 2026 — complete, user approved)
 - [x] **Vendor dashboard** — SmoothGig platform theme (`VendorDashboardShell`, `vendor-*` CSS utilities, `PlatformLogo` + business name in header Option A)
