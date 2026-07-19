@@ -3,6 +3,7 @@ import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { quoteContractPdfUpload } from '../middleware/quoteUpload'
 import { Quote } from '../models/Quote'
 import { QuoteContract } from '../models/QuoteContract'
+import { Inquiry } from '../models/Inquiry'
 import { VendorProfile } from '../models/VendorProfile'
 import { getPublicAppUrl, sendQuoteEmail } from '../services/emailService'
 import { logger } from '../utils/logger'
@@ -17,6 +18,30 @@ function parseLineItems(raw: unknown): Array<{ description: string; quantity: nu
     return JSON.parse(raw) as Array<{ description: string; quantity: number; unitPrice: number }>
   }
   return raw as Array<{ description: string; quantity: number; unitPrice: number }>
+}
+
+function validateLineItems(
+  lineItems: Array<{ description: string; quantity: number; unitPrice: number }>
+): string | null {
+  if (!Array.isArray(lineItems) || lineItems.length === 0) {
+    return 'At least one line item is required'
+  }
+  for (const item of lineItems) {
+    if (!item.description?.trim()) {
+      return 'Each line item needs a description'
+    }
+    if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+      return 'Line item quantity must be greater than zero'
+    }
+    if (typeof item.unitPrice !== 'number' || !Number.isFinite(item.unitPrice)) {
+      return 'Line item price must be a valid number'
+    }
+  }
+  const total = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+  if (total < 0) {
+    return 'Quote total cannot be negative'
+  }
+  return null
 }
 
 function parseOptionalNumber(raw: unknown): number | undefined {
@@ -96,19 +121,10 @@ router.post(
         return
       }
 
-      for (const item of lineItems) {
-        if (!item.description?.trim()) {
-          res.status(400).json({ error: 'Each line item needs a description' })
-          return
-        }
-        if (typeof item.quantity !== 'number' || item.quantity <= 0) {
-          res.status(400).json({ error: 'Line item quantity must be greater than zero' })
-          return
-        }
-        if (typeof item.unitPrice !== 'number' || item.unitPrice < 0) {
-          res.status(400).json({ error: 'Line item price cannot be negative' })
-          return
-        }
+      const lineItemError = validateLineItems(lineItems)
+      if (lineItemError) {
+        res.status(400).json({ error: lineItemError })
+        return
       }
 
       const wantsContract =
@@ -207,6 +223,93 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   } catch (error) {
     logger.error('Get quote error:', error)
     res.status(500).json({ error: 'Failed to load quote' })
+  }
+})
+
+// PUT /api/vendor/quotes/:id — edit draft/sent quotes (line items, discount, details)
+router.put('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const quoteId = Number(req.params['id'])
+    const vendorId = Number(req.user.id)
+    const {
+      title,
+      clientEmail,
+      clientName,
+      eventDate,
+      location,
+      notes,
+      lineItems: lineItemsRaw,
+    } = req.body
+
+    if (clientEmail !== undefined) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!clientEmail?.trim() || !emailRegex.test(clientEmail.trim())) {
+        res.status(400).json({ error: 'Invalid client email format' })
+        return
+      }
+    }
+
+    let lineItems: Array<{ description: string; quantity: number; unitPrice: number }> | undefined
+    if (lineItemsRaw !== undefined) {
+      try {
+        lineItems = parseLineItems(lineItemsRaw)
+      } catch {
+        res.status(400).json({ error: 'Invalid line items format' })
+        return
+      }
+      const lineItemError = validateLineItems(lineItems)
+      if (lineItemError) {
+        res.status(400).json({ error: lineItemError })
+        return
+      }
+    }
+
+    const updatePayload: {
+      title?: string
+      clientEmail?: string
+      clientName?: string | null
+      eventDate?: string | null
+      location?: string | null
+      notes?: string | null
+      lineItems?: Array<{ description: string; quantity: number; unitPrice: number }>
+    } = {}
+    if (title !== undefined) updatePayload.title = title
+    if (clientEmail !== undefined) updatePayload.clientEmail = clientEmail
+    if (clientName !== undefined) updatePayload.clientName = clientName
+    if (eventDate !== undefined) updatePayload.eventDate = eventDate
+    if (location !== undefined) updatePayload.location = location
+    if (notes !== undefined) updatePayload.notes = notes
+    if (lineItems !== undefined) updatePayload.lineItems = lineItems
+
+    const quote = await Quote.update(quoteId, vendorId, updatePayload)
+    if (!quote) {
+      res.status(404).json({ error: 'Quote not found' })
+      return
+    }
+
+    res.json({
+      quote,
+      quotePath: `/quote/${quote.token}`,
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === 'QUOTE_NOT_EDITABLE') {
+        res.status(400).json({
+          error: 'This quote can no longer be edited. Create a new quote if you need changes.',
+        })
+        return
+      }
+      if (error.message === 'LINE_ITEMS_REQUIRED') {
+        res.status(400).json({ error: 'At least one line item is required' })
+        return
+      }
+      if (error.message === 'QUOTE_TOTAL_NEGATIVE') {
+        res.status(400).json({ error: 'Quote total cannot be negative' })
+        return
+      }
+    }
+    logger.error('Update quote error:', error)
+    res.status(500).json({ error: 'Failed to update quote' })
   }
 })
 
@@ -320,6 +423,7 @@ router.post('/:id/convert-to-project', async (req: AuthRequest, res: Response): 
     const quoteId = Number(req.params['id'])
 
     const result = await Quote.convertToProject(quoteId, Number(req.user.id))
+    await Inquiry.markBookedByQuoteId(quoteId, Number(req.user.id))
 
     res.status(201).json({
       quote: result.quote,

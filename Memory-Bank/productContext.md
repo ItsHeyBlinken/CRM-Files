@@ -6,8 +6,10 @@
 
 **Streamline vendor business processes while keeping the client experience simple and easy to use.**
 
-- **Vendor dashboard** = where the product earns its keep: quotes, projects, clients, money, files, status — wired together so vendors spend less time in email, spreadsheets, and disconnected tools.
-- **Client portal** = thin, branded window into *their* project with that vendor — never a second CRM.
+- **Vendor dashboard** = where the product earns its keep: inquiries, quotes, projects, clients, money, status — wired together so vendors spend less time in email, spreadsheets, and disconnected tools.
+- **Client portal** = thin, branded window into *their* journey with that vendor (pre-booking next steps through delivery) — never a second CRM.
+
+**Client Flow north star:** Inquiry → Quote → Accept → Project/Portal → Delivery.
 
 When trade-offs arise, **default to vendor workflow efficiency** on the dashboard and **ruthless simplicity** on the portal.
 

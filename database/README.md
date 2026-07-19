@@ -16,7 +16,7 @@ NNN_short_descriptive_name.sql
 
 | Rule | Detail |
 |------|--------|
-| **Next number** | `014` (then `015`, `016`, …) |
+| **Next number** | `017` (then `018`, …) |
 | **Prefix** | Zero-padded: `008`, not `8` |
 | **Suffix** | Short snake_case description of what the migration does |
 | **Header** | Include `Migration NNN — run AFTER NNN_previous_file.sql` |
@@ -42,6 +42,9 @@ Example for the next migration: `009_schema_vendor_subscriptions.sql`
 | 011 | **`011_vendor_plan.sql`** | `vendor_profiles.plan` column (`starter` \| `pro`) for free-tier gating |
 | 012 | **`012_vendor_stripe_billing.sql`** | Stripe customer/subscription columns on `vendor_profiles` |
 | 013 | **`013_vendor_stripe_payment_link.sql`** | Vendor-hosted Stripe Payment Link URL (no platform Connect) |
+| 014 | **`014_inquiries.sql`** | Vendor inquiries inbox (Client Flow left side) |
+| 015 | **`015_quote_packages.sql`** | Reusable quote package templates (line items) |
+| 016 | **`016_quote_line_item_discount.sql`** | Allow negative quote line prices (quote-time discounts) |
 
 ### Dev reset & seed (`reset/`)
 
@@ -66,7 +69,7 @@ Test logins are documented in `Memory-Bank/techContext.md`.
 
 ### Current tables
 
-`users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`, `vendor_notifications`
+`users`, `vendor_profiles`, `vendor_payment_settings`, `project_payment_settings`, `projects`, `project_clients`, `project_invites`, `milestones`, `contracts`, `invoices`, `user_sessions`, `quotes`, `quote_line_items`, `quote_contracts`, `vendor_notifications`, `inquiries`, `quote_packages`, `quote_package_line_items`
 
 ---
 

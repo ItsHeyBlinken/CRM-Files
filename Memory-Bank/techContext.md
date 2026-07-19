@@ -244,7 +244,7 @@ npm run start        # Start production server
 
 ### Database Setup
 
-**Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` (next: **`014`**). The agent provides scripts and instructions — never executes migrations against the database.
+**Migrations are manual.** Run `database/001_` through the latest numbered file in order in pgAdmin (see `database/README.md`). New migrations use `NNN_short_name.sql` (next: **`017`**). Latest: `014_inquiries.sql`, `015_quote_packages.sql`, `016_quote_line_item_discount.sql`. The agent provides scripts and instructions — never executes migrations against the database.
 
 **After each new migration that adds tables:** update `database/reset/clear_all_data_keep_schema.sql` per Memory Bank (`systemPatterns.md` → Go-live data wipe).
 

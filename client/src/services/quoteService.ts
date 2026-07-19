@@ -1,6 +1,6 @@
 import api from './api'
 import axios from 'axios'
-import type { CreateQuoteInput, PublicQuote, Quote } from '../types/quote'
+import type { CreateQuoteInput, PublicQuote, Quote, QuoteLineItemInput } from '../types/quote'
 
 export async function fetchVendorQuotes(): Promise<Quote[]> {
   const response = await api.get('/vendor/quotes')
@@ -40,6 +40,22 @@ export async function createQuote(input: CreateQuoteInput): Promise<QuoteDetailR
   const { attachContract: _attachContract, contractTitle: _contractTitle, contractFile: _contractFile, ...jsonBody } =
     input
   const response = await api.post('/vendor/quotes', jsonBody)
+  return response.data
+}
+
+export async function updateQuote(
+  quoteId: number,
+  input: {
+    title?: string
+    clientEmail?: string
+    clientName?: string | null
+    eventDate?: string | null
+    location?: string | null
+    notes?: string | null
+    lineItems?: QuoteLineItemInput[]
+  }
+): Promise<QuoteDetailResult> {
+  const response = await api.put(`/vendor/quotes/${quoteId}`, input)
   return response.data
 }
 
@@ -142,9 +158,22 @@ export async function openVendorQuoteContract(quoteId: number): Promise<void> {
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
-export async function acceptQuote(token: string): Promise<PublicQuote> {
+export async function acceptQuote(
+  token: string
+): Promise<{
+  quote: PublicQuote
+  autoConvert?: {
+    converted: boolean
+    projectId: number | null
+    invitePath: string | null
+    reason?: string
+  }
+}> {
   const response = await api.post(`/quotes/${token}/accept`)
-  return response.data.quote
+  return {
+    quote: response.data.quote,
+    autoConvert: response.data.autoConvert,
+  }
 }
 
 export async function declineQuote(token: string): Promise<PublicQuote> {

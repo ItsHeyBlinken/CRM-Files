@@ -4,7 +4,10 @@ export const APP_NAME = 'SmoothGig'
 /** Visual wordmark split — use when a text wordmark is needed (e.g. vendor shell fallback). */
 export const APP_NAME_PARTS = ['Smooth', 'Gig'] as const
 
-export const APP_TAGLINE = 'Book gigs. Grow business. Deliver smoothly.'
+export const APP_TAGLINE = 'From first inquiry to final delivery.'
+
+/** Secondary marketing line (logo / footer still use delivery-focused copy). */
+export const APP_TAGLINE_SHORT = 'Book gigs. Grow business. Deliver smoothly.'
 
 export const APP_DOMAIN = 'smoothgig.com'
 

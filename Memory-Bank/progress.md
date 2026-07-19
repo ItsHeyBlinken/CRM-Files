@@ -2,6 +2,39 @@
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
 
+## Handoff — July 19, 2026 (quote edit + discount polish)
+
+- [x] Budget no longer locked as quote price; Edit quote on detail page
+- [x] Quote-time % / $ discount (not on package templates)
+- [x] Migration `016_quote_line_item_discount.sql`
+- [ ] User applies `016` (and `014`/`015` if not yet) in pgAdmin
+
+---
+
+## Handoff — July 19, 2026 (SmoothGig Client Flow — Phases 0–4 complete in code)
+
+**Shipped (code ready; migrations not yet applied by user):**
+- [x] Phase 0 — Positioning: inquiry → delivery copy on landing + Memory Bank
+- [x] Phase 1 — Inquiries inbox (`014_inquiries.sql`, vendor API + `/dashboard/inquiries`)
+- [x] Phase 2 — Auto-convert on accept (+ contract sign): project, deposit invoice, portal invite, inquiry booked
+- [x] Phase 3 — Portal journey stages (“Getting booked” / “Your event”)
+- [x] Phase 4 — Quote packages (`015_quote_packages.sql`, Settings + create-from-package)
+- [x] `clear_all_data_keep_schema.sql` updated for inquiries + packages tables
+- [x] Client + server TypeScript clean
+
+### Before next session
+- [ ] Apply **`014_inquiries.sql`** then **`015_quote_packages.sql`** in pgAdmin
+- [ ] Commit + deploy; smoke: Inquiries → quote → accept/sign → project/invite/deposit
+- [ ] Authenticated smoke + E2E payments (still open)
+- [ ] Family UAT when ready
+
+### Suggested commit message
+```
+Add SmoothGig Client Flow: inquiries, auto-convert on accept, portal journey, quote packages.
+```
+
+---
+
 ## Handoff — June 20, 2026 (night — session end)
 
 **Stripe client pay = Path B (vendor-hosted Payment Link).** User confirmed SmoothGig should not use Stripe Connect for client invoices.
@@ -648,8 +681,17 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] User git commit — `8567e36` "Implement dual branding for SmoothGig platform and vendor dashboards" (June 20, 2026, before bed)
 - [x] Production deploy — Coolify auto-redeploy on commit (user-configured)
 
+### Session: SmoothGig Client Flow Phases 0–4 (July 19, 2026)
+- [x] Phase 0 docs + landing
+- [x] `014_inquiries.sql` + Inquiry model/routes + VendorInquiries UI
+- [x] Auto-convert service wired to quote accept / contract sign
+- [x] Portal journey stage helper on ClientPortal Home
+- [x] `015_quote_packages.sql` + Settings packages + apply on create
+- [x] Server TS fixes (`exactOptionalPropertyTypes`, `getPublicAppUrl(path)`)
+- [ ] User applies `014`/`015` in pgAdmin + commit/deploy
+
 ### Planned (user approved — implement later): Path B+ per-invoice Stripe pay URL
-- [ ] Migration `014`: `invoices.stripe_payment_link` (optional per invoice)
+- [ ] Migration `017+`: `invoices.stripe_payment_link` (optional per invoice) — **014–016 used by Client Flow / discounts**
 - [ ] Vendor UI: paste URL on invoice create/send; helper copy amount + Stripe Dashboard link
 - [ ] Client portal: pay button prefers invoice URL, fallback to vendor default from settings
 - [ ] **No Connect** — vendor still creates Payment Link/Invoice in their Stripe Dashboard

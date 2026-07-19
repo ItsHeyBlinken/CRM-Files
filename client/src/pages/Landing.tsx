@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import PlatformLogo from '../components/branding/PlatformLogo'
-import { APP_TAGLINE } from '../constants/branding'
 import { useAuth } from '../contexts/AuthContext'
 import { getHomePathForRole } from '../utils/roleRedirect'
 
@@ -168,12 +167,12 @@ const Landing: React.FC = () => {
                   For photographers, DJs, planners & event vendors
                 </p>
                 <h1 className="mt-6 text-4xl sm:text-5xl lg:text-[3.25rem] font-bold tracking-tight text-slate-900 leading-[1.08]">
-                  Run your gigs without the{' '}
-                  <span className="landing-gradient-text">spreadsheet chaos</span>
+                  From first inquiry to{' '}
+                  <span className="landing-gradient-text">final delivery</span>
                 </h1>
                 <p className="mt-6 text-lg text-slate-600 leading-relaxed">
-                  {APP_TAGLINE}. Quotes, contracts, invoices, and a branded client portal — so you
-                  spend less time in email and more time doing the work you love.
+                  Turn inquiries into booked clients — then deliver an experience they&apos;ll
+                  remember. Quotes, contracts, invoices, and a branded client portal in one place.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <Link

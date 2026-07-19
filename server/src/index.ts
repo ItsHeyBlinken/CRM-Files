@@ -54,6 +54,8 @@ import vendorDashboardRoutes from './routes/vendorDashboard'
 import vendorNotificationRoutes from './routes/vendorNotifications'
 import vendorProfileRoutes from './routes/vendorProfile'
 import vendorPlanRoutes from './routes/vendorPlan'
+import vendorInquiryRoutes from './routes/vendorInquiries'
+import vendorQuotePackageRoutes from './routes/vendorQuotePackages'
 import quoteRoutes from './routes/quotes'
 import portalRoutes from './routes/portal'
 import stripeWebhookRoutes from './routes/stripeWebhook'
@@ -250,6 +252,8 @@ function setupMiddleware() {
   app.use('/api/vendor/notifications', vendorNotificationRoutes)
   app.use('/api/vendor/profile', vendorProfileRoutes)
   app.use('/api/vendor/plan', vendorPlanRoutes)
+  app.use('/api/vendor/inquiries', vendorInquiryRoutes)
+  app.use('/api/vendor/quote-packages', vendorQuotePackageRoutes)
   app.use('/api/quotes', quoteRoutes)
   app.use('/api/portal', portalRoutes)
 

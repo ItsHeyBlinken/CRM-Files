@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import ClientPortalPreview from '../components/vendor/ClientPortalPreview'
+import QuotePackagesSettings from '../components/vendor/QuotePackagesSettings'
 import { VendorInlineLoader } from '../components/vendor/VendorDashboardShell'
 import { useVendorBranding } from '../components/vendor/VendorBrandingProvider'
 import {
@@ -144,6 +145,8 @@ const VendorSettings: React.FC = () => {
           primaryColor={form.primaryColor}
           secondaryColor={form.secondaryColor}
         />
+
+        <QuotePackagesSettings />
 
         <form onSubmit={handleSave} className="space-y-6">
           <section className="vendor-card p-6 space-y-4">

@@ -54,6 +54,21 @@ export async function notifyQuoteContractSigned(input: {
   })
 }
 
+export async function notifyProjectReadyFromQuote(input: {
+  vendorId: number
+  projectId: number
+  quoteTitle: string
+  clientName: string | null
+}): Promise<void> {
+  await safeCreate({
+    vendorId: input.vendorId,
+    type: 'quote_accepted',
+    title: 'Client accepted — project ready',
+    body: `${input.clientName ?? 'Your client'} completed booking steps for "${input.quoteTitle}". Project, deposit invoice, and portal invite are ready.`,
+    linkPath: `/dashboard/projects/${input.projectId}`,
+  })
+}
+
 export async function notifyClientJoined(input: {
   vendorId: number
   projectId: number

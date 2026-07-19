@@ -8,15 +8,25 @@ import PipelineStepper from '../components/vendor/PipelineStepper'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
 import { VendorInlineLoader } from '../components/vendor/VendorDashboardShell'
 import StarterPlanBanner from '../components/vendor/StarterPlanBanner'
-import { convertQuoteToProject, fetchVendorQuote, openVendorQuoteContract, uploadQuoteContract } from '../services/quoteService'
+import {
+  convertQuoteToProject,
+  fetchVendorQuote,
+  openVendorQuoteContract,
+  updateQuote,
+  uploadQuoteContract,
+} from '../services/quoteService'
 import { fetchVendorPlanUsage } from '../services/planService'
 import { sendQuoteEmail } from '../services/vendorExtrasService'
 import { getApiErrorMessage } from '../utils/apiErrors'
 import type { VendorPlanUsage } from '../types/plan'
-import type { Quote } from '../types/quote'
+import type { Quote, QuoteLineItemInput } from '../types/quote'
 import { formatUsDate } from '../utils/calendarHelpers'
 import { formatQuoteMoney } from '../utils/formatQuoteMoney'
 import { getQuotePipelineSteps } from '../utils/quotePipeline'
+import {
+  applyQuoteDiscount,
+  type QuoteDiscountType,
+} from '../utils/quoteDiscount'
 import toast from 'react-hot-toast'
 
 const statusLabel: Record<Quote['status'], string> = {
@@ -27,6 +37,12 @@ const statusLabel: Record<Quote['status'], string> = {
   expired: 'Expired',
   converted: 'Converted to project',
 }
+
+const emptyLineItem = (): QuoteLineItemInput => ({
+  description: '',
+  quantity: 1,
+  unitPrice: 0,
+})
 
 const VendorQuoteDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -42,6 +58,13 @@ const VendorQuoteDetail: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
   const [contractUploadTitle, setContractUploadTitle] = useState('Service agreement')
   const [contractUploadFile, setContractUploadFile] = useState<File | null>(null)
+
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editNotes, setEditNotes] = useState('')
+  const [editLineItems, setEditLineItems] = useState<QuoteLineItemInput[]>([emptyLineItem()])
+  const [discountType, setDiscountType] = useState<QuoteDiscountType>('percent')
+  const [discountValue, setDiscountValue] = useState('')
 
   const loadQuote = useCallback(async () => {
     if (!quoteId) return
@@ -61,6 +84,79 @@ const VendorQuoteDetail: React.FC = () => {
   useEffect(() => {
     loadQuote()
   }, [loadQuote])
+
+  const canEditQuote = quote?.status === 'draft' || quote?.status === 'sent'
+
+  const startEditing = () => {
+    if (!quote) return
+    setEditTitle(quote.title)
+    setEditNotes(quote.notes ?? '')
+    setEditLineItems(
+      quote.lineItems.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+      }))
+    )
+    setDiscountValue('')
+    setDiscountType('percent')
+    setEditing(true)
+  }
+
+  const updateEditLineItem = (
+    index: number,
+    field: keyof QuoteLineItemInput,
+    value: string | number
+  ) => {
+    setEditLineItems((prev) => {
+      const next = [...prev]
+      const current = next[index]
+      if (!current) return prev
+      next[index] = { ...current, [field]: value }
+      return next
+    })
+  }
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!quoteId || !editTitle.trim()) return
+
+    let lineItems = editLineItems
+      .filter((item) => item.description.trim())
+      .map((item) => ({
+        description: item.description.trim(),
+        quantity: Number(item.quantity),
+        unitPrice: Number(item.unitPrice),
+      }))
+
+    if (lineItems.length === 0) {
+      setError('Add at least one line item')
+      return
+    }
+
+    const discountNum = Number.parseFloat(discountValue)
+    if (discountValue.trim() !== '' && Number.isFinite(discountNum) && discountNum > 0) {
+      lineItems = applyQuoteDiscount(lineItems, discountType, discountNum)
+    }
+
+    setSubmitting(true)
+    setError('')
+    try {
+      const result = await updateQuote(quoteId, {
+        title: editTitle.trim(),
+        notes: editNotes,
+        lineItems,
+      })
+      setQuote(result.quote)
+      setQuotePath(result.quotePath)
+      setEditing(false)
+      toast.success('Quote updated')
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to update quote'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const getQuoteFullUrl = (path: string) => `${window.location.origin}${path}`
 
@@ -184,7 +280,14 @@ const VendorQuoteDetail: React.FC = () => {
             </Link>
             <h1 className="text-xl font-semibold text-slate-900 mt-1">{quote.title}</h1>
           </div>
-          <SaveQuotePdfButton quoteTitle={quote.title} />
+          <div className="flex flex-wrap gap-2">
+            {canEditQuote && !editing && (
+              <button type="button" onClick={startEditing} className="vendor-btn-outline">
+                Edit quote
+              </button>
+            )}
+            <SaveQuotePdfButton quoteTitle={quote.title} />
+          </div>
         </div>
         <StarterPlanBanner usage={planUsage} focus="projects" />
 
@@ -200,21 +303,165 @@ const VendorQuoteDetail: React.FC = () => {
           <PipelineStepper steps={getQuotePipelineSteps(quote)} title="Quote progress" />
         </div>
 
-        <QuoteDocument
-          quote={{
-            title: quote.title,
-            clientName: quote.clientName,
-            clientEmail: quote.clientEmail,
-            eventDate: quote.eventDate,
-            location: quote.location,
-            notes: quote.notes,
-            currency: quote.currency,
-            totalAmount: quote.totalAmount,
-            lineItems: quote.lineItems,
-            expiresAt: quote.expiresAt,
-            statusLabel: statusLabel[quote.status],
-          }}
-        />
+        {editing ? (
+          <form onSubmit={handleSaveEdit} className="no-print vendor-card p-6 space-y-4">
+            <h2 className="font-medium text-slate-900">Edit quote</h2>
+            <p className="text-sm text-slate-600">
+              Set your prices here. Client budget on an inquiry is reference only — it does not lock
+              this total.
+            </p>
+            <input
+              required
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Quote title"
+            />
+            <textarea
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Notes for your client (optional)"
+            />
+
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2">
+              <p className="text-xs font-medium text-slate-700">Apply discount (optional)</p>
+              <div className="flex flex-wrap gap-2 items-end">
+                <label className="text-xs text-slate-600">
+                  Type
+                  <select
+                    value={discountType}
+                    onChange={(e) => setDiscountType(e.target.value as QuoteDiscountType)}
+                    className="mt-1 block rounded-md border border-gray-300 px-2 py-1.5 text-sm bg-white"
+                  >
+                    <option value="percent">Percent (%)</option>
+                    <option value="flat">Flat ($)</option>
+                  </select>
+                </label>
+                <label className="text-xs text-slate-600">
+                  Amount
+                  <input
+                    type="number"
+                    min={0}
+                    step={discountType === 'percent' ? 1 : 0.01}
+                    placeholder={discountType === 'percent' ? '10' : '100'}
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="mt-1 block w-28 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-slate-500">
+                Adds or replaces a Discount line when you save. Leave blank to keep line items as
+                shown.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-slate-900">Line items</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditLineItems((prev) => [...prev, emptyLineItem()])}
+                  className="text-sm vendor-link"
+                >
+                  + Add item
+                </button>
+              </div>
+              {editLineItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="grid gap-2 sm:grid-cols-12 items-end border-b border-gray-100 pb-3"
+                >
+                  <div className="sm:col-span-6">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <input
+                      value={item.description}
+                      onChange={(e) => updateEditLineItem(index, 'description', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Qty</label>
+                    <input
+                      type="number"
+                      min={0.01}
+                      step={0.01}
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateEditLineItem(index, 'quantity', parseFloat(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Unit price
+                    </label>
+                    <input
+                      type="number"
+                      step={0.01}
+                      value={item.unitPrice}
+                      onChange={(e) =>
+                        updateEditLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    />
+                  </div>
+                  {editLineItems.length > 1 && (
+                    <div className="sm:col-span-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditLineItems((prev) => prev.filter((_, i) => i !== index))
+                        }
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button type="submit" disabled={submitting} className="vendor-btn-primary">
+                {submitting ? 'Saving...' : 'Save changes'}
+              </button>
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={() => setEditing(false)}
+                className="vendor-btn-outline"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <QuoteDocument
+            quote={{
+              title: quote.title,
+              clientName: quote.clientName,
+              clientEmail: quote.clientEmail,
+              eventDate: quote.eventDate,
+              location: quote.location,
+              notes: quote.notes,
+              currency: quote.currency,
+              totalAmount: quote.totalAmount,
+              lineItems: quote.lineItems,
+              expiresAt: quote.expiresAt,
+              statusLabel: statusLabel[quote.status],
+            }}
+          />
+        )}
 
         {quote.contract && (
           <section className="no-print vendor-card p-6 space-y-3">

@@ -2,34 +2,37 @@
 -- SmoothGig: Clear ALL application data — keep schema
 -- =====================================================
 -- Use when preparing a database for production go-live after
--- testing: schema stays as-is (migrations 001–013 already applied);
+-- testing: schema stays as-is (migrations 001–015 already applied);
 -- every row in application tables is removed.
 --
 -- This script does NOT:
---   • Run or re-run migrations 001–013
+--   • Run or re-run migrations 001–015
 --   • DROP or ALTER tables, columns, indexes, or triggers
 --   • Delete files on disk (server/uploads/ — contracts, logos, etc.)
 --
 -- This script DOES:
 --   • Remove ALL users (including vendor@test.com / client@test.com)
---   • Remove ALL projects, quotes, invoices, contracts, notifications, etc.
+--   • Remove ALL projects, quotes, invoices, contracts, notifications, inquiries, packages, etc.
 --   • Reset ID sequences so new IDs start from 1
 --   • Clear user_sessions if that table exists (express-session store)
 --
 -- BEFORE running on production:
 --   1. Back up the database (pgAdmin → Backup).
---   2. Confirm migrations 001–013 are applied.
+--   2. Confirm migrations 001–015 are applied.
 --   3. Optionally clear or replace server/uploads/ on the host.
 --
 -- Run in pgAdmin Query Tool on the target database.
 --
--- MAINTENANCE: When migration 014+ adds application tables, add them to
+-- MAINTENANCE: When migration 016+ adds application tables, add them to
 -- TRUNCATE + verification below. Checklist: Memory-Bank/systemPatterns.md
 -- =====================================================
 
 BEGIN;
 
 TRUNCATE TABLE
+  quote_package_line_items,
+  quote_packages,
+  inquiries,
   quote_line_items,
   quote_contracts,
   quotes,
@@ -77,5 +80,8 @@ UNION ALL SELECT 'invoices', COUNT(*)::bigint FROM invoices
 UNION ALL SELECT 'quotes', COUNT(*)::bigint FROM quotes
 UNION ALL SELECT 'quote_line_items', COUNT(*)::bigint FROM quote_line_items
 UNION ALL SELECT 'quote_contracts', COUNT(*)::bigint FROM quote_contracts
+UNION ALL SELECT 'inquiries', COUNT(*)::bigint FROM inquiries
+UNION ALL SELECT 'quote_packages', COUNT(*)::bigint FROM quote_packages
+UNION ALL SELECT 'quote_package_line_items', COUNT(*)::bigint FROM quote_package_line_items
 UNION ALL SELECT 'vendor_notifications', COUNT(*)::bigint FROM vendor_notifications
 ORDER BY table_name;

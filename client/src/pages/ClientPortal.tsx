@@ -18,6 +18,7 @@ import {
   getInvoiceDisplayLabel,
   getInvoiceStatusLabel,
   getNextAction,
+  getPortalJourneyStage,
   getStatusLabel,
   portalTabLabel,
 } from '../utils/portalHelpers'
@@ -182,6 +183,7 @@ const ClientPortal: React.FC = () => {
   const accent = data?.primaryColor || '#2563eb'
   const secondaryAccent = data?.secondaryColor || '#1e40af'
   const nextAction = data ? getNextAction(data) : null
+  const journeyStage = data ? getPortalJourneyStage(data) : null
 
   const tabs: PortalTab[] = ['home', 'documents', 'payments']
 
@@ -190,6 +192,15 @@ const ClientPortal: React.FC = () => {
 
     return (
       <div className="space-y-5">
+        {journeyStage && (
+          <section className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {journeyStage.label}
+            </p>
+            <p className="mt-1 text-sm text-slate-700">{journeyStage.description}</p>
+          </section>
+        )}
+
         {reportedInvoiceTitle && (
           <section className="rounded-2xl bg-amber-50 border border-amber-200 p-5 shadow-sm">
             <p className="font-medium text-amber-900">Payment reported</p>

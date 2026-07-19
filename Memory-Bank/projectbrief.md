@@ -58,11 +58,17 @@ Asymmetric by design: depth and capability on the vendor dashboard; clarity and 
 3. Vendor sets branding, adds milestone, uploads contract PDF, creates invoice
 4. Client sees project status, acknowledges contract, views invoice, downloads deliverables
 
-## Approach: Full Vendor Lifecycle (Planned)
+## Approach: Full Vendor Lifecycle (Client Flow)
 
-**Phase 1 (MVP — largely complete):** Post-booking project hub + client portal.
+**MVP (largely complete):** Post-booking project hub + client portal + quoting.
 
-**Phase 2 (Next):** Pre-booking **quoting tool** — inquiry → quote → email → client accept → create project → existing portal flow. See `productContext.md` and `activeContext.md`.
+**Next major release — SmoothGig Client Flow** (see `detour_direction.md`):
+1. **Inquiries** — capture prospects (New → Contacted → Quote Sent → Booked → Lost)
+2. **Quote** — existing builder; packages/templates speed create
+3. **Accept wow** — accept (+ sign if contract) auto-creates project, deposit invoice, portal invite
+4. **Portal journey** — same portal; stages for getting booked vs delivery
+
+Positioning: *From first inquiry to final delivery* — not “another client portal.”
 
 ## Approach: Greenfield Product, Reuse Infrastructure
 The previous Event Planner CRM direction is deprecated. Keep auth patterns, build/deploy pipeline, and stack. Replace planner-centric schema, CRM boilerplate pages, and entity models with the vendor/client portal model.

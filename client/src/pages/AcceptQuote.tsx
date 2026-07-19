@@ -10,6 +10,8 @@ import {
   QUOTE_ACCEPTED_NEXT_STEPS,
   QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE,
   QUOTE_ACCEPTED_NO_CONTRACT_NEXT_STEPS,
+  QUOTE_AUTO_CONVERTED_HEADLINE,
+  QUOTE_AUTO_CONVERTED_STEPS,
   QUOTE_CONTRACT_VIEW_ONLY_NOTE,
 } from '../constants/clientAgreement'
 import { acceptQuote, declineQuote, fetchPublicQuote } from '../services/quoteService'
@@ -20,10 +22,11 @@ const statusMessage: Record<PublicQuote['status'], string> = {
   draft: 'This quote is not ready yet.',
   sent: '',
   accepted:
-    'You accepted this quote. Review and sign the contract below when you are ready, then watch your email for a deposit invoice and client portal invite.',
+    'You accepted this quote. If a contract is included, sign it below. Your project, deposit invoice, and portal invite are prepared automatically when ready.',
   declined: 'You declined this quote.',
   expired: 'This quote has expired.',
-  converted: 'This quote was accepted and your vendor has started your project.',
+  converted:
+    'Your project has started. Check your email for a portal invite and deposit invoice.',
 }
 
 const statusLabel: Record<PublicQuote['status'], string> = {
@@ -41,6 +44,7 @@ const AcceptQuote: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [autoConverted, setAutoConverted] = useState(false)
 
   const loadQuote = useCallback(async () => {
     if (!token) {
@@ -72,9 +76,16 @@ const AcceptQuote: React.FC = () => {
     setSubmitting(true)
     setError('')
     try {
-      const updated =
-        decision === 'accept' ? await acceptQuote(token) : await declineQuote(token)
-      setQuote(updated)
+      if (decision === 'accept') {
+        const result = await acceptQuote(token)
+        setQuote(result.quote)
+        if (result.autoConvert?.converted) {
+          setAutoConverted(true)
+        }
+      } else {
+        const updated = await declineQuote(token)
+        setQuote(updated)
+      }
     } catch (err: unknown) {
       const message =
         err && typeof err === 'object' && 'response' in err
@@ -200,6 +211,14 @@ const AcceptQuote: React.FC = () => {
 
         {showDepositNotice && <DepositPendingNotice />}
 
+        {(autoConverted || quote.status === 'converted') && !showContractSign && (
+          <QuoteNextStepsNotice
+            headline={QUOTE_AUTO_CONVERTED_HEADLINE}
+            steps={QUOTE_AUTO_CONVERTED_STEPS}
+            tone="indigo"
+          />
+        )}
+
         {error && (
           <div className="no-print rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>
         )}
@@ -237,10 +256,18 @@ const AcceptQuote: React.FC = () => {
           )
         )}
 
-        {quote.status === 'accepted' && !contract && (
+        {quote.status === 'accepted' && !contract && !autoConverted && (
           <QuoteNextStepsNotice
             headline={QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE}
             steps={QUOTE_ACCEPTED_NO_CONTRACT_NEXT_STEPS}
+            tone="indigo"
+          />
+        )}
+
+        {quote.status === 'accepted' && !contract && autoConverted && (
+          <QuoteNextStepsNotice
+            headline={QUOTE_AUTO_CONVERTED_HEADLINE}
+            steps={QUOTE_AUTO_CONVERTED_STEPS}
             tone="indigo"
           />
         )}

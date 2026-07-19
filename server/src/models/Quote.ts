@@ -355,6 +355,101 @@ export class QuoteModel {
     }
   }
 
+  /** Update quote fields + replace line items. Allowed for draft/sent only. */
+  static async update(
+    id: number,
+    vendorId: number,
+    input: {
+      title?: string
+      clientEmail?: string
+      clientName?: string | null
+      eventDate?: string | null
+      location?: string | null
+      notes?: string | null
+      lineItems?: Array<{ description: string; quantity: number; unitPrice: number }>
+    }
+  ): Promise<IQuote | null> {
+    const existing = await this.findByIdForVendor(id, vendorId)
+    if (!existing) {
+      return null
+    }
+    if (existing.status !== 'draft' && existing.status !== 'sent') {
+      throw new Error('QUOTE_NOT_EDITABLE')
+    }
+
+    if (input.lineItems !== undefined) {
+      if (!input.lineItems.length) {
+        throw new Error('LINE_ITEMS_REQUIRED')
+      }
+      const total = input.lineItems.reduce(
+        (sum, item) => sum + item.quantity * item.unitPrice,
+        0
+      )
+      if (total < 0) {
+        throw new Error('QUOTE_TOTAL_NEGATIVE')
+      }
+    }
+
+    const pool = getPool()
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
+
+      await client.query(
+        `
+        UPDATE quotes SET
+          title = COALESCE($3, title),
+          client_email = COALESCE($4, client_email),
+          client_name = CASE WHEN $5::boolean THEN $6 ELSE client_name END,
+          wedding_date = CASE WHEN $7::boolean THEN $8::date ELSE wedding_date END,
+          location = CASE WHEN $9::boolean THEN $10 ELSE location END,
+          notes = CASE WHEN $11::boolean THEN $12 ELSE notes END,
+          updated_at = NOW()
+        WHERE id = $1 AND vendor_id = $2
+        `,
+        [
+          id,
+          vendorId,
+          input.title?.trim() ?? null,
+          input.clientEmail?.toLowerCase().trim() ?? null,
+          input.clientName !== undefined,
+          input.clientName === undefined ? null : input.clientName?.trim() || null,
+          input.eventDate !== undefined,
+          input.eventDate === undefined || input.eventDate === null || input.eventDate === ''
+            ? null
+            : formatDateOnly(input.eventDate),
+          input.location !== undefined,
+          input.location === undefined ? null : input.location?.trim() || null,
+          input.notes !== undefined,
+          input.notes === undefined ? null : input.notes?.trim() || null,
+        ]
+      )
+
+      if (input.lineItems) {
+        await client.query(`DELETE FROM quote_line_items WHERE quote_id = $1`, [id])
+        for (let i = 0; i < input.lineItems.length; i++) {
+          const item = input.lineItems[i]
+          if (!item) continue
+          await client.query(
+            `
+            INSERT INTO quote_line_items (quote_id, description, quantity, unit_price, sort_order)
+            VALUES ($1, $2, $3, $4, $5)
+            `,
+            [id, item.description.trim(), item.quantity, item.unitPrice, i + 1]
+          )
+        }
+      }
+
+      await client.query('COMMIT')
+      return this.findByIdForVendor(id, vendorId)
+    } catch (error) {
+      await client.query('ROLLBACK')
+      throw error
+    } finally {
+      client.release()
+    }
+  }
+
   static async respondToQuote(
     token: string,
     decision: 'accepted' | 'declined'
@@ -380,6 +475,47 @@ export class QuoteModel {
     }
 
     return this.findByToken(token)
+  }
+
+  /** Vendor withdrew / opportunity lost — close open quotes so they leave “Awaiting response”. */
+  static async declineOpenForVendor(quoteId: number, vendorId: number): Promise<boolean> {
+    const pool = getPool()
+    const result = await pool.query(
+      `
+      UPDATE quotes
+      SET
+        status = 'declined',
+        responded_at = COALESCE(responded_at, NOW()),
+        updated_at = NOW()
+      WHERE id = $1
+        AND vendor_id = $2
+        AND status IN ('sent', 'draft')
+      `,
+      [quoteId, vendorId]
+    )
+    return (result.rowCount ?? 0) > 0
+  }
+
+  /** Decline any sent/draft quotes still linked to lost inquiries for this vendor (incl. backfill). */
+  static async declineOpenLinkedToLostInquiries(vendorId: number): Promise<number> {
+    const pool = getPool()
+    const result = await pool.query(
+      `
+      UPDATE quotes q
+      SET
+        status = 'declined',
+        responded_at = COALESCE(responded_at, NOW()),
+        updated_at = NOW()
+      FROM inquiries i
+      WHERE i.quote_id = q.id
+        AND i.vendor_id = $1
+        AND i.status = 'lost'
+        AND q.vendor_id = $1
+        AND q.status IN ('sent', 'draft')
+      `,
+      [vendorId]
+    )
+    return result.rowCount ?? 0
   }
 
   static async deleteForVendor(id: number, vendorId: number): Promise<void> {

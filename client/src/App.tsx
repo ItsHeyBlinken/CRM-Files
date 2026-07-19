@@ -11,6 +11,7 @@ import VendorDashboard from './pages/VendorDashboard'
 import VendorOnboarding from './pages/VendorOnboarding'
 import VendorProjectDetail from './pages/VendorProjectDetail'
 import VendorQuotes from './pages/VendorQuotes'
+import VendorInquiries from './pages/VendorInquiries'
 import VendorQuoteDetail from './pages/VendorQuoteDetail'
 import VendorCalendar from './pages/VendorCalendar'
 import VendorSettings from './pages/VendorSettings'
@@ -48,6 +49,7 @@ function App() {
             <Route path="onboarding" element={<VendorOnboarding />} />
             <Route index element={<VendorDashboard />} />
             <Route path="projects/:id" element={<VendorProjectDetail />} />
+            <Route path="inquiries" element={<VendorInquiries />} />
             <Route path="quotes" element={<VendorQuotes />} />
             <Route path="quotes/:id" element={<VendorQuoteDetail />} />
             <Route path="calendar" element={<VendorCalendar />} />

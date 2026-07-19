@@ -2,10 +2,12 @@ import { Router, Request, Response } from 'express'
 import { Quote } from '../models/Quote'
 import { QuoteContract } from '../models/QuoteContract'
 import {
+  notifyProjectReadyFromQuote,
   notifyQuoteAccepted,
   notifyQuoteContractSigned,
   notifyQuoteDeclined,
 } from '../services/notificationService'
+import { tryAutoConvertAcceptedQuote } from '../services/quoteAutoConvert'
 import { logger } from '../utils/logger'
 
 const router = Router()
@@ -57,17 +59,28 @@ router.post('/:token/accept', async (req: Request, res: Response): Promise<void>
       return
     }
 
+    const autoConvert = await tryAutoConvertAcceptedQuote(token)
+
     const meta = await Quote.findVendorMetaByToken(token)
     if (meta) {
-      await notifyQuoteAccepted({
-        vendorId: meta.vendorId,
-        quoteId: meta.quoteId,
-        quoteTitle: meta.title,
-        clientName: meta.clientName,
-      })
+      if (autoConvert.converted && autoConvert.projectId) {
+        await notifyProjectReadyFromQuote({
+          vendorId: meta.vendorId,
+          projectId: autoConvert.projectId,
+          quoteTitle: meta.title,
+          clientName: meta.clientName,
+        })
+      } else {
+        await notifyQuoteAccepted({
+          vendorId: meta.vendorId,
+          quoteId: meta.quoteId,
+          quoteTitle: meta.title,
+          clientName: meta.clientName,
+        })
+      }
     }
 
-    res.json({ quote })
+    res.json({ quote, autoConvert })
   } catch (error) {
     logger.error('Accept quote error:', error)
     res.status(500).json({ error: 'Failed to accept quote' })
@@ -174,7 +187,17 @@ router.post('/:token/contract/acknowledge', async (req: Request, res: Response):
         legalName: contract.acknowledgementLegalName,
       })
     }
-    res.json({ contract, quote })
+
+    const autoConvert = token ? await tryAutoConvertAcceptedQuote(token) : null
+    if (meta && autoConvert?.converted && autoConvert.projectId) {
+      await notifyProjectReadyFromQuote({
+        vendorId: meta.vendorId,
+        projectId: autoConvert.projectId,
+        quoteTitle: meta.title,
+        clientName: meta.clientName,
+      })
+    }
+    res.json({ contract, quote, autoConvert })
   } catch (error) {
     logger.error('Quote contract acknowledge error:', error)
 

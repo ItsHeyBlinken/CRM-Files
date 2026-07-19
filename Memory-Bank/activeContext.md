@@ -43,31 +43,35 @@
 
 ## Current Work Focus
 
-**Session (July 9, 2026 — production smoke).** Migration `013` applied. Public production smoke on [plannercrm.bytesbyblinken.com](https://plannercrm.bytesbyblinken.com/) — landing, login, register, health OK; auth guard redirects `/dashboard` → login. **Authenticated smoke pending** (vendor dashboard theme, client portal, payments) — needs user login on production.
+**Major release: SmoothGig Client Flow** (from `detour_direction.md`, July 2026). Expand from post-booking portal into full client lifecycle: **Inquiry → Quote → Accept → Project/Portal → Delivery**.
 
-**Prior (June 20, 2026 — branding):** Shipped and committed (`8567e36`); Coolify auto-deploy.
+| Phase | Scope | Migration |
+|-------|--------|-----------|
+| **1** | Inquiries inbox (Lead Inbox — UI label **Inquiries**, no CRM jargon) | `014_inquiries.sql` |
+| **2** | Auto-convert on accept (+ contract sign if attached): project, deposit invoice, portal invite | — |
+| **3** | Portal/quote journey stages (“Getting booked” vs “Your event”) | — |
+| **4** | Quote packages / templates | `015_quote_packages.sql` |
 
-**Next up:** User completes authenticated smoke checklist → E2E payments on production → family UAT when ready.
+**Path B+ per-invoice Stripe** deferred to migration **`017+`** (was previously planned as 014; 016 used for quote discounts).
 
-**Deferred for later (user confirmed):** Vendor calendar **personal entries** — future migration (not `011`; plan uses separate calendar migration). Apply `MarketingAuthLayout` to `AcceptInvite.tsx`.
+**Positioning:** Landing hero → *From first inquiry to final delivery*. UI never says “CRM.”
+
+**Deferred (unchanged):** Vendor calendar personal entries; `MarketingAuthLayout` on `AcceptInvite.tsx`; family UAT.
 
 ## When You Return — Start Here
 
-1. **Authenticated production smoke** — log in as vendor; confirm dashboard theme, Settings preview, client portal colors (checklist in session log July 9)
-2. **E2E payments** on production — Payment Link + P2P + claim-sent + mark paid
-3. **Family UAT** when ready — `docs/family-uat-guide.md`
-4. **Confirm migrations `011` + `012`** if testing Pro billing
-5. **Uploads volume** — contract PDFs survive redeploy
-6. **Launch prep:** Register **smoothgig.com**
+1. **Apply migrations `014` + `015` + `016`** in pgAdmin (inquiries, packages, quote discounts)
+2. Smoke-test Inquiries → Create quote → **Edit prices / discount** → Accept (+ sign) → auto project/invite/deposit
+3. **E2E payments** on production if not done
+4. **Family UAT** when ready — `docs/family-uat-guide.md`
+5. **Launch prep:** Register **smoothgig.com**
 
 ## Next Session — Priority Order
 
-1. **Authenticated production smoke** (user login required)
-2. **E2E payments** on production
-3. **Family UAT results** — fix blockers (especially mobile client portal)
-4. **Pro billing smoke test** — migrations `011`/`012`, Checkout upgrade, plan limits
-5. **Volume persistence test** — redeploy; confirm `uploads/contracts/` PDFs load
-6. **Future:** Vendor calendar personal entries (separate migration)
+1. Apply `014` / `015` / `016` + production smoke of Client Flow
+2. E2E payments + family UAT
+3. Path B+ per-invoice Stripe (`017+`) when ready
+4. Vendor calendar personal entries (separate migration)
 
 ## MVP Status
 
@@ -109,6 +113,10 @@
 | Mobile-responsive quote document layout | ✅ Built |
 | Stripe Payment Link (vendor-hosted card pay) | ✅ Built (June 20, 2026) |
 | Monetization (vendor subscription) | ✅ Model confirmed — see `monetization.md` |
+| **Client Flow Phase 1 — Inquiries inbox** | ✅ Built (SQL `014` — apply in pgAdmin) |
+| **Client Flow Phase 2 — Auto-convert on accept/sign** | ✅ Built (project + deposit invoice + portal invite) |
+| **Client Flow Phase 3 — Portal journey stages** | ✅ Built (“Getting booked” / “Your event”) |
+| **Client Flow Phase 4 — Quote packages** | ✅ Built (SQL `015` — apply in pgAdmin) |
 
 ## Payment Architecture (Agreed)
 
@@ -266,9 +274,10 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 - **Signed contract view (new tab):** authenticated blob fetch + `URL.createObjectURL` (not iframe)
 - **Date display:** User-facing dates = **MM-DD-YYYY** via `formatUsDate()` / `formatUsDateTime()` in `client/src/utils/calendarHelpers.ts`; API/DB stay `YYYY-MM-DD`
 - Stripe webhook: raw body at `/api/webhooks/stripe` — **Pro subscriptions only** (not client invoice pay)
-- **Client card pay:** vendor `stripe_payment_link` on settings (default) + **planned** per-invoice URL (`014`); validated as `https://*.stripe.com`; no Connect
+- **Client card pay:** vendor `stripe_payment_link` on settings (default) + **planned** per-invoice URL (`017+`); validated as `https://*.stripe.com`; no Connect
 - **Git commits / push:** user only
-- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next new migration: `014`)
+- **Database migrations:** user applies SQL in pgAdmin; numbered `NNN_*.sql` in `database/` (next new migration: `016`)
+- **Client Flow:** `014_inquiries.sql`, `015_quote_packages.sql` — apply before using Inquiries / packages in production
 
 ## Planned Features (Post-MVP / Later)
 
@@ -298,7 +307,7 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 ### Implementation sketch (when built)
 | Layer | Work |
 |-------|------|
-| **DB** | Migration `014`: `invoices.stripe_payment_link TEXT` (nullable); reuse `stripePaymentLink.ts` validation |
+| **DB** | Migration `017+`: `invoices.stripe_payment_link TEXT` (nullable); reuse `stripePaymentLink.ts` validation |
 | **API** | Include on invoice create/update/send; expose in portal payload per open invoice |
 | **Vendor UI** | Invoice form / send modal: optional Stripe pay URL; helper: show amount, copy `$X.XX`, link to Stripe Payment Links docs |
 | **Client UI** | `handlePayWithCard` uses `invoice.stripePaymentLink ?? paymentOptions.stripePaymentLink` |
@@ -310,6 +319,39 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 
 ### Alternative deferred (only if vendor UX still too heavy)
 - **Connect OAuth** — one-time platform Connect setup; vendors link existing accounts; SmoothGig creates Checkout per invoice with correct amount. User prefers to avoid Connect for now.
+
+## Session Log (July 19, 2026 — quotes status filters)
+
+- [x] Quotes list filters: Active + per-status (Awaiting, Accepted, Declined, Converted, Expired, Draft, All)
+
+## Session Log (July 19, 2026 — lost inquiry declines open quote)
+
+- [x] Marking inquiry lost declines linked sent/draft quotes; list GET backfills orphans
+
+## Session Log (July 19, 2026 — inquiry Active / Lost filters)
+
+- [x] Inquiries list filters: Active (hides booked + lost) | Booked | Lost | All
+- [x] “Mark as lost” + “Restore to Active”; status label “Lost / declined”
+- [x] Repeat customers OK (no unique email) — documented in UI tip
+
+## Session Log (July 19, 2026 — quote edit + discount)
+
+- [x] Inquiry budget no longer seeds quote unit price (reference note only; line starts at $0)
+- [x] `PUT /api/vendor/quotes/:id` + Edit quote UI on quote detail (draft/sent)
+- [x] Quote-time discount % or $ (create form + edit) as Discount line item
+- [x] Migration `016_quote_line_item_discount.sql` — allow negative line unit prices
+- [ ] **User:** apply `016` in pgAdmin (needed before saving discounts)
+
+## Session Log (July 19, 2026 — SmoothGig Client Flow Phases 0–4)
+
+- [x] Phase 0: Landing/tagline + Memory Bank positioning (“From first inquiry to final delivery”)
+- [x] Phase 1: `014_inquiries.sql`, Inquiry model/API, `/dashboard/inquiries` UI, create-quote-from-inquiry
+- [x] Phase 2: `quoteAutoConvert` on accept (+ sign if contract) → project, deposit invoice, milestones, portal invite, inquiry `booked`
+- [x] Phase 3: Portal Home journey stage (“Getting booked” vs “Your event”)
+- [x] Phase 4: `015_quote_packages.sql`, package CRUD in Settings, apply package on inquiry/quote create
+- [x] Path B+ Stripe renumbered to **`016+`** (014/015 used by Client Flow)
+- [x] Client + server `tsc --noEmit` pass
+- [ ] **User:** apply `014` + `015` in pgAdmin, commit/deploy, smoke Client Flow E2E
 
 ## Session Log (landing page — vendor marketing)
 

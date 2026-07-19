@@ -51,7 +51,7 @@
 - **Soft deletes**: Optional `deleted_at` for data retention
 
 ### Database migrations (manual, pgAdmin)
-- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `013_*` (next: **`014`**)
+- **Numbered files** in `database/`: `001_schema_portalhub.sql` … `016_*` (next: **`017`** — Path B+ Stripe or later)
 - **Format:** `NNN_short_descriptive_name.sql` — zero-padded 3-digit prefix + snake_case suffix
 - **Order:** Run in numeric order; each file header states prerequisite migration(s)
 - **Reset/seed:** Unnumbered scripts in `database/reset/` (data only, not schema)

@@ -6,6 +6,7 @@ import VendorNotificationBell from './VendorNotificationBell'
 
 export type VendorNavSection =
   | 'projects'
+  | 'inquiries'
   | 'quotes'
   | 'calendar'
   | 'payments'
@@ -13,6 +14,7 @@ export type VendorNavSection =
 
 const NAV_ITEMS: { key: VendorNavSection; label: string; to: string }[] = [
   { key: 'projects', label: 'Home', to: '/dashboard' },
+  { key: 'inquiries', label: 'Inquiries', to: '/dashboard/inquiries' },
   { key: 'quotes', label: 'Quotes', to: '/dashboard/quotes' },
   { key: 'calendar', label: 'Calendar', to: '/dashboard/calendar' },
   { key: 'payments', label: 'Payments', to: '/dashboard/payments' },

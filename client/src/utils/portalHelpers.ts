@@ -86,13 +86,59 @@ export function getNextAction(data: ClientPortalData): NextAction | null {
   const upcomingMilestone = data.milestones.find((m) => m.status !== 'complete')
   if (upcomingMilestone) {
     return {
-      label: "See what's next",
+      label: "See what's next on your timeline",
       description: upcomingMilestone.title,
       tab: 'home',
     }
   }
 
   return null
+}
+
+/** Soft journey stage for portal Home header. */
+export function getPortalJourneyStage(data: ClientPortalData): {
+  label: string
+  description: string
+} {
+  const needsContract = data.contracts.some((c) => !c.acknowledgedAt)
+  const unpaidDeposit = data.invoices.find(
+    (inv) =>
+      inv.invoiceKind === 'deposit' &&
+      (inv.status === 'sent' || inv.status === 'overdue')
+  )
+  const depositPaid = data.invoices.some(
+    (inv) => inv.invoiceKind === 'deposit' && inv.status === 'paid'
+  )
+
+  if (needsContract || unpaidDeposit || (!depositPaid && data.project.status === 'inquiry')) {
+    return {
+      label: 'Getting booked',
+      description: needsContract
+        ? 'Sign your contract, then pay your deposit to finish booking.'
+        : unpaidDeposit
+          ? 'Pay your deposit to hold your date and finish booking.'
+          : 'Complete any remaining steps to finish booking.',
+    }
+  }
+
+  switch (data.project.status) {
+    case 'cancelled':
+      return {
+        label: 'Project cancelled',
+        description: 'Contact your vendor if you have questions.',
+      }
+    case 'complete':
+    case 'delivered':
+      return {
+        label: 'Your event',
+        description: 'Delivery and wrap-up details live here.',
+      }
+    default:
+      return {
+        label: 'Your event',
+        description: 'Timeline, documents, and payments for your booking.',
+      }
+  }
 }
 
 export function getInvoiceStatusLabel(status: string): string {

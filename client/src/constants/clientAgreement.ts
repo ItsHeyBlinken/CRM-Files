@@ -16,25 +16,32 @@ export const QUOTE_CONTRACT_VIEW_ONLY_NOTE =
 export const QUOTE_ACCEPTED_NEXT_STEPS_HEADLINE = 'Quote accepted — here’s what happens next'
 
 export const QUOTE_ACCEPTED_NEXT_STEPS = [
-  'Sign the contract below when you’re ready (if one is included with this quote).',
-  'Your vendor will email you a deposit invoice and a client portal invite.',
-  'Use the portal to pay your deposit and see what to do next.',
-  'You can close this page anytime — your vendor will follow up by email.',
+  'Sign the contract below when you’re ready.',
+  'After you sign, your project starts automatically — deposit invoice and portal invite are prepared for you.',
+  'Check your email for the portal invite, then pay your deposit there.',
+  'You’re not fully booked until your deposit is paid.',
 ] as const
 
-export const CONTRACT_SIGNED_NEXT_STEPS_HEADLINE = 'Contract signed — here’s what happens next'
+export const CONTRACT_SIGNED_NEXT_STEPS_HEADLINE = 'You’re on your way — project started'
 
 export const CONTRACT_SIGNED_NEXT_STEPS = [
-  'You can close this window — you’re done here for now.',
-  'Your vendor will send a deposit invoice and a client portal invite by email.',
-  'Open the portal link to pay your deposit and track your booking.',
+  'Your project is set up and a deposit invoice is ready.',
+  'Check your email for a client portal invite (or ask your vendor to resend the link).',
+  'Open the portal to pay your deposit and see what’s next.',
   'You’re not fully booked until your deposit is paid.',
 ] as const
 
 export const QUOTE_ACCEPTED_NO_CONTRACT_NEXT_STEPS = [
-  'You can close this page — you’re done here for now.',
-  'Your vendor will email you a deposit invoice and a client portal invite.',
-  'Use the portal to pay your deposit and see what to do next.',
+  'Your project is set up and a deposit invoice is ready.',
+  'Check your email for a client portal invite.',
+  'Open the portal to pay your deposit and see what’s next.',
   'You’re not fully booked until your deposit is paid.',
 ] as const
 
+export const QUOTE_AUTO_CONVERTED_HEADLINE = 'Project started — check your email'
+
+export const QUOTE_AUTO_CONVERTED_STEPS = [
+  'Your vendor portal invite and deposit invoice are ready.',
+  'Open the invite link in your email to create your account.',
+  'Pay your deposit in the portal to finish booking.',
+] as const
