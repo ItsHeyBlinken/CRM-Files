@@ -24,6 +24,7 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
   try {
     const {
       businessName,
+      serviceType,
       venmoHandle,
       zelleHandle,
       cashappHandle,
@@ -35,6 +36,7 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
 
     const status = await VendorOnboarding.completeOnboarding(Number(req.user.id), {
       businessName,
+      serviceType,
       venmoHandle,
       zelleHandle,
       cashappHandle,
@@ -50,6 +52,9 @@ router.post('/complete', async (req: AuthRequest, res: Response): Promise<void> 
       switch (error.message) {
         case 'BUSINESS_NAME_REQUIRED':
           res.status(400).json({ error: 'Business name is required' })
+          return
+        case 'SERVICE_TYPE_REQUIRED':
+          res.status(400).json({ error: 'Choose your vendor category' })
           return
         case 'PAYMENT_METHOD_REQUIRED':
           res.status(400).json({

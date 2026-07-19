@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { protect, authorize, AuthRequest } from '../middleware/auth'
 import { vendorLogoPublicPath, vendorLogoUpload } from '../middleware/vendorLogoUpload'
+import { isVendorCategoryId, normalizeVendorCategory } from '../constants/vendorCategories'
 import { VendorProfile } from '../models/VendorProfile'
 import { logger } from '../utils/logger'
 
@@ -24,16 +25,42 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
 
 router.put('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const profile = await VendorProfile.update(Number(req.user.id), {
+    const serviceTypeRaw = req.body.serviceType
+    if (
+      serviceTypeRaw !== undefined &&
+      serviceTypeRaw !== null &&
+      serviceTypeRaw !== '' &&
+      !isVendorCategoryId(serviceTypeRaw)
+    ) {
+      res.status(400).json({ error: 'Invalid vendor category' })
+      return
+    }
+
+    const updatePayload: {
+      businessName?: string
+      serviceType?: string | null
+      tagline?: string | null
+      primaryColor?: string
+      secondaryColor?: string
+      website?: string | null
+      businessPhone?: string | null
+      businessEmail?: string | null
+    } = {
       businessName: req.body.businessName,
-      serviceType: req.body.serviceType,
       tagline: req.body.tagline,
       primaryColor: req.body.primaryColor,
       secondaryColor: req.body.secondaryColor,
       website: req.body.website,
       businessPhone: req.body.businessPhone,
       businessEmail: req.body.businessEmail,
-    })
+    }
+    if (serviceTypeRaw !== undefined) {
+      updatePayload.serviceType = serviceTypeRaw
+        ? normalizeVendorCategory(serviceTypeRaw)
+        : null
+    }
+
+    const profile = await VendorProfile.update(Number(req.user.id), updatePayload)
     res.json({ profile })
   } catch (error) {
     if (error instanceof Error) {

@@ -1,4 +1,5 @@
 import { getPool } from '../config/database'
+import { isVendorCategoryId, normalizeVendorCategory } from '../constants/vendorCategories'
 import {
   hasAnyClientPaymentMethod,
   VendorPaymentSettings,
@@ -7,6 +8,7 @@ import {
 export interface IVendorOnboardingStatus {
   needsOnboarding: boolean
   businessName: string
+  serviceType: string | null
   paymentSetupComplete: boolean
   hasPaymentMethod: boolean
   stripeConfigured: boolean
@@ -23,17 +25,22 @@ export class VendorOnboardingModel {
   static async getStatus(vendorId: number): Promise<IVendorOnboardingStatus> {
     const pool = getPool()
     const [profileResult, settings] = await Promise.all([
-      pool.query(`SELECT business_name FROM vendor_profiles WHERE user_id = $1`, [vendorId]),
+      pool.query(
+        `SELECT business_name, service_type FROM vendor_profiles WHERE user_id = $1`,
+        [vendorId]
+      ),
       VendorPaymentSettings.findByVendorId(vendorId),
     ])
 
     const businessName = profileResult.rows[0]?.business_name ?? ''
+    const serviceType = profileResult.rows[0]?.service_type ?? null
     const paymentSetupComplete = settings.paymentSetupComplete
     const hasPaymentMethod = hasAnyClientPaymentMethod(settings)
 
     return {
       needsOnboarding: !paymentSetupComplete,
       businessName,
+      serviceType,
       paymentSetupComplete,
       hasPaymentMethod,
       stripeConfigured: false,
@@ -77,6 +84,7 @@ export class VendorOnboardingModel {
     vendorId: number,
     data: {
       businessName: string
+      serviceType?: string | null
       venmoHandle?: string | null
       zelleHandle?: string | null
       cashappHandle?: string | null
@@ -91,13 +99,19 @@ export class VendorOnboardingModel {
       throw new Error('BUSINESS_NAME_REQUIRED')
     }
 
+    if (!data.serviceType || !isVendorCategoryId(data.serviceType)) {
+      throw new Error('SERVICE_TYPE_REQUIRED')
+    }
+    const serviceType = normalizeVendorCategory(data.serviceType)
+
     const pool = getPool()
     await pool.query(
       `
-      UPDATE vendor_profiles SET business_name = $2, updated_at = NOW()
+      UPDATE vendor_profiles
+      SET business_name = $2, service_type = $3, updated_at = NOW()
       WHERE user_id = $1
       `,
-      [vendorId, businessName]
+      [vendorId, businessName, serviceType]
     )
 
     const settings = await VendorPaymentSettings.updateSettings(vendorId, {

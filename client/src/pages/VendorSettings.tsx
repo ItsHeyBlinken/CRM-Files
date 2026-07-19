@@ -15,6 +15,11 @@ import { fetchVendorPlanUsage } from '../services/planService'
 import StarterPlanBanner, { ProPlanManageLink } from '../components/vendor/StarterPlanBanner'
 import type { VendorPlanUsage } from '../types/plan'
 import type { VendorProfile } from '../types/vendorExtras'
+import {
+  VENDOR_CATEGORY_IDS,
+  VENDOR_CATEGORY_LABELS,
+  normalizeVendorCategory,
+} from '../constants/vendorCategories'
 
 const VendorSettings: React.FC = () => {
   const { user, logout } = useAuth()
@@ -185,12 +190,24 @@ const VendorSettings: React.FC = () => {
               placeholder="Tagline (optional)"
               className="auth-input"
             />
-            <input
-              value={form.serviceType ?? ''}
-              onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-              placeholder="Service type (optional)"
-              className="auth-input"
-            />
+            <label className="block text-sm">
+              <span className="text-slate-700 font-medium">Vendor category</span>
+              <select
+                value={normalizeVendorCategory(form.serviceType)}
+                onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                className="auth-input mt-1"
+              >
+                {VENDOR_CATEGORY_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {VENDOR_CATEGORY_LABELS[id]}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs text-slate-500">
+                Controls which package starters you see. Not shown as a wedding-only product — works
+                for any event type.
+              </span>
+            </label>
           </section>
 
           <section className="vendor-card p-6 space-y-4">

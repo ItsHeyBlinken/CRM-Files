@@ -320,6 +320,12 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 ### Alternative deferred (only if vendor UX still too heavy)
 - **Connect OAuth** — one-time platform Connect setup; vendors link existing accounts; SmoothGig creates Checkout per invoice with correct amount. User prefers to avoid Connect for now.
 
+## Session Log (July 19, 2026 — vendor category + package starters)
+
+- [x] Vendor category at onboarding + Settings (photography, videography, DJ, florals, catering, planning, other)
+- [x] Category-scoped package starters ($0 prices); edit packages; “Show other categories” escape
+- [x] Event-neutral template copy (not wedding-only UI)
+
 ## Session Log (July 19, 2026 — quotes status filters)
 
 - [x] Quotes list filters: Active + per-status (Awaiting, Accepted, Declined, Converted, Expired, Draft, All)

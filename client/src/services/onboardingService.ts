@@ -10,6 +10,7 @@ export interface VendorChecklist {
 export interface VendorOnboardingStatus {
   needsOnboarding: boolean
   businessName: string
+  serviceType: string | null
   paymentSetupComplete: boolean
   hasPaymentMethod: boolean
   stripeConfigured: boolean
@@ -23,6 +24,7 @@ export interface OnboardingResponse {
 
 export interface CompleteOnboardingInput {
   businessName: string
+  serviceType: string
   stripePaymentLink?: string | null
   venmoHandle?: string | null
   zelleHandle?: string | null

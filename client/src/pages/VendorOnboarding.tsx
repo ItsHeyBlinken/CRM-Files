@@ -2,6 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react'
 import PlatformLogo from '../components/branding/PlatformLogo'
 import { useNavigate } from 'react-router-dom'
 import { completeVendorOnboarding, fetchVendorOnboarding } from '../services/onboardingService'
+import {
+  VENDOR_CATEGORY_IDS,
+  VENDOR_CATEGORY_LABELS,
+  type VendorCategoryId,
+  isVendorCategoryId,
+} from '../constants/vendorCategories'
 
 type OnboardingStep = 'business' | 'payments' | 'stripe'
 
@@ -14,6 +20,7 @@ const VendorOnboarding: React.FC = () => {
   const [error, setError] = useState('')
 
   const [businessName, setBusinessName] = useState('')
+  const [serviceType, setServiceType] = useState<VendorCategoryId | ''>('')
   const [form, setForm] = useState({
     stripePaymentLink: '',
     venmoHandle: '',
@@ -30,6 +37,9 @@ const VendorOnboarding: React.FC = () => {
       const data = await fetchVendorOnboarding()
       if (data.status.businessName) {
         setBusinessName(data.status.businessName)
+      }
+      if (data.status.serviceType && isVendorCategoryId(data.status.serviceType)) {
+        setServiceType(data.status.serviceType)
       }
       if (data.status.settings.stripePaymentLink) {
         setForm((f) => ({
@@ -56,12 +66,19 @@ const VendorOnboarding: React.FC = () => {
   const hasStripeLink = Boolean(form.stripePaymentLink.trim())
 
   const finishOnboarding = async (skipPaymentSetup: boolean) => {
+    if (!serviceType) {
+      setError('Choose your vendor category')
+      setStep('business')
+      return
+    }
+
     setSubmitting(true)
     setError('')
 
     try {
       await completeVendorOnboarding({
         businessName: businessName.trim(),
+        serviceType,
         stripePaymentLink: form.stripePaymentLink.trim() || null,
         venmoHandle: form.venmoHandle.trim() || null,
         zelleHandle: form.zelleHandle.trim() || null,
@@ -112,9 +129,10 @@ const VendorOnboarding: React.FC = () => {
 
         {step === 'business' && (
           <section className="vendor-card p-6 space-y-4">
-            <h2 className="font-medium text-gray-900">Your business name</h2>
+            <h2 className="font-medium text-gray-900">Your business</h2>
             <p className="text-sm text-gray-600">
-              Clients see this on their portal — use your studio or brand name.
+              Clients see your business name on their portal. Your category shows the right package
+              starters — wording stays event-neutral for weddings and other events.
             </p>
             <label className="block text-sm">
               <span className="text-gray-700">Business name</span>
@@ -126,9 +144,29 @@ const VendorOnboarding: React.FC = () => {
                 className="auth-input"
               />
             </label>
+            <label className="block text-sm">
+              <span className="text-gray-700">What kind of vendor are you?</span>
+              <select
+                required
+                value={serviceType}
+                onChange={(e) =>
+                  setServiceType(
+                    e.target.value === '' ? '' : (e.target.value as VendorCategoryId)
+                  )
+                }
+                className="auth-input mt-1"
+              >
+                <option value="">Select a category…</option>
+                {VENDOR_CATEGORY_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {VENDOR_CATEGORY_LABELS[id]}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
-              disabled={!businessName.trim()}
+              disabled={!businessName.trim() || !serviceType}
               onClick={() => setStep('payments')}
               className="auth-submit"
             >
