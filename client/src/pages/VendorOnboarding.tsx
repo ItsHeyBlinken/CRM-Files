@@ -8,6 +8,7 @@ import {
   type VendorCategoryId,
   isVendorCategoryId,
 } from '../constants/vendorCategories'
+import { VENDOR_GUIDE_STORAGE_KEY } from '../constants/vendorGuide'
 
 type OnboardingStep = 'business' | 'payments' | 'stripe'
 
@@ -87,7 +88,13 @@ const VendorOnboarding: React.FC = () => {
         paymentInstructions: form.paymentInstructions.trim() || null,
         skipPaymentSetup,
       })
-      navigate('/dashboard')
+      let seenGuide = false
+      try {
+        seenGuide = localStorage.getItem(VENDOR_GUIDE_STORAGE_KEY) === '1'
+      } catch {
+        seenGuide = false
+      }
+      navigate(seenGuide ? '/dashboard' : '/dashboard/guide')
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||

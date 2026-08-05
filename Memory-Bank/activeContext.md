@@ -320,6 +320,17 @@ Full convention: `Memory-Bank/systemPatterns.md` → Go-live data wipe.
 ### Alternative deferred (only if vendor UX still too heavy)
 - **Connect OAuth** — one-time platform Connect setup; vendors link existing accounts; SmoothGig creates Checkout per invoice with correct amount. User prefers to avoid Connect for now.
 
+## Session Log (Aug 4, 2026 — public how-it-works guide)
+
+- [x] `/how-it-works` — public product guide for unsigned visitors (marketing layout)
+- [x] Shared `ProductGuideContent` component (`public` vs `vendor` mode)
+- [x] Landing nav, hero, and footer link to public guide
+
+## Session Log (Aug 4, 2026 — vendor product guide)
+
+- [x] `/dashboard/guide` — workflow, features, tips (event-neutral copy)
+- [x] First-time post-setup redirect to guide; Home + Settings links to reopen
+
 ## Session Log (July 19, 2026 — vendor category + package starters)
 
 - [x] Vendor category at onboarding + Settings (photography, videography, DJ, florals, catering, planning, other)

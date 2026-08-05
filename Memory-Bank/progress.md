@@ -681,6 +681,11 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [x] User git commit — `8567e36` "Implement dual branding for SmoothGig platform and vendor dashboards" (June 20, 2026, before bed)
 - [x] Production deploy — Coolify auto-redeploy on commit (user-configured)
 
+### Session: Public how-it-works guide (Aug 4, 2026)
+- [x] `/how-it-works` route — no auth required; reuses `vendorGuide.ts` content via `ProductGuideContent`
+- [x] Public CTAs → register/login; signed-in users see "Open dashboard"
+- [x] Landing: nav + hero "See how it works" + footer link
+
 ### Session: SmoothGig Client Flow Phases 0–4 (July 19, 2026)
 - [x] Phase 0 docs + landing
 - [x] `014_inquiries.sql` + Inquiry model/routes + VendorInquiries UI

@@ -5,6 +5,7 @@ import { SocketProvider } from './contexts/SocketContext'
 import Layout from './components/Layout/Layout'
 import ProtectedRoute from './components/Auth/ProtectedRoute'
 import Landing from './pages/Landing'
+import HowItWorks from './pages/HowItWorks'
 import VendorOnboardingGate from './components/vendor/VendorOnboardingGate'
 
 import VendorDashboard from './pages/VendorDashboard'
@@ -15,6 +16,7 @@ import VendorInquiries from './pages/VendorInquiries'
 import VendorQuoteDetail from './pages/VendorQuoteDetail'
 import VendorCalendar from './pages/VendorCalendar'
 import VendorSettings from './pages/VendorSettings'
+import VendorGuide from './pages/VendorGuide'
 import VendorPaymentSettings from './pages/VendorPaymentSettings'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
@@ -37,6 +39,7 @@ function App() {
           <Route path="/quote/:token" element={<AcceptQuote />} />
 
           <Route path="/" element={<Landing />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
 
           <Route
             path="/dashboard"
@@ -47,6 +50,7 @@ function App() {
             }
           >
             <Route path="onboarding" element={<VendorOnboarding />} />
+            <Route path="guide" element={<VendorGuide />} />
             <Route index element={<VendorDashboard />} />
             <Route path="projects/:id" element={<VendorProjectDetail />} />
             <Route path="inquiries" element={<VendorInquiries />} />

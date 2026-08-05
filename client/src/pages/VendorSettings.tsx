@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
 import VendorDashboardHeader from '../components/vendor/VendorDashboardHeader'
@@ -121,7 +122,10 @@ const VendorSettings: React.FC = () => {
           <h2 className="text-lg font-semibold text-slate-900">Client portal branding</h2>
           <p className="text-sm text-slate-600 mt-1">
             Logo, colors, and business details shown to your clients in their project portal.
-            Your vendor dashboard uses the SmoothGig platform theme.
+            Your vendor dashboard uses the SmoothGig platform theme.{' '}
+            <Link to="/dashboard/guide" className="vendor-link">
+              How SmoothGig works →
+            </Link>
           </p>
         </div>
 

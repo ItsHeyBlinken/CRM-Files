@@ -131,6 +131,12 @@ const Landing: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <PlatformLogo heightClass="h-11" />
           <nav className="flex items-center gap-2 sm:gap-4">
+            <Link
+              to="/how-it-works"
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 hidden sm:inline transition"
+            >
+              How it works
+            </Link>
             <a
               href="#pricing"
               className="text-sm font-medium text-slate-600 hover:text-blue-600 px-3 py-2 hidden sm:inline transition"
@@ -182,12 +188,18 @@ const Landing: React.FC = () => {
                     Create your vendor account
                   </Link>
                   <Link
-                    to="/login"
+                    to="/how-it-works"
                     className="marketing-cta-outline px-8 py-3.5 text-base rounded-xl"
                   >
-                    I already have an account
+                    See how it works
                   </Link>
                 </div>
+                <p className="mt-4 text-sm text-slate-500">
+                  Already have an account?{' '}
+                  <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                    Log in
+                  </Link>
+                </p>
                 <p className="mt-6 text-sm text-slate-500">
                   Free to start · No platform fees · No credit card
                 </p>
@@ -482,6 +494,9 @@ const Landing: React.FC = () => {
             <p className="text-xs text-slate-500">© {new Date().getFullYear()}</p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <Link to="/how-it-works" className="hover:text-slate-900 transition">
+              How it works
+            </Link>
             <Link to="/login" className="hover:text-slate-900 transition">
               Log in
             </Link>
