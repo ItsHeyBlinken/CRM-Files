@@ -12,6 +12,7 @@
 - [x] Created `docs/beta-tester-reply-email.md` (copy/paste reply + checklist + feedback prompts)
 - [x] Created `docs/beta-tester-checklist.md` (standalone checklist + feedback section)
 - [x] Reply email signature set to **Chris** (not Blinken)
+- [x] Beta materials approved; user waiting on interest emails from Facebook posts
 
 ---
 
