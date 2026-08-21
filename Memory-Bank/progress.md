@@ -2,6 +2,19 @@
 
 > **Note:** Product pivoted from Event Planner CRM to two-sided **event vendor** client portal. Platform name: **SmoothGig** (`smoothgig.com`). Legacy code/comments may still say PortalHub in SQL filenames — that is historical only.
 
+## Session log — Aug 21, 2026 (local beta invite planning)
+
+- [x] Planned local beta: interest email → access kit + checklist; Founding Pro ($19 locked) as exclusive thank-you
+- [x] Contact CTA: `info@bytesbyblinken.com`; live site for kit: `https://plannercrm.bytesbyblinken.com`
+- [x] Recommended posting in **wedding/event vendor** Facebook groups (not generic SMB)
+- [x] Drafted wedding-vendor-tuned Facebook posts (long + short)
+- [x] User posted in **two wedding vendor Facebook groups**
+- [x] Created `docs/beta-tester-reply-email.md` (copy/paste reply + checklist + feedback prompts)
+- [x] Created `docs/beta-tester-checklist.md` (standalone checklist + feedback section)
+- [x] Reply email signature set to **Chris** (not Blinken)
+
+---
+
 ## Handoff — July 19, 2026 (quote edit + discount polish)
 
 - [x] Budget no longer locked as quote price; Edit quote on detail page
