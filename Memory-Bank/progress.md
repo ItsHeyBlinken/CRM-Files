@@ -715,3 +715,9 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 - [ ] Client portal: pay button prefers invoice URL, fallback to vendor default from settings
 - [ ] **No Connect** — vendor still creates Payment Link/Invoice in their Stripe Dashboard
 - [ ] Full spec in `activeContext.md` → **Planned: Path B+ per-invoice Stripe pay**
+
+### Session: Security — sanitize committed env example (Aug 29, 2026)
+- [x] Replaced production credentials in tracked `.env.example` with obvious placeholders
+- [x] Updated `.gitignore`: track `.env.example` on purpose; ignore `.env`, `.env.local`, `.env.*.local`
+- [x] Repo scan: removed tracked `server/logs/*.log` (contained production DB host); docs reference public site URL only
+- [x] Opened PR; git history still contains leaked values — rotation required
