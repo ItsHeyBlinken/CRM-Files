@@ -51,3 +51,4 @@ client/dist
 dist
 *.log
 logs
+server/logs/

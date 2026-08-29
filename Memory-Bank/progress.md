@@ -719,5 +719,5 @@ Use vendor-hosted Stripe Payment Links instead of platform Connect for client pa
 ### Session: Security — sanitize committed env example (Aug 29, 2026)
 - [x] Replaced production credentials in tracked `.env.example` with obvious placeholders
 - [x] Updated `.gitignore`: track `.env.example` on purpose; ignore `.env`, `.env.local`, `.env.*.local`
-- [x] Repo scan: no other committed secrets found (docs reference public site URL only)
+- [x] Repo scan: removed tracked `server/logs/*.log` (contained production DB host); docs reference public site URL only
 - [x] Opened PR; git history still contains leaked values — rotation required
